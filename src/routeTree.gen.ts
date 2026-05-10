@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LandingPagesIndexRouteImport } from './routes/landing-pages.index'
 import { Route as FunnelsIndexRouteImport } from './routes/funnels.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as VIdRouteImport } from './routes/v.$id'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as LiveIdRouteImport } from './routes/live.$id'
@@ -80,6 +81,11 @@ const FunnelsIndexRoute = FunnelsIndexRouteImport.update({
   path: '/funnels/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/funnels.index.lazy').then((d) => d.Route))
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/admin.index.lazy').then((d) => d.Route))
 const VIdRoute = VIdRouteImport.update({
   id: '/v/$id',
   path: '/v/$id',
@@ -142,45 +148,45 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 const AdminWhatsappRoute = AdminWhatsappRouteImport.update({
-  id: '/whatsapp',
-  path: '/whatsapp',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/whatsapp',
+  path: '/admin/whatsapp',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/admin.whatsapp.lazy').then((d) => d.Route),
 )
 const AdminVideosRoute = AdminVideosRouteImport.update({
-  id: '/videos',
-  path: '/videos',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/videos',
+  path: '/admin/videos',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.videos.lazy').then((d) => d.Route))
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.users.lazy').then((d) => d.Route))
 const AdminSupportRoute = AdminSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/support',
+  path: '/admin/support',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.support.lazy').then((d) => d.Route))
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
-  id: '/subscriptions',
-  path: '/subscriptions',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/subscriptions',
+  path: '/admin/subscriptions',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/admin.subscriptions.lazy').then((d) => d.Route),
 )
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/admin.settings.lazy').then((d) => d.Route),
 )
 const AdminKycRoute = AdminKycRouteImport.update({
-  id: '/kyc',
-  path: '/kyc',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/kyc',
+  path: '/admin/kyc',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.kyc.lazy').then((d) => d.Route))
 const LandingPagesIdEditRoute = LandingPagesIdEditRouteImport.update({
   id: '/edit',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
@@ -252,6 +259,7 @@ export interface FileRoutesByTo {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/admin': typeof AdminIndexRoute
   '/funnels': typeof FunnelsIndexRoute
   '/landing-pages': typeof LandingPagesIndexRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
@@ -315,6 +324,7 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
     | '/funnels/$id/edit'
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/admin'
     | '/funnels'
     | '/landing-pages'
     | '/funnels/$id/edit'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
     | '/funnels/$id/edit'
@@ -388,6 +400,13 @@ export interface RootRouteChildren {
   LeadsRoute: typeof LeadsRoute
   LiveRoute: typeof LiveRouteWithChildren
   VideosRoute: typeof VideosRoute
+  AdminKycRoute: typeof AdminKycRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminVideosRoute: typeof AdminVideosRoute
+  AdminWhatsappRoute: typeof AdminWhatsappRoute
   FSlugRoute: typeof FSlugRoute
   FunnelsIdRoute: typeof FunnelsIdRouteWithChildren
   FunnelsCreateRoute: typeof FunnelsCreateRoute
@@ -396,6 +415,7 @@ export interface RootRouteChildren {
   LandingPagesCreateRoute: typeof LandingPagesCreateRoute
   SSlugRoute: typeof SSlugRoute
   VIdRoute: typeof VIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   FunnelsIndexRoute: typeof FunnelsIndexRoute
   LandingPagesIndexRoute: typeof LandingPagesIndexRoute
 }
@@ -456,6 +476,13 @@ declare module '@tanstack/react-router' {
       path: '/funnels'
       fullPath: '/funnels/'
       preLoaderRoute: typeof FunnelsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/v/$id': {
@@ -537,52 +564,52 @@ declare module '@tanstack/react-router' {
     }
     '/admin/whatsapp': {
       id: '/admin/whatsapp'
-      path: '/whatsapp'
+      path: '/admin/whatsapp'
       fullPath: '/admin/whatsapp'
       preLoaderRoute: typeof AdminWhatsappRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/videos': {
       id: '/admin/videos'
-      path: '/videos'
+      path: '/admin/videos'
       fullPath: '/admin/videos'
       preLoaderRoute: typeof AdminVideosRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
       id: '/admin/users'
-      path: '/users'
+      path: '/admin/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/support': {
       id: '/admin/support'
-      path: '/support'
+      path: '/admin/support'
       fullPath: '/admin/support'
       preLoaderRoute: typeof AdminSupportRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
-      path: '/subscriptions'
+      path: '/admin/subscriptions'
       fullPath: '/admin/subscriptions'
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/settings': {
       id: '/admin/settings'
-      path: '/settings'
+      path: '/admin/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/kyc': {
       id: '/admin/kyc'
-      path: '/kyc'
+      path: '/admin/kyc'
       fullPath: '/admin/kyc'
       preLoaderRoute: typeof AdminKycRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/landing-pages/$id/edit': {
       id: '/landing-pages/$id/edit'
@@ -654,6 +681,13 @@ const rootRouteChildren: RootRouteChildren = {
   LeadsRoute: LeadsRoute,
   LiveRoute: LiveRouteWithChildren,
   VideosRoute: VideosRoute,
+  AdminKycRoute: AdminKycRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminSupportRoute: AdminSupportRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminVideosRoute: AdminVideosRoute,
+  AdminWhatsappRoute: AdminWhatsappRoute,
   FSlugRoute: FSlugRoute,
   FunnelsIdRoute: FunnelsIdRouteWithChildren,
   FunnelsCreateRoute: FunnelsCreateRoute,
@@ -662,19 +696,10 @@ const rootRouteChildren: RootRouteChildren = {
   LandingPagesCreateRoute: LandingPagesCreateRoute,
   SSlugRoute: SSlugRoute,
   VIdRoute: VIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   FunnelsIndexRoute: FunnelsIndexRoute,
   LandingPagesIndexRoute: LandingPagesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
