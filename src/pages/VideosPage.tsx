@@ -1,0 +1,233 @@
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { Video, Search, Grid, List, Link2, Share2, Pencil, Rocket, Upload, Copy, Trash2 } from "lucide-react";
+import { VideoLinkModal } from "@/components/VideoLinkModal";
+import { VideoUploadModal } from "@/components/VideoUploadModal";
+import { VideoShareModal } from "@/components/VideoShareModal";
+import { VideoRenameModal } from "@/components/VideoRenameModal";
+import { useNavigate } from "@/lib/router-compat";
+import { toast } from "sonner";
+
+const VideosPage = () => {
+  useDocumentTitle("Video Gallery");
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [shareVideo, setShareVideo] = useState<{ id: string; title: string } | null>(null);
+  const [renameVideo, setRenameVideo] = useState<{ id: string; title: string } | null>(null);
+
+  const { data: ownVideos = [], isLoading } = useQuery({
+    queryKey: ["videos", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("video_assets").select("*").eq("owner_id", user!.id).order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const { data: sharedVideos = [] } = useQuery({
+    queryKey: ["shared-videos", user?.id],
+    queryFn: async () => {
+      const { data: access } = await supabase.from("video_asset_access").select("video_id").eq("granted_to", user!.id);
+      if (!access?.length) return [];
+      const videoIds = access.map((a) => a.video_id);
+      const { data } = await supabase.from("video_assets").select("*").in("id", videoIds);
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const allVideos = [
+    ...ownVideos.map((v) => ({ ...v, _source: "own" as const })),
+    ...sharedVideos.filter((sv) => !ownVideos.find((ov) => ov.id === sv.id)).map((v) => ({ ...v, _source: "linked" as const })),
+  ];
+
+  const filtered = allVideos.filter((v) => !search || v.title.toLowerCase().includes(search.toLowerCase()));
+
+  const formatSize = (bytes: number | null) => {
+    if (!bytes) return "—";
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+
+  const useInFunnel = (videoId: string) => {
+    navigate(`/funnels/create?videoId=${videoId}`);
+  };
+
+  const copyLink = (videoId: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/video/${videoId}`);
+    toast.success("nFlow link copied to clipboard!");
+  };
+
+  const removeLinkedVideo = async (videoId: string) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from("video_asset_access")
+      .delete()
+      .eq("video_id", videoId)
+      .eq("granted_to", user.id);
+    if (error) {
+      toast.error("Failed to remove video");
+    } else {
+      toast.success("Video removed from gallery");
+      queryClient.invalidateQueries({ queryKey: ["shared-videos"] });
+    }
+  };
+
+  const invalidateVideos = () => {
+    queryClient.invalidateQueries({ queryKey: ["videos"] });
+    queryClient.invalidateQueries({ queryKey: ["shared-videos"] });
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6 w-full max-w-full overflow-x-hidden box-border">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full max-w-full">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-heading font-bold">Video Gallery</h1>
+            <div className="page-header-accent" />
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button
+              variant="hero"
+              className="flex-1 sm:flex-none"
+              onClick={() => setUploadModalOpen(true)}
+            >
+              <Upload size={16} /> Upload Video
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 sm:flex-none border-primary/50 text-primary hover:bg-primary/10"
+              onClick={() => setLinkModalOpen(true)}
+            >
+              <Link2 size={16} /> Add by nFlow Link
+            </Button>
+          </div>
+        </div>
+
+        {/* Search + View toggle */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-full">
+          <div className="relative flex-1 min-w-0 search-premium rounded-md">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search videos..." className="pl-9 bg-muted border-border w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+            <button onClick={() => setView("grid")} className={`p-2 rounded-md transition-colors ${view === "grid" ? "bg-card shadow-sm" : ""}`}><Grid size={16} /></button>
+            <button onClick={() => setView("list")} className={`p-2 rounded-md transition-colors ${view === "list" ? "bg-card shadow-sm" : ""}`}><List size={16} /></button>
+          </div>
+        </div>
+
+        {/* Empty state */}
+        {filtered.length === 0 ? (
+          <div className="glass-card p-8 sm:p-12 text-center w-full max-w-full">
+            <Video size={40} className="text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-heading font-semibold mb-2">{search ? "No videos found" : "No videos yet"}</h3>
+            <p className="text-sm text-muted-foreground mb-6">Upload a video or add one using an nFlow link.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button variant="hero" onClick={() => setUploadModalOpen(true)}>
+                <Upload size={16} /> Upload Video
+              </Button>
+              <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => setLinkModalOpen(true)}>
+                <Link2 size={16} /> Add by nFlow Link
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full max-w-full" : "space-y-2 w-full max-w-full"}>
+            {filtered.map((v) => (
+              <div key={v.id} className="premium-card p-3 sm:p-4 w-full max-w-full box-border min-w-0">
+                {/* Thumbnail */}
+                <div className="aspect-video bg-muted rounded-lg mb-3 flex items-center justify-center overflow-hidden w-full max-w-full">
+                  {v.thumbnail_url ? <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover rounded-lg block" /> :
+                    v.public_url ? <video src={v.public_url} preload="metadata" playsInline muted className="w-full h-full object-cover rounded-lg block" /> :
+                    <Video size={24} className="text-muted-foreground" />}
+                </div>
+
+                {/* Title & meta */}
+                <h3 className="font-medium text-sm truncate max-w-full overflow-hidden">{v.title}</h3>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
+                  <span>{formatSize(v.file_size_bytes)}</span>
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] ${v.status === "ready" ? "bg-success/10 text-success" : v.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
+                    {v.status}
+                  </span>
+                  {v._source === "linked" ? (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary">Added via Link</span>
+                  ) : (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-muted-foreground/10 text-muted-foreground">Uploaded</span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-center gap-1 mt-3 border-t border-border pt-3 w-full">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setRenameVideo({ id: v.id, title: v.title })} title="Rename">
+                    <Pencil size={15} />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => copyLink(v.id)} title="Copy Link">
+                    <Copy size={15} />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setShareVideo({ id: v.id, title: v.title })} title="Share">
+                    <Share2 size={15} />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => useInFunnel(v.id)} title="Use in Funnel">
+                    <Rocket size={15} />
+                  </Button>
+                  {v._source === "linked" && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive" onClick={() => removeLinkedVideo(v.id)} title="Remove">
+                      <Trash2 size={15} />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Modals */}
+        <VideoUploadModal
+          open={uploadModalOpen}
+          onClose={() => setUploadModalOpen(false)}
+          onSuccess={invalidateVideos}
+        />
+
+        <VideoLinkModal
+          open={linkModalOpen}
+          onClose={() => setLinkModalOpen(false)}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ["shared-videos"] })}
+        />
+
+        {shareVideo && (
+          <VideoShareModal
+            open={!!shareVideo}
+            onClose={() => setShareVideo(null)}
+            videoId={shareVideo.id}
+            videoTitle={shareVideo.title}
+          />
+        )}
+
+        {renameVideo && (
+          <VideoRenameModal
+            open={!!renameVideo}
+            onClose={() => setRenameVideo(null)}
+            videoId={renameVideo.id}
+            currentTitle={renameVideo.title}
+            onSuccess={invalidateVideos}
+          />
+        )}
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default VideosPage;

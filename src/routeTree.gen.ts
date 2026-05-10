@@ -9,12 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideosRouteImport } from './routes/videos'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as LandingPagesRouteImport } from './routes/landing-pages'
 import { Route as FunnelsRouteImport } from './routes/funnels'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VIdRouteImport } from './routes/v.$id'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as LiveIdRouteImport } from './routes/live.$id'
 import { Route as LandingPagesCreateRouteImport } from './routes/landing-pages.create'
@@ -28,6 +30,11 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-passw
 import { Route as LandingPagesIdEditRouteImport } from './routes/landing-pages.$id.edit'
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
 
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -56,6 +63,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VIdRoute = VIdRouteImport.update({
+  id: '/v/$id',
+  path: '/v/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSlugRoute = SSlugRouteImport.update({
@@ -126,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/funnels': typeof FunnelsRouteWithChildren
   '/landing-pages': typeof LandingPagesRouteWithChildren
   '/live': typeof LiveRouteWithChildren
+  '/videos': typeof VideosRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
@@ -136,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/landing-pages/create': typeof LandingPagesCreateRoute
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
+  '/v/$id': typeof VIdRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -146,6 +160,7 @@ export interface FileRoutesByTo {
   '/funnels': typeof FunnelsRouteWithChildren
   '/landing-pages': typeof LandingPagesRouteWithChildren
   '/live': typeof LiveRouteWithChildren
+  '/videos': typeof VideosRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
@@ -156,6 +171,7 @@ export interface FileRoutesByTo {
   '/landing-pages/create': typeof LandingPagesCreateRoute
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
+  '/v/$id': typeof VIdRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -167,6 +183,7 @@ export interface FileRoutesById {
   '/funnels': typeof FunnelsRouteWithChildren
   '/landing-pages': typeof LandingPagesRouteWithChildren
   '/live': typeof LiveRouteWithChildren
+  '/videos': typeof VideosRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
@@ -177,6 +194,7 @@ export interface FileRoutesById {
   '/landing-pages/create': typeof LandingPagesCreateRoute
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
+  '/v/$id': typeof VIdRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -189,6 +207,7 @@ export interface FileRouteTypes {
     | '/funnels'
     | '/landing-pages'
     | '/live'
+    | '/videos'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
@@ -199,6 +218,7 @@ export interface FileRouteTypes {
     | '/landing-pages/create'
     | '/live/$id'
     | '/s/$slug'
+    | '/v/$id'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -209,6 +229,7 @@ export interface FileRouteTypes {
     | '/funnels'
     | '/landing-pages'
     | '/live'
+    | '/videos'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
@@ -219,6 +240,7 @@ export interface FileRouteTypes {
     | '/landing-pages/create'
     | '/live/$id'
     | '/s/$slug'
+    | '/v/$id'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   id:
@@ -229,6 +251,7 @@ export interface FileRouteTypes {
     | '/funnels'
     | '/landing-pages'
     | '/live'
+    | '/videos'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
@@ -239,6 +262,7 @@ export interface FileRouteTypes {
     | '/landing-pages/create'
     | '/live/$id'
     | '/s/$slug'
+    | '/v/$id'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   fileRoutesById: FileRoutesById
@@ -250,13 +274,22 @@ export interface RootRouteChildren {
   FunnelsRoute: typeof FunnelsRouteWithChildren
   LandingPagesRoute: typeof LandingPagesRouteWithChildren
   LiveRoute: typeof LiveRouteWithChildren
+  VideosRoute: typeof VideosRoute
   FSlugRoute: typeof FSlugRoute
   LSlugRoute: typeof LSlugRoute
   SSlugRoute: typeof SSlugRoute
+  VIdRoute: typeof VIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/live': {
       id: '/live'
       path: '/live'
@@ -297,6 +330,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/v/$id': {
+      id: '/v/$id'
+      path: '/v/$id'
+      fullPath: '/v/$id'
+      preLoaderRoute: typeof VIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$slug': {
@@ -466,9 +506,11 @@ const rootRouteChildren: RootRouteChildren = {
   FunnelsRoute: FunnelsRouteWithChildren,
   LandingPagesRoute: LandingPagesRouteWithChildren,
   LiveRoute: LiveRouteWithChildren,
+  VideosRoute: VideosRoute,
   FSlugRoute: FSlugRoute,
   LSlugRoute: LSlugRoute,
   SSlugRoute: SSlugRoute,
+  VIdRoute: VIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
