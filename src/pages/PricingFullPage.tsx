@@ -9,7 +9,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useNevoraiMember } from "@/hooks/useNevoraiMember";
 import { useWhatsAppSupport } from "@/hooks/useWhatsAppSupport";
 import { useCurrency, formatPrice } from "@/hooks/useCurrency";
-import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -134,7 +134,7 @@ const PricingFullPage = () => {
   const [loading, setLoading] = useState<string | null>(null);
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const { currency, gateway } = useCurrency();
-  const [stripeCheckout, setStripeCheckout] = useState<{ priceId: string } | null>(null);
+  
   const autoTriggeredRef = useRef(false);
 
   // Mobile carousel state
@@ -224,18 +224,7 @@ const PricingFullPage = () => {
 
     const planKey = `${planName}_${billing}`;
 
-    // International users → Stripe (USD)
-    if (gateway === "stripe") {
-      const usdAmount = billing === "monthly"
-        ? Number(config.usd_price_monthly || 0)
-        : Number(config.usd_price_yearly || 0);
-      if (usdAmount <= 0) {
-        toast.error("USD pricing not configured for this plan. Contact support.");
-        return;
-      }
-      setStripeCheckout({ priceId: planKey });
-      return;
-    }
+    // Razorpay (INR) is the only payment gateway in use.
 
     // Indian users → Razorpay (INR). Server reads authoritative price from plan_view_tiers.
     setLoading(planKey);
@@ -463,7 +452,7 @@ const PricingFullPage = () => {
             Subscribe — {formatPrice(getPrice(basicConfig), currency)}/{billing === "monthly" ? "mo" : "yr"}
           </Button>
           <p className="text-[11px] text-muted-foreground text-center mt-2 flex items-center justify-center gap-1">
-            <Shield size={10} className="text-emerald-500" /> {gateway === "stripe" ? "Secure payment via Stripe · Cards · Apple Pay · Google Pay" : "Secure payment via Razorpay · UPI · Cards · NetBanking"}
+            <Shield size={10} className="text-emerald-500" /> Secure payment via Razorpay · UPI · Cards · NetBanking
           </p>
         </>
       )}
@@ -518,7 +507,7 @@ const PricingFullPage = () => {
               : `Subscribe — ${formatPrice(getPrice(proConfig), currency)}/${billing === "monthly" ? "mo" : "yr"}`}
           </Button>
           <p className="text-[11px] text-muted-foreground text-center mt-2 flex items-center justify-center gap-1">
-            <Shield size={10} className="text-emerald-500" /> {gateway === "stripe" ? "Secure payment via Stripe · Cards · Apple Pay · Google Pay" : "Secure payment via Razorpay · UPI · Cards · NetBanking"}
+            <Shield size={10} className="text-emerald-500" /> Secure payment via Razorpay · UPI · Cards · NetBanking
           </p>
         </>
       )}
@@ -667,7 +656,7 @@ const PricingFullPage = () => {
 
           <div className="max-w-lg mx-auto text-center space-y-4">
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Shield size={16} /> Secure payments via {gateway === "stripe" ? "Stripe" : "Razorpay"}
+              <Shield size={16} /> Secure payments via Razorpay
             </div>
             <p className="text-sm text-muted-foreground">
               Need help choosing a plan?{" "}
@@ -680,26 +669,6 @@ const PricingFullPage = () => {
       </div>
       <Footer />
 
-      {/* Stripe Embedded Checkout dialog */}
-      <Dialog open={!!stripeCheckout} onOpenChange={(o) => !o && setStripeCheckout(null)}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Complete your subscription</DialogTitle>
-            <DialogDescription>
-              Secure checkout powered by Stripe. 7-day money-back guarantee.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="px-6 pb-6 max-h-[80vh] overflow-y-auto">
-            {stripeCheckout && (
-              <StripeEmbeddedCheckout
-                priceId={stripeCheckout.priceId}
-                customerEmail={user?.email}
-                userId={user?.id}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

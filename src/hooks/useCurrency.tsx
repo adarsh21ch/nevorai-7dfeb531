@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 export type Currency = "INR" | "USD";
-export type Gateway = "razorpay" | "stripe";
+export type Gateway = "razorpay";
 
 interface CurrencyCtx {
   currency: Currency;
@@ -39,7 +39,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
 
   const value: CurrencyCtx = {
     currency,
-    gateway: currency === "INR" ? "razorpay" : "stripe",
+    gateway: "razorpay",
     symbol: currency === "INR" ? "₹" : "$",
     setCurrency,
     isAutoDetected,

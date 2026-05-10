@@ -21,14 +21,3 @@ verify_jwt = false
 [functions.check-funnel-view-limit]
 verify_jwt = false
 
-[functions.stripe-checkout]
-verify_jwt = false
-
-[functions.get-stripe-price]
-verify_jwt = false
-
-[functions.payments-webhook]
-verify_jwt = false
-
-[functions.create-portal-session]
-verify_jwt = false
