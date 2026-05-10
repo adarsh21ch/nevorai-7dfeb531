@@ -44,8 +44,7 @@ export const SupportFAB = () => {
       <button
         onClick={() => setOpen(true)}
         aria-label="Get help"
-        className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg text-white transition-all hover:scale-110"
-        style={{ background: "linear-gradient(135deg, #7EE83A, #1D4ED8)" }}
+        className="fixed bottom-20 md:bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg text-white transition-all hover:scale-110 bg-gradient-brand-rich"
       >
         <MessageCircle size={22} />
       </button>
