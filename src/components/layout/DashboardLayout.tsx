@@ -18,6 +18,7 @@ import { TrialExpiredGate } from "@/components/TrialExpiredGate";
 import { TrialBanner } from "@/components/TrialBanner";
 import { usePlan } from "@/hooks/usePlan";
 import { SupportFAB } from "@/components/SupportFAB";
+import { useRouter } from "@tanstack/react-router";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -35,6 +36,7 @@ const bottomItems = [{ icon: User, label: "Profile", path: "/profile" }];
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const router = useRouter();
   const { signOut, user } = useAuth();
   const { isAdmin } = useAdmin();
   const [collapsed, setCollapsed] = useState(false);
@@ -67,6 +69,10 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
     navigate("/");
   };
 
+  const preloadRoute = (path: string) => {
+    void router.preloadRoute({ to: path as any });
+  };
+
   const renderNavItem = (item: typeof navItems[0], matchExact = false) => {
     const active = matchExact ? location.pathname === item.path : location.pathname.startsWith(item.path);
     const isNotif = item.path === "/notifications";
@@ -74,6 +80,8 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
       <Link
         key={item.path}
         to={item.path}
+        onMouseEnter={() => preloadRoute(item.path)}
+        onFocus={() => preloadRoute(item.path)}
         className={cn(
           "relative flex items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-all",
           active
@@ -103,6 +111,8 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         key={item.path}
         to={item.path}
         onClick={() => setMobileMenuOpen(false)}
+        onMouseEnter={() => preloadRoute(item.path)}
+        onFocus={() => preloadRoute(item.path)}
         className={cn(
           "relative flex min-h-[46px] items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
           active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
@@ -152,6 +162,8 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
               <div className="px-3 pb-2 pt-4">
                 <Link
                   to="/admin"
+                    onMouseEnter={() => preloadRoute("/admin")}
+                    onFocus={() => preloadRoute("/admin")}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                     location.pathname.startsWith("/admin")
@@ -224,6 +236,8 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                           <Link
                             to="/admin"
                             onClick={() => setMobileMenuOpen(false)}
+                            onMouseEnter={() => preloadRoute("/admin")}
+                            onFocus={() => preloadRoute("/admin")}
                             className={cn(
                               "flex min-h-[46px] items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
                               location.pathname.startsWith("/admin") ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
@@ -271,6 +285,8 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                 <Link
                   key={item.path}
                   to={item.path}
+                  onMouseEnter={() => preloadRoute(item.path)}
+                  onFocus={() => preloadRoute(item.path)}
                   className={cn(
                     "flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] transition-colors",
                     active ? "text-primary" : "text-muted-foreground"
