@@ -235,7 +235,9 @@ export const PricingSection = () => {
         amount: data.amount,
         currency: data.currency,
         name: "nFlow",
-        description: `${planName} Plan — monthly`,
+        description: data.is_plan_upgrade
+          ? `Upgrade to ${planName} — prorated for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} (renews at ₹${data.target_price}/mo)`
+          : `${planName} Plan — monthly`,
         order_id: data.order_id,
         handler: async (response: any) => {
           try {

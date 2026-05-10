@@ -248,7 +248,9 @@ const PricingFullPage = () => {
         amount: data.amount,
         currency: data.currency,
         name: "nFlow",
-        description: `${planName.charAt(0).toUpperCase() + planName.slice(1)} Plan — ${billing}`,
+        description: data.is_plan_upgrade
+          ? `Upgrade to ${planName.charAt(0).toUpperCase() + planName.slice(1)} — prorated for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} (renews at ₹${data.target_price}/mo)`
+          : `${planName.charAt(0).toUpperCase() + planName.slice(1)} Plan — ${billing}`,
         order_id: data.order_id,
         handler: async (response: any) => {
           try {

@@ -10,8 +10,8 @@ const RAZORPAY_KEY_ID = (Deno.env.get("RAZORPAY_KEY_ID") ?? "").trim();
 const RAZORPAY_KEY_SECRET = (Deno.env.get("RAZORPAY_KEY_SECRET") ?? "").trim();
 const RAZORPAY_API = "https://api.razorpay.com/v1";
 
-// Build marker — bumping this string forces a fresh deploy. v=2026-05-10e
-console.log("razorpay-portal build v=2026-05-10e key_id_prefix=", RAZORPAY_KEY_ID.slice(0, 8));
+// Build marker — bumping this string forces a fresh deploy. v=2026-05-10f-planupg
+console.log("razorpay-portal build v=2026-05-10f-planupg key_id_prefix=", RAZORPAY_KEY_ID.slice(0, 8));
 
 function rzpHeaders() {
   return {
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   if (req.method === "GET" || url.searchParams.get("ping") === "1") {
     return jsonResponse({
-      build: "v=2026-05-10e",
+      build: "v=2026-05-10f-planupg",
       key_id_prefix: RAZORPAY_KEY_ID ? RAZORPAY_KEY_ID.slice(0, 8) : null,
       key_id_len: RAZORPAY_KEY_ID.length,
       key_secret_len: RAZORPAY_KEY_SECRET.length,
@@ -129,6 +129,90 @@ Deno.serve(async (req) => {
         }
       }
 
+      // ===== Plan upgrade proration (Basic → Pro for users with active paid sub) =====
+      // If user already has an active paid subscription on a LOWER plan, charge only
+      // the prorated price difference for the days remaining in the current cycle.
+      const { data: activePaidSub } = await serviceClient
+        .from("user_subscriptions")
+        .select("plan_key, tier, expires_at, amount_paid, status, billing_type")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, pro: 2 };
+      const currentBasePlan = activePaidSub
+        ? (activePaidSub.tier || activePaidSub.plan_key || "").split("_")[0]
+        : null;
+
+      let isPlanUpgrade = false;
+      let proratedCharge = 0;
+      let daysRemaining = 0;
+      let priceDiff = 0;
+      let currentPlanPrice = 0;
+      let targetPlanPrice = authoritativeAmount;
+      let fromPlanKey: string | null = null;
+
+      if (
+        activePaidSub &&
+        activePaidSub.expires_at &&
+        currentBasePlan &&
+        (PLAN_RANK[baseTier] ?? -1) > (PLAN_RANK[currentBasePlan] ?? -1) &&
+        (currentBasePlan === "basic" || currentBasePlan === "pro")
+      ) {
+        // Resolve current plan's base monthly price
+        const { data: currentBaseRow } = await serviceClient
+          .from("plan_view_tiers")
+          .select("monthly_price")
+          .eq("plan_name", currentBasePlan)
+          .eq("is_base", true)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        currentPlanPrice = Number(currentBaseRow?.monthly_price || activePaidSub.amount_paid || 0);
+        priceDiff = targetPlanPrice - currentPlanPrice;
+
+        if (priceDiff > 0) {
+          const today = new Date();
+          today.setUTCHours(0, 0, 0, 0);
+          const exp = new Date(activePaidSub.expires_at);
+          exp.setUTCHours(0, 0, 0, 0);
+          const msPerDay = 86400000;
+          daysRemaining = Math.max(
+            1,
+            Math.ceil((exp.getTime() - today.getTime()) / msPerDay)
+          );
+          const daysInCycle = 30;
+          proratedCharge = Math.max(
+            1,
+            Math.round((priceDiff / daysInCycle) * Math.min(daysRemaining, daysInCycle))
+          );
+          isPlanUpgrade = true;
+          fromPlanKey = activePaidSub.plan_key;
+          authoritativeAmount = proratedCharge;
+        }
+      }
+
+      const orderNotes: Record<string, string> = {
+        user_id: user.id,
+        plan_key,
+        tier_id: resolvedTierId || "",
+        daily_views: resolvedDailyViews ? String(resolvedDailyViews) : "",
+      };
+
+      if (isPlanUpgrade) {
+        orderNotes.kind = "plan_upgrade_prorated";
+        orderNotes.from_plan = fromPlanKey || "";
+        orderNotes.to_plan = plan_key;
+        orderNotes.current_price = String(currentPlanPrice);
+        orderNotes.target_price = String(targetPlanPrice);
+        orderNotes.price_diff = String(priceDiff);
+        orderNotes.prorated_charge = String(proratedCharge);
+        orderNotes.days_remaining = String(daysRemaining);
+        orderNotes.expires_at = activePaidSub!.expires_at as string;
+      }
+
       const orderRes = await fetch(`${RAZORPAY_API}/orders`, {
         method: "POST",
         headers: rzpHeaders(),
@@ -136,12 +220,7 @@ Deno.serve(async (req) => {
           amount: Math.round(authoritativeAmount * 100),
           currency: "INR",
           receipt: `order_${user.id.slice(0, 8)}_${Date.now()}`,
-          notes: {
-            user_id: user.id,
-            plan_key,
-            tier_id: resolvedTierId || "",
-            daily_views: resolvedDailyViews ? String(resolvedDailyViews) : "",
-          },
+          notes: orderNotes,
         }),
       });
 
@@ -162,9 +241,16 @@ Deno.serve(async (req) => {
 
       await serviceClient.from("payment_audit_logs").insert({
         user_id: user.id,
-        event_type: "order_created",
+        event_type: isPlanUpgrade ? "plan_upgrade_order_created" : "order_created",
         razorpay_order_id: order.id,
-        payload: { plan_key, amount: authoritativeAmount },
+        payload: {
+          plan_key,
+          amount: authoritativeAmount,
+          is_plan_upgrade: isPlanUpgrade,
+          prorated_charge: isPlanUpgrade ? proratedCharge : null,
+          price_diff: isPlanUpgrade ? priceDiff : null,
+          days_remaining: isPlanUpgrade ? daysRemaining : null,
+        },
         source: "frontend",
         idempotency_key: `order_${order.id}`,
       });
@@ -174,6 +260,11 @@ Deno.serve(async (req) => {
         amount: order.amount,
         currency: order.currency,
         key_id: RAZORPAY_KEY_ID,
+        is_plan_upgrade: isPlanUpgrade,
+        prorated_charge: isPlanUpgrade ? proratedCharge : null,
+        price_difference: isPlanUpgrade ? priceDiff : null,
+        days_remaining: isPlanUpgrade ? daysRemaining : null,
+        target_price: isPlanUpgrade ? targetPlanPrice : null,
       });
     }
 
@@ -235,10 +326,17 @@ Deno.serve(async (req) => {
 
       if (!planData) return jsonResponse({ error: "Plan not found or inactive" }, 400);
 
+      // Detect prorated plan upgrade orders (Basic → Pro for active paid users)
+      const isPlanUpgradeOrder = order.notes?.kind === "plan_upgrade_prorated";
+      const orderProratedCharge = Number(order.notes?.prorated_charge || 0);
+      const orderExpiresAt: string | null = order.notes?.expires_at || null;
+
       // Resolve tier_id from order.notes (authoritative)
       const orderTierId: string | null = (order.notes?.tier_id || "") || null;
       let tierRow: any = null;
-      let expectedAmountInr = Number(planData.price_inr);
+      let expectedAmountInr = isPlanUpgradeOrder
+        ? orderProratedCharge
+        : Number(planData.price_inr);
       if (orderTierId) {
         const { data: tr } = await serviceClient
           .from("plan_view_tiers")
@@ -247,11 +345,13 @@ Deno.serve(async (req) => {
           .maybeSingle();
         if (tr) {
           tierRow = tr;
-          expectedAmountInr = Number(tr.monthly_price);
+          if (!isPlanUpgradeOrder) {
+            expectedAmountInr = Number(tr.monthly_price);
+          }
         }
       }
 
-      // Order amount must match (plan price OR tier price)
+      // Order amount must match (plan price OR tier price OR prorated upgrade)
       const expectedPaise = Math.round(expectedAmountInr * 100);
       if (Number(order.amount) !== expectedPaise) {
         await serviceClient.from("payment_audit_logs").insert({
@@ -259,7 +359,7 @@ Deno.serve(async (req) => {
           event_type: "payment_amount_mismatch",
           razorpay_order_id,
           razorpay_payment_id,
-          payload: { expected: expectedPaise, actual: order.amount },
+          payload: { expected: expectedPaise, actual: order.amount, kind: order.notes?.kind || null },
           source: "frontend",
           idempotency_key: `amt_${razorpay_payment_id}`,
         });
@@ -278,7 +378,10 @@ Deno.serve(async (req) => {
 
       const now = new Date();
       let expiresAt: string | null = null;
-      if (planData?.duration_days) {
+      if (isPlanUpgradeOrder && orderExpiresAt) {
+        // Plan upgrade: preserve current cycle's renewal date.
+        expiresAt = orderExpiresAt;
+      } else if (planData?.duration_days) {
         expiresAt = new Date(now.getTime() + planData.duration_days * 86400000).toISOString();
       }
 
