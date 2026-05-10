@@ -1,4 +1,4 @@
-// Stub — full PrivacySettings ported.
+// Full PrivacySettings — visibility toggle, access code, lead-capture field switches.
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
