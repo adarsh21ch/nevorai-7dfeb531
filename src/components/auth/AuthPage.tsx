@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { Route as AuthRoute } from "@/routes/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ interface NevoraiInfo {
 export default function AuthPage() {
   const search = AuthRoute.useSearch();
   const navigate = useNavigate();
+  const router = useRouter();
   const { signIn, signUp, user, loading } = useAuth();
 
   const [stage, setStage] = useState<Stage>("email");
@@ -153,6 +154,10 @@ export default function AuthPage() {
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard" });
   }, [loading, user, navigate]);
+
+  useEffect(() => {
+    void router.preloadRoute({ to: "/dashboard" });
+  }, [router]);
 
   if (loading) {
     return (
