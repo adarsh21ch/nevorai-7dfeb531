@@ -1,0 +1,34 @@
+project_id = "atwnmovdnblcqyvhaxls"
+
+[storage]
+file_size_limit = "250MB"
+
+[functions.process-email-queue]
+verify_jwt = true
+
+[functions.gmail-oauth-callback]
+verify_jwt = false
+
+[functions.send-gmail-email]
+verify_jwt = false
+
+[functions.verify-nevorai-member]
+verify_jwt = false
+
+[functions.confirm-nevorai-otp]
+verify_jwt = false
+
+[functions.check-funnel-view-limit]
+verify_jwt = false
+
+[functions.stripe-checkout]
+verify_jwt = false
+
+[functions.get-stripe-price]
+verify_jwt = false
+
+[functions.payments-webhook]
+verify_jwt = false
+
+[functions.create-portal-session]
+verify_jwt = false
