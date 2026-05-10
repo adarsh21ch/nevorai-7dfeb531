@@ -38,7 +38,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen landing-page">
+    <div className="min-h-screen landing-page overflow-x-clip">
       <Navbar />
       <HeroSection />
       <LeakyFunnel />
