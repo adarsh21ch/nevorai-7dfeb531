@@ -1,140 +1,84 @@
+## Goals
 
-# Design System Refactor — Whole App
+1. Fix admin panel — tabs (Users, Subs, KYC, WhatsApp, Support, Settings, Videos) currently change URL but render the Overview page.
+2. Achieve exact parity with the source nFlow project for the funnel features that are still stubs in this app.
+3. Eliminate the real causes of navigation lag (slow first paint, repeated waterfalls, unnecessary work on every route change).
 
-**Goal:** Same look. Better bones. Pages become token-driven, theme-aware, responsive, and 3-5× faster to change going forward.
-
-**Scope:** ~141 components + ~50 pages. Done in 6 phases over multiple turns. Each phase ends with a visual diff so you can confirm nothing looks different.
-
-**Non-goals:** No new features. No visual redesign. No backend changes. Same copy, same icons, same flows.
-
----
-
-## Current state (audit numbers)
-
-- **191 files** in `src/components` + `src/pages`
-- **41 files** use `style={{...}}` inline styles
-- **33 files** use hardcoded hex colors (`#00C896`, `#0066FF`, `#EF4444`, etc.)
-- **17 files** use `rgba(...)` directly
-- **1 file** still imports from `react-router-dom`
-- `src/styles.css` is only 179 lines — design tokens basically don't exist yet
+Performance is the first priority, then admin, then parity — all delivered in one pass.
 
 ---
 
-## Phase 1 — Build the design system foundation
+## 1. Performance pass (first)
 
-**One turn. No visual change.**
+What the live profile shows: TTFB 2.6s, FCP 4s, full load 6.5s, 238 script chunks, `lucide-react` alone is 179 KB / 1.5s, `styles.css` blocks render for ~1.2s, `@radix-ui/react-select` and `date-fns` are pulled into the cold path. So the lag is **not** "JS is doing too much CPU work" — it's **module graph bloat + render-blocking CSS + redundant queries on every layout mount**.
 
-1. Define semantic tokens in `src/styles.css` (oklch values):
-   - **Brand**: `--brand-emerald` (#00C896), `--brand-blue` (#0066FF), `--brand-red` (#EF4444)
-   - **Gradients**: `--gradient-brand`, `--gradient-danger`, `--gradient-subtle`
-   - **Surfaces**: `--surface-1`, `--surface-2`, `--surface-glass`, `--border-subtle`, `--border-strong`
-   - **Shadows**: `--shadow-glow-brand`, `--shadow-glow-danger`, `--shadow-elegant`
-   - **Hero/marketing-only**: `--hero-bg`, `--hero-text`, `--hero-muted`
-2. Wire all tokens into Tailwind via `@theme` so classes like `bg-brand-emerald`, `text-hero-muted`, `shadow-glow-brand`, `bg-gradient-brand` exist.
-3. Add typography scale tokens: `--font-display`, `--font-body` + utility classes.
-4. Add responsive container utility: `.container-app` = `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`.
-5. Document the token map in `src/styles.css` as a comment block (so future you can find them).
+Concrete changes:
 
-**Deliverable:** `src/styles.css` grows from 179 → ~400 lines. Zero component changes. App looks identical.
-
----
-
-## Phase 2 — Refactor the landing/marketing pages
-
-**One turn. ~18 files.**
-
-Targets: `src/components/landing/*` + `src/pages/Index.tsx`.
-
-For each component:
-- Replace `style={{ background: "#00C896" }}` → `className="bg-brand-emerald"`
-- Replace `style={{ background: "linear-gradient(...)" }}` → `className="bg-gradient-brand"`
-- Replace ad-hoc `rgba(255,255,255,0.04)` → `bg-surface-glass`
-- Replace `style={{ color: "#8896B3" }}` → `text-hero-muted`
-- Replace `container max-w-3xl` → `container-app max-w-3xl`
-- Fix responsive font sizes: `text-3xl sm:text-4xl md:text-5xl` instead of `clamp()` inline
-- Deduplicate: extract a single `<FunnelRow>` component and feed both YouTube/nFlow datasets into it (kills ~100 duplicated lines in `LeakyFunnel.tsx`)
-
-**Deliverable:** Visual diff matches Phase 0. Zero hex colors left in landing components.
+- **CSS**: move the Google Fonts `@import` in `src/styles.css` to a `<link rel="preconnect"> + <link rel="stylesheet">` in `__root.tsx`, and add `font-display: swap`. This eliminates the PostCSS warning ("@import must precede all other statements") and the render-blocking font fetch.
+- **Icon bundle**: replace blanket `import { X, Y, Z } from "lucide-react"` in hot files (DashboardLayout, AdminLayout, navbars, KPI strips) with per-icon `lucide-react/dist/esm/icons/<name>` imports so only the icons used are shipped, dropping ~150 KB from the cold chunk.
+- **Date / heavy deps**: lazy-load `date-fns`, `@radix-ui/react-select`, and `seroval` only inside the components that actually need them; remove unused `date-fns` re-exports from shared util files.
+- **Query defaults**: keep the recent `staleTime: 30s / gcTime: 5min / refetchOnMount: false` defaults but additionally:
+  - Set `placeholderData: keepPreviousData` on tab-switch queries (Funnels, Leads, Payments, Admin tabs) so switching tabs renders cached data instantly while revalidating.
+  - Add a single `dashboard-bootstrap` query in `DashboardLayout` that fetches profile + plan + admin role + unread count in one parallel batch, instead of 4 separate hooks each waiting their turn.
+- **Auth context**: `useAuth` currently re-fetches the profile on every `onAuthStateChange` event. Skip the fetch when the new session's user id and access token both match the previous values. This stops the cascade re-render that fires on every tab focus.
+- **Router preload**: keep `defaultPreload: "intent"` but also set `defaultPreloadDelay: 30` and add `<link rel="modulepreload">` for the next-likely route chunks (`/dashboard`, `/funnels`, `/admin`) inside `__root.tsx` head, so first-click feels instant after login.
+- **Code-split heavy editors**: `FunnelEditor`, `LandingPageEditor`, `AdminSubscriptionsPage`, `LivePage` already lazy-load via route, but they each re-import the same heavy components synchronously at the top. Convert their non-critical sections (TestimonialsBuilderStep, ViewTiersManager, PlanEditorTable, MemberGatewayTab, EnterpriseInquiriesTab, RefundsTab) to `React.lazy` + `Suspense` so the editor shell paints before the inner panels finish parsing.
+- **Image weight**: `nevorai-mark.png` is 127 KB and render-blocking. Convert to a `<Logo />` SVG (already in `src/components/landing/Logo.tsx`) for inline use; keep the PNG only for og:image / favicon.
 
 ---
 
-## Phase 3 — Refactor the app shell + auth
+## 2. Admin panel fix
 
-**One turn. ~15 files.**
+Cause: `src/routes/admin.tsx` is `createFileRoute("/admin")({})` (no component, no `<Outlet />`). The flat dot-named files like `admin.users.tsx` register **as children** of `/admin`. Since the parent has no `Outlet`, the child URL changes but the parent's `admin.lazy.tsx` (which renders `AdminDashboard`) is what shows up. Identical pattern to the earlier `funnels.tsx` bug.
 
-Targets: `DashboardLayout`, `AdminLayout`, `Navbar`, `Footer`, `AuthPage`, `ResetPassword`, `UpdatePassword`, sidebar, top bar.
+Fix:
 
-- Same substitutions as Phase 2
-- Audit responsive breakpoints: every layout renders cleanly at 375 / 768 / 1024 / 1440
-- Touch targets: every `<Button>`, link, and tab gets `min-h-11` on mobile
-- Containers use `container-app`
-- Fix the lone remaining `react-router-dom` import
-
-**Deliverable:** Auth + shell are mobile-perfect.
+- Rename the parent files so they are leaf routes:
+  - `src/routes/admin.tsx` → `src/routes/admin.index.tsx` with `createFileRoute("/admin/")` (and matching `admin.index.lazy.tsx` pointing at `AdminDashboard`).
+  - Delete `src/routes/admin.tsx` and `src/routes/admin.lazy.tsx`.
+- Verify the same pattern is correct for funnels and landing-pages (already migrated to `.index.tsx` — confirm and remove any leftover `funnels.tsx` / `landing-pages.tsx` shells).
+- Re-test each admin tab via the browser tool to confirm correct page renders.
 
 ---
 
-## Phase 4 — Refactor dashboard pages
+## 3. Port remaining nFlow stubs (exact parity)
 
-**Two turns. ~25 files.**
+Files in this project that are stubs but referenced by real screens (compared 1:1 against the `nFlow` source project):
 
-Targets: `Dashboard`, `Funnels*`, `LiveSessions*`, `Videos*`, `Leads*`, `Insights*`, `Payments*`, `Notifications*`, `Profile*`, `Settings*`, `Billing*`.
+| File | Status here | Action |
+|---|---|---|
+| `src/components/funnel/PerStepSpeakerAssignment.tsx` | Stub | Port full version from nFlow (per-step speaker editor with photo upload, copy across steps, draft state). |
+| `src/components/funnel/ViewersAnalyticsTab.tsx` | Stub | Port full version (search, paginated viewer table, watch %/last seen, code-gate filter). |
+| `src/components/funnel/PrivacySettings.tsx` | Header says "stub", body partially exists | Diff against nFlow and bring over any missing fields (visibility radio, code generator, required-fields toggles). |
+| `src/components/funnel/SpeakerPhotoUpload.tsx` | "TODO: simplified" | Port full version with cropper (Slider + crop dialog) from nFlow. |
+| `src/components/funnel/StepTypeSelector.tsx` | Marked stub but exports `getStepTypeMeta` | Verify metadata matches nFlow; add any missing step-type entries used by `JourneyPreview`. |
 
-Per page:
-- Strip inline styles, replace with token classes
-- Wrap content in `container-app`
-- Tables become responsive: horizontal scroll inside a card (not the page), or stack-on-mobile cards
-- Forms: full-width inputs on mobile, two-column on `md:`
-- Cards: consistent `rounded-xl bg-surface-1 border border-border-subtle p-6`
-
-**Deliverable:** Every dashboard page looks the same on desktop, usable on mobile. No horizontal page scroll anywhere.
-
----
-
-## Phase 5 — Refactor admin + public pages
-
-**One turn. ~20 files.**
-
-Targets: `AdminDashboard`, `AdminUsers`, `AdminSubscriptions`, `AdminSupport`, `AdminKYC`, `AdminVideos`, `AdminWhatsApp`, `AdminSettings`, public funnel/lander pages (`/f/$slug`, `/l/$slug`), legal pages.
-
-Same treatment as Phase 4. Public pages get extra attention since they're seen by prospects on mobile.
-
-**Deliverable:** Admin tables don't break the layout. Public funnel/lander pages render flawlessly on a phone.
+For each port:
+1. `cross_project--read_project_file` the nFlow source.
+2. Copy the file in full, adapting only imports (router-compat, design tokens) to this project's conventions.
+3. Run a build to confirm no missing dep — install any missing shadcn primitives (e.g. Slider) the first time.
 
 ---
 
-## Phase 6 — Cleanup + verification
+## 4. Verification
 
-**One turn.**
-
-1. Grep sweep: zero `style={{` for color/background/border anywhere in `src/components` and `src/pages` (inline `style` is OK only for dynamic widths/heights/transforms).
-2. Grep sweep: zero raw `#XXXXXX` hex in component files.
-3. Visual QA at 5 viewports (375, 768, 1024, 1440, 1920) for: home, auth, dashboard, funnel editor, public funnel, admin users.
-4. Console error sweep on each page.
-5. Update memory: save the new color tokens and component conventions to `mem://design/tokens` so future sessions follow the system.
-
-**Deliverable:** A short report listing what was checked and what passed.
+- After each section, reload preview and:
+  - Click every admin tab; confirm correct page renders and is interactive.
+  - Run `browser--performance_profile` — target FCP < 2.5s, total cold load < 4s, slowest script < 800ms.
+  - Click through Dashboard → Funnels → Create → Funnel Editor → Privacy/Speakers tabs; confirm no "coming in next pass" placeholders.
+- Check `browser--read_console_logs` for the `Minified React error #418` (text-mismatch hydration) and `g._nonReactive` runtime errors that appear in current logs; both are expected to disappear once the duplicate font-import / CSS warning is removed.
 
 ---
 
-## What you'll see between phases
+## Out of scope
 
-After each phase I'll show you a screenshot comparison (before/after) at the affected breakpoints, so you can confirm we kept the same look. If any page drifts visually, we adjust the token values, not the component.
+- No DB schema changes, no new Supabase migrations.
+- No marketing/landing visual redesign — only the font-loading change there.
+- No new features beyond what already exists in the nFlow source.
 
-## Risks + mitigations
+## Technical notes
 
-- **Risk:** A token replacement subtly shifts a color. **Mitigation:** Phase 1 defines tokens from the *exact* current hex values. Visual diff per phase catches drift.
-- **Risk:** Time. This is ~6 turns of focused work. **Mitigation:** Each phase is independently shippable — you can stop after Phase 2 if you want and the homepage will already be much cleaner.
-- **Risk:** I introduce a regression in a page I haven't seen recently. **Mitigation:** I screenshot each page after refactoring before moving on.
-
-## What I will NOT do
-
-- Change copy, headlines, button labels, or imagery
-- Reorder sections
-- Add or remove features
-- Change Supabase queries, RLS, or any business logic
-- Touch the database
-
-## Recommended start
-
-Approve the plan → I begin with **Phase 1** (tokens only, zero visual change). That's the lowest-risk step and unlocks everything after.
+- Stack: TanStack Start v1, file-based routing under `src/routes`, React Query 5, Supabase JS, Tailwind v4 via `src/styles.css`.
+- Routing convention reminder: a parent route file (`admin.tsx`) without `component` + `<Outlet />` will silently shadow its children. Always use `xxx.index.tsx` for the leaf and reserve `xxx.tsx` only for true layouts that render `<Outlet />`.
+- React Query: prefer `placeholderData: keepPreviousData` over `staleTime: Infinity` for tab UIs so data stays fresh in the background.
+- Lucide tree-shaking only works with deep imports (`lucide-react/dist/esm/icons/...`) under Vite when using the prebundled dep — barrel imports cost the full 179 KB.

@@ -1,42 +1,99 @@
-// Stub — to be expanded with full step type metadata.
 import { Play, ClipboardList, ExternalLink, CreditCard, UserCheck, Calendar } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
-export type StepTypeMeta = {
-  type: string;
-  label: string;
-  icon: any;
-  color: string;
-  bg: string;
-  description?: string;
-};
+const STEP_TYPES = [
+  {
+    value: "video",
+    label: "Video",
+    icon: Play,
+    description: "Show a video and unlock the next step after watching",
+    color: "text-blue-400",
+    bg: "bg-blue-500/10",
+  },
+  {
+    value: "lead_form",
+    label: "Lead Form",
+    icon: ClipboardList,
+    description: "Collect their info before continuing",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+  },
+  {
+    value: "booking",
+    label: "Booking / Call",
+    icon: Calendar,
+    description: "Book a call or Zoom meeting",
+    color: "text-pink-400",
+    bg: "bg-pink-500/10",
+  },
+  {
+    value: "payment",
+    label: "Payment",
+    icon: CreditCard,
+    description: "Collect UPI payment proof",
+    color: "text-amber-400",
+    bg: "bg-amber-500/10",
+  },
+  {
+    value: "cta",
+    label: "CTA / Link",
+    icon: ExternalLink,
+    description: "Button + redirect to any URL",
+    color: "text-violet-400",
+    bg: "bg-violet-500/10",
+  },
+  {
+    value: "manual_approval",
+    label: "Manual Unlock",
+    icon: UserCheck,
+    description: "You approve manually before next step",
+    color: "text-orange-400",
+    bg: "bg-orange-500/10",
+  },
+] as const;
 
-const META: Record<string, StepTypeMeta> = {
-  video: { type: "video", label: "Video", icon: Play, color: "text-blue-500", bg: "bg-blue-500/10" },
-  lead_form: { type: "lead_form", label: "Lead Form", icon: ClipboardList, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-  cta: { type: "cta", label: "CTA / Link", icon: ExternalLink, color: "text-purple-500", bg: "bg-purple-500/10" },
-  payment: { type: "payment", label: "Payment", icon: CreditCard, color: "text-amber-500", bg: "bg-amber-500/10" },
-  manual_approval: { type: "manual_approval", label: "Manual Approval", icon: UserCheck, color: "text-rose-500", bg: "bg-rose-500/10" },
-  booking: { type: "booking", label: "Booking", icon: Calendar, color: "text-teal-500", bg: "bg-teal-500/10" },
-};
+interface StepTypeSelectorProps {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (type: string) => void;
+}
 
-export const getStepTypeMeta = (type: string): StepTypeMeta => META[type] || META.video;
-export const STEP_TYPES = Object.values(META);
-
-export const StepTypeSelector = ({ open, onClose, onSelect }: { open: boolean; onClose: () => void; onSelect: (type: string) => void }) => {
-  if (!open) return null;
+export const StepTypeSelector = ({ open, onClose, onSelect }: StepTypeSelectorProps) => {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-card rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-heading font-bold mb-4">Add Step</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {STEP_TYPES.map((m) => (
-            <button key={m.type} onClick={() => { onSelect(m.type); onClose(); }} className="p-4 rounded-xl border border-border hover:border-primary/50 text-left transition-colors">
-              <div className={`w-8 h-8 rounded-lg ${m.bg} flex items-center justify-center mb-2`}><m.icon size={16} className={m.color} /></div>
-              <p className="text-sm font-medium">{m.label}</p>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-lg bg-card border-border">
+        <DialogHeader>
+          <DialogTitle className="font-heading text-lg">Choose Step Type</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-sm">
+            What do you want your prospect to do in this step?
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+          {STEP_TYPES.map((type) => (
+            <button
+              key={type.value}
+              onClick={() => { onSelect(type.value); onClose(); }}
+              className="flex flex-col items-center gap-2 p-5 rounded-[14px] border border-border hover:border-primary/40 hover:bg-primary/[0.06] transition-all text-center group"
+            >
+              <div className={`w-11 h-11 rounded-xl ${type.bg} flex items-center justify-center`}>
+                <type.icon size={22} className={type.color} />
+              </div>
+              <div>
+                <p className="font-bold text-[14px] text-foreground group-hover:text-primary transition-colors" style={{ fontFamily: "'Plus Jakarta Sans', var(--font-heading), sans-serif" }}>
+                  {type.label}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                  {type.description}
+                </p>
+              </div>
             </button>
           ))}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
+};
+
+export const getStepTypeMeta = (type: string) => {
+  return STEP_TYPES.find((t) => t.value === type) || STEP_TYPES[0];
 };

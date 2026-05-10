@@ -52,17 +52,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let isMounted = true;
+    let lastUserId: string | null = null;
 
     const applySession = (nextSession: Session | null) => {
       if (!isMounted) return;
       setSession((prev) => (prev?.access_token === nextSession?.access_token ? prev : nextSession));
       setUser((prev) => (prev?.id === nextSession?.user?.id ? prev : nextSession?.user ?? null));
 
-      if (nextSession?.user) {
-        void fetchProfile(nextSession.user.id);
-      } else {
+      const nextUserId = nextSession?.user?.id ?? null;
+      // Only refetch profile when the user id actually changes — token refresh
+      // events keep the same user and shouldn't trigger a profile reload.
+      if (nextUserId && nextUserId !== lastUserId) {
+        void fetchProfile(nextUserId);
+      } else if (!nextUserId && lastUserId) {
         setProfile(null);
       }
+      lastUserId = nextUserId;
 
       setLoading(false);
     };
