@@ -21,3 +21,6 @@ verify_jwt = false
 [functions.check-funnel-view-limit]
 verify_jwt = false
 
+
+[functions.razorpay-webhook]
+verify_jwt = false

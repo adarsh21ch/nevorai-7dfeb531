@@ -1,57 +1,62 @@
 ## Goal
+Confirm `razorpay-webhook` (deployed Supabase function) correctly verifies HMAC signatures and updates `user_subscriptions` / appends to `payment_audit_logs` — first via a simulated signed event, then via a real Razorpay test-mode checkout in the live preview.
 
-Finish the project: remove dead code, run a real QA pass on every page, and apply the remaining performance wins identified in the previous audit.
+## Phase 1 — Simulated signed webhook (handler logic)
 
----
+1. Pick a target subscription row to mutate
+   - Query `user_subscriptions` for the most recent row belonging to your logged-in user (or insert a throwaway test row in `pending` status with a known fake `razorpay_order_id` like `order_TEST_<timestamp>` if none exists).
+   - Capture its `id`, `razorpay_order_id`, and current `status` as the "before" snapshot.
 
-## 1. Cleanup
+2. Build and send a signed `payment.captured` event
+   - Read the `RAZORPAY_WEBHOOK_SECRET` value (server-side only — done via a one-off script, not committed).
+   - Construct a payload mirroring Razorpay's real shape:
+     ```json
+     { "event": "payment.captured",
+       "event_id": "evt_test_<uuid>",
+       "payload": { "payment": { "entity": {
+         "id": "pay_TEST_<ts>",
+         "order_id": "<order id from step 1>",
+         "amount": 49900,
+         "notes": { "user_id": "<your uid>", "plan_key": "starter" }
+       }}}}
+     ```
+   - Compute `x-razorpay-signature` = HMAC-SHA256(rawBody, secret), hex.
+   - POST to `https://<project>.supabase.co/functions/v1/razorpay-webhook`.
 
-- Delete `src/pages/AppPages.tsx` (unused — no imports anywhere in the project, contains the old "Coming up next" placeholder).
+3. Verify outcomes
+   - Response is `200 {"status":"ok"}`.
+   - `payment_audit_logs` has a new row with `event_type='payment.captured'`, `idempotency_key='webhook_evt_test_<uuid>'`, `source='webhook'`.
+   - `user_subscriptions.status` for the row from step 1 flipped to `active` and `razorpay_payment_id` is set.
+   - Re-send the exact same payload → response indicates `"status":"duplicate"` and no second audit-log row is added (idempotency check passes).
 
-## 2. Full QA pass (browser-driven)
+4. Negative test — bad signature
+   - Send the same body with a wrong signature → expect 200 with `{"error":"Invalid signature"}` and no DB changes.
 
-Walk the live preview and verify each route renders, is interactive, and has no console errors. Fix anything broken inline.
+5. Optional secondary events
+   - Repeat the same flow with `subscription.activated` and `subscription.charged` against a row that has a `razorpay_subscription_id`, to confirm the other switch branches.
 
-**Public / marketing**
-- `/`, `/about`, `/features`, `/pricing`, `/faq`, `/contact`, `/enterprise`, `/privacy`, `/terms`, `/refund-policy`, `/install`
+## Phase 2 — End-to-end test checkout
 
-**Auth**
-- `/auth`, `/auth/reset-password`, `/auth/update-password`
+1. Confirm Razorpay dashboard config
+   - Webhook URL = `https://<project>.supabase.co/functions/v1/razorpay-webhook`
+   - Secret matches `RAZORPAY_WEBHOOK_SECRET`
+   - Active events include at least `payment.captured`, `payment.failed`, `subscription.activated`, `subscription.charged`, `subscription.cancelled`.
+   - Razorpay account is in **Test Mode**.
 
-**Authenticated app**
-- `/dashboard`, `/onboarding`, `/profile`, `/settings`, `/billing`, `/upgrade`, `/notifications`, `/kyc`, `/analytics`, `/insights`, `/payments`, `/leads`, `/videos`, `/live`
-- `/funnels`, `/funnels/create`, `/funnels/:id`, `/funnels/:id/edit`
-- `/landing-pages`, `/landing-pages/create`, `/landing-pages/:id`, `/landing-pages/:id/edit`
+2. Drive the live preview
+   - Log in (or have you log in) → open Pricing / Billing → start a checkout for the cheapest plan.
+   - Pay with the Razorpay test card `4111 1111 1111 1111`, any future expiry, any CVV, OTP `1234`.
 
-**Admin (the original failing area)**
-- `/admin`, `/admin/users`, `/admin/subscriptions`, `/admin/kyc`, `/admin/whatsapp`, `/admin/support`, `/admin/settings`, `/admin/videos`
+3. Verify outcomes
+   - Razorpay dashboard → Webhooks shows the delivery as 200.
+   - `payment_audit_logs` has a real `payment.captured` (and possibly `subscription.*`) row sourced from `webhook`.
+   - The corresponding `user_subscriptions` row is `active` with real `razorpay_payment_id` and `razorpay_order_id`.
+   - The UI in Billing reflects the active plan.
 
-**Public viewers**
-- `/f/:slug`, `/f/:slug/member`, `/l/:slug`, `/s/:slug`, `/v/:id`, `/live/:id`, `/checkout/return`
+## Reporting
+After each phase I will produce a short report: request status, the audit-log row(s) inserted, the before/after `user_subscriptions` row, and any mismatches with the handler's expected behavior.
 
-For each: navigate via the browser tool, check console for errors, click primary CTAs (tabs, "Create" buttons, form submits where safe). Capture and fix any blank screen, hydration mismatch, or runtime error.
-
-## 3. Remaining performance optimizations
-
-- **Lucide deep imports**: replace barrel imports in the 6 hottest files (`DashboardLayout`, `AdminLayout`, `Navbar`, `DashboardKpiStrip`, `FunnelEditor`, `LandingPageEditor`) with `lucide-react/dist/esm/icons/<name>` to drop ~150 KB from the cold chunk.
-- **`placeholderData: keepPreviousData`**: add to the tab-switch queries in `FunnelsPage`, `LeadsPage`, `PaymentsPage`, and the admin tabs so cached data renders instantly while revalidating.
-- **Lazy editor panels**: convert `TestimonialsBuilderStep`, `ViewTiersManager`, `PlanEditorTable`, `MemberGatewayTab`, `EnterpriseInquiriesTab`, `RefundsTab` to `React.lazy` + `Suspense` so the editor shell paints first.
-- **Modulepreload hints**: add `<link rel="modulepreload">` for `/dashboard`, `/funnels`, `/admin` chunks in `__root.tsx` head so post-login navigation feels instant.
-- **Image weight**: stop using the 127 KB `nevorai-mark.png` inline; use the existing `<Logo />` SVG. Keep the PNG only for `og:image` / favicon.
-
-## 4. Verification
-
-- After perf changes: run `browser--performance_profile` and confirm cold load < 4 s, FCP < 2.5 s, no script > 800 ms self-time.
-- After QA: every route in section 2 must render without a console error and the primary CTA must be clickable.
-
-## Out of scope
-
-- No DB schema changes.
-- No new features beyond what already exists.
-- No marketing redesign.
-
-## Technical notes
-
-- Lucide tree-shaking under Vite only works with deep imports — barrel imports always cost the full bundle.
-- `keepPreviousData` is preferred over `staleTime: Infinity` for tab UIs because it shows cached data immediately and revalidates in the background.
-- Modulepreload is a hint, not a hard fetch — safe to add for likely-next routes.
+## Technical details
+- Verification SQL/queries will use the Supabase tools (psql exec is unavailable in this sandbox).
+- The HMAC + POST is a one-off Node script run via `code--exec`; secret is read from the Supabase secrets store at runtime, never written to a project file.
+- No code changes are required if both phases pass. If `payment_audit_logs.idempotency_key` lacks a unique constraint or the handler misses the row update, I'll propose a fix in a follow-up plan.
