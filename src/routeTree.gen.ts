@@ -100,14 +100,14 @@ const LiveIdRoute = LiveIdRouteImport.update({
   getParentRoute: () => LiveRoute,
 } as any)
 const LandingPagesCreateRoute = LandingPagesCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => LandingPagesRoute,
+  id: '/landing-pages/create',
+  path: '/landing-pages/create',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LandingPagesIdRoute = LandingPagesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => LandingPagesRoute,
+  id: '/landing-pages/$id',
+  path: '/landing-pages/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LSlugRoute = LSlugRouteImport.update({
   id: '/l/$slug',
@@ -115,14 +115,14 @@ const LSlugRoute = LSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const FunnelsCreateRoute = FunnelsCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => FunnelsRoute,
+  id: '/funnels/create',
+  path: '/funnels/create',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const FunnelsIdRoute = FunnelsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => FunnelsRoute,
+  id: '/funnels/$id',
+  path: '/funnels/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const FSlugRoute = FSlugRouteImport.update({
   id: '/f/$slug',
@@ -384,7 +384,11 @@ export interface RootRouteChildren {
   LiveRoute: typeof LiveRouteWithChildren
   VideosRoute: typeof VideosRoute
   FSlugRoute: typeof FSlugRoute
+  FunnelsIdRoute: typeof FunnelsIdRouteWithChildren
+  FunnelsCreateRoute: typeof FunnelsCreateRoute
   LSlugRoute: typeof LSlugRoute
+  LandingPagesIdRoute: typeof LandingPagesIdRouteWithChildren
+  LandingPagesCreateRoute: typeof LandingPagesCreateRoute
   SSlugRoute: typeof SSlugRoute
   VIdRoute: typeof VIdRoute
   FunnelsIndexRoute: typeof FunnelsIndexRoute
@@ -479,17 +483,17 @@ declare module '@tanstack/react-router' {
     }
     '/landing-pages/create': {
       id: '/landing-pages/create'
-      path: '/create'
+      path: '/landing-pages/create'
       fullPath: '/landing-pages/create'
       preLoaderRoute: typeof LandingPagesCreateRouteImport
-      parentRoute: typeof LandingPagesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/landing-pages/$id': {
       id: '/landing-pages/$id'
-      path: '/$id'
+      path: '/landing-pages/$id'
       fullPath: '/landing-pages/$id'
       preLoaderRoute: typeof LandingPagesIdRouteImport
-      parentRoute: typeof LandingPagesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/l/$slug': {
       id: '/l/$slug'
@@ -500,17 +504,17 @@ declare module '@tanstack/react-router' {
     }
     '/funnels/create': {
       id: '/funnels/create'
-      path: '/create'
+      path: '/funnels/create'
       fullPath: '/funnels/create'
       preLoaderRoute: typeof FunnelsCreateRouteImport
-      parentRoute: typeof FunnelsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/funnels/$id': {
       id: '/funnels/$id'
-      path: '/$id'
+      path: '/funnels/$id'
       fullPath: '/funnels/$id'
       preLoaderRoute: typeof FunnelsIdRouteImport
-      parentRoute: typeof FunnelsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/f/$slug': {
       id: '/f/$slug'
@@ -643,6 +647,30 @@ const LiveRouteChildren: LiveRouteChildren = {
 
 const LiveRouteWithChildren = LiveRoute._addFileChildren(LiveRouteChildren)
 
+interface FunnelsIdRouteChildren {
+  FunnelsIdEditRoute: typeof FunnelsIdEditRoute
+}
+
+const FunnelsIdRouteChildren: FunnelsIdRouteChildren = {
+  FunnelsIdEditRoute: FunnelsIdEditRoute,
+}
+
+const FunnelsIdRouteWithChildren = FunnelsIdRoute._addFileChildren(
+  FunnelsIdRouteChildren,
+)
+
+interface LandingPagesIdRouteChildren {
+  LandingPagesIdEditRoute: typeof LandingPagesIdEditRoute
+}
+
+const LandingPagesIdRouteChildren: LandingPagesIdRouteChildren = {
+  LandingPagesIdEditRoute: LandingPagesIdEditRoute,
+}
+
+const LandingPagesIdRouteWithChildren = LandingPagesIdRoute._addFileChildren(
+  LandingPagesIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -652,7 +680,11 @@ const rootRouteChildren: RootRouteChildren = {
   LiveRoute: LiveRouteWithChildren,
   VideosRoute: VideosRoute,
   FSlugRoute: FSlugRoute,
+  FunnelsIdRoute: FunnelsIdRouteWithChildren,
+  FunnelsCreateRoute: FunnelsCreateRoute,
   LSlugRoute: LSlugRoute,
+  LandingPagesIdRoute: LandingPagesIdRouteWithChildren,
+  LandingPagesCreateRoute: LandingPagesCreateRoute,
   SSlugRoute: SSlugRoute,
   VIdRoute: VIdRoute,
   FunnelsIndexRoute: FunnelsIndexRoute,
@@ -661,13 +693,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
