@@ -207,7 +207,7 @@ const BillingPage = () => {
           {!isMember && (!plan.isPaid || plan.isExpired || plan.isExpiringSoon) && (
             <Link to="/upgrade">
               <Button className="gap-2">
-                {plan.isExpired ? "Renew Plan" : plan.isExpiringSoon ? "Renew Now" : "Upgrade"}
+                {plan.isExpired ? "Renew Plan" : plan.isExpiringSoon ? "Renew Now" : "Upgrade to Pro"}
                 <ArrowRight size={16} />
               </Button>
             </Link>
