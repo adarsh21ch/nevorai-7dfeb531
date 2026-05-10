@@ -170,7 +170,7 @@ export default function AuthPage() {
     setSubmitting(true);
     try {
       try {
-        const { data: lockData } = await supabase.rpc("check_auth_lockout", { _email: form.email, _ip: null });
+        const { data: lockData } = await supabase.rpc("check_auth_lockout", { _email: form.email, _ip: null as unknown as string });
         const lock = lockData as { locked?: boolean; unlock_at?: string } | null;
         if (lock?.locked) {
           const unlockAt = lock.unlock_at ? new Date(lock.unlock_at) : null;
@@ -183,7 +183,7 @@ export default function AuthPage() {
       const { error } = await signIn(form.email, form.password);
       void (async () => {
         try {
-          await supabase.rpc("record_auth_attempt", { _email: form.email, _ip: null, _success: !error });
+          await supabase.rpc("record_auth_attempt", { _email: form.email, _ip: null as unknown as string, _success: !error });
         } catch {
           return undefined;
         }
