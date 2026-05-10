@@ -11,7 +11,7 @@ import { Upload, Video, Trash2, Loader2, Link2, Share2, Pencil, Rocket } from "l
 import { Progress } from "@/components/ui/progress";
 import { VideoShareModal } from "@/components/VideoShareModal";
 import { VideoRenameModal } from "@/components/VideoRenameModal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 
 const AdminVideosPage = () => {
   const { user } = useAuth();

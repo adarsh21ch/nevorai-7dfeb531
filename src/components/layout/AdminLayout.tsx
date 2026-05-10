@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "@/lib/router-compat";
 import { DashboardLayout } from "./DashboardLayout";
 import { LayoutDashboard, Video, Users, UserCheck, CreditCard, Cog, MessageSquare, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
