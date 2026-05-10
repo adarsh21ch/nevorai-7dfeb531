@@ -272,45 +272,45 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 const AdminWhatsappRoute = AdminWhatsappRouteImport.update({
-  id: '/whatsapp',
-  path: '/whatsapp',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/whatsapp',
+  path: '/admin/whatsapp',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/admin.whatsapp.lazy').then((d) => d.Route),
 )
 const AdminVideosRoute = AdminVideosRouteImport.update({
-  id: '/videos',
-  path: '/videos',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/videos',
+  path: '/admin/videos',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.videos.lazy').then((d) => d.Route))
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.users.lazy').then((d) => d.Route))
 const AdminSupportRoute = AdminSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/support',
+  path: '/admin/support',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.support.lazy').then((d) => d.Route))
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
-  id: '/subscriptions',
-  path: '/subscriptions',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/subscriptions',
+  path: '/admin/subscriptions',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/admin.subscriptions.lazy').then((d) => d.Route),
 )
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/admin.settings.lazy').then((d) => d.Route),
 )
 const AdminKycRoute = AdminKycRouteImport.update({
-  id: '/kyc',
-  path: '/kyc',
-  getParentRoute: () => AdminRoute,
+  id: '/admin/kyc',
+  path: '/admin/kyc',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.kyc.lazy').then((d) => d.Route))
 const FSlugIndexRoute = FSlugIndexRouteImport.update({
   id: '/f/$slug/',
@@ -332,9 +332,9 @@ const FunnelsIdEditRoute = FunnelsIdEditRouteImport.update({
   import('./routes/funnels.$id.edit.lazy').then((d) => d.Route),
 )
 const FSlugMemberRoute = FSlugMemberRouteImport.update({
-  id: '/member',
-  path: '/member',
-  getParentRoute: () => FSlugRoute,
+  id: '/f/$slug/member',
+  path: '/f/$slug/member',
+  getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/f.$slug.member.lazy').then((d) => d.Route),
 )
@@ -688,6 +688,13 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UpgradeRoute: typeof UpgradeRoute
   VideosRoute: typeof VideosRoute
+  AdminKycRoute: typeof AdminKycRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminVideosRoute: typeof AdminVideosRoute
+  AdminWhatsappRoute: typeof AdminWhatsappRoute
   CheckoutReturnRoute: typeof CheckoutReturnRoute
   FunnelsIdRoute: typeof FunnelsIdRouteWithChildren
   FunnelsCreateRoute: typeof FunnelsCreateRoute
@@ -699,6 +706,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   FunnelsIndexRoute: typeof FunnelsIndexRoute
   LandingPagesIndexRoute: typeof LandingPagesIndexRoute
+  FSlugMemberRoute: typeof FSlugMemberRoute
   FSlugIndexRoute: typeof FSlugIndexRoute
 }
 
@@ -986,52 +994,52 @@ declare module '@tanstack/react-router' {
     }
     '/admin/whatsapp': {
       id: '/admin/whatsapp'
-      path: '/whatsapp'
+      path: '/admin/whatsapp'
       fullPath: '/admin/whatsapp'
       preLoaderRoute: typeof AdminWhatsappRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/videos': {
       id: '/admin/videos'
-      path: '/videos'
+      path: '/admin/videos'
       fullPath: '/admin/videos'
       preLoaderRoute: typeof AdminVideosRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
       id: '/admin/users'
-      path: '/users'
+      path: '/admin/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/support': {
       id: '/admin/support'
-      path: '/support'
+      path: '/admin/support'
       fullPath: '/admin/support'
       preLoaderRoute: typeof AdminSupportRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
-      path: '/subscriptions'
+      path: '/admin/subscriptions'
       fullPath: '/admin/subscriptions'
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/settings': {
       id: '/admin/settings'
-      path: '/settings'
+      path: '/admin/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/kyc': {
       id: '/admin/kyc'
-      path: '/kyc'
+      path: '/admin/kyc'
       fullPath: '/admin/kyc'
       preLoaderRoute: typeof AdminKycRouteImport
-      parentRoute: typeof AdminRoute
+      parentRoute: typeof rootRouteImport
     }
     '/f/$slug/': {
       id: '/f/$slug/'
@@ -1056,10 +1064,10 @@ declare module '@tanstack/react-router' {
     }
     '/f/$slug/member': {
       id: '/f/$slug/member'
-      path: '/member'
+      path: '/f/$slug/member'
       fullPath: '/f/$slug/member'
       preLoaderRoute: typeof FSlugMemberRouteImport
-      parentRoute: typeof FSlugRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -1137,6 +1145,13 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UpgradeRoute: UpgradeRoute,
   VideosRoute: VideosRoute,
+  AdminKycRoute: AdminKycRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminSupportRoute: AdminSupportRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminVideosRoute: AdminVideosRoute,
+  AdminWhatsappRoute: AdminWhatsappRoute,
   CheckoutReturnRoute: CheckoutReturnRoute,
   FunnelsIdRoute: FunnelsIdRouteWithChildren,
   FunnelsCreateRoute: FunnelsCreateRoute,
@@ -1148,18 +1163,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   FunnelsIndexRoute: FunnelsIndexRoute,
   LandingPagesIndexRoute: LandingPagesIndexRoute,
+  FSlugMemberRoute: FSlugMemberRoute,
   FSlugIndexRoute: FSlugIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
