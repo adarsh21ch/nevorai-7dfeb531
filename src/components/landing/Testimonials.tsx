@@ -24,8 +24,8 @@ const items = [
 
 export const Testimonials = () => {
   return (
-    <section className="py-24 relative">
-      <div className="container max-w-6xl">
+    <section className="py-20 sm:py-24 relative">
+      <div className="container-app max-w-6xl">
         <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 16 }}
@@ -33,44 +33,31 @@ export const Testimonials = () => {
           viewport={{ once: true }}
         >
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-3">
-            What Our <span className="gradient-text">Users Say</span>
+            What Our <span className="text-gradient-brand">Users Say</span>
           </h2>
-          <p style={{ color: "#8896B3" }}>
-            Network marketers and entrepreneurs using nFlow.
-          </p>
+          <p className="text-hero-muted">Network marketers and entrepreneurs using nFlow.</p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 items-stretch">
           {items.map((t, i) => (
             <motion.div
               key={t.name}
-              className="rounded-2xl p-6 flex flex-col"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
+              className="rounded-2xl p-6 flex flex-col h-full bg-white/[0.04] border border-white/10"
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
             >
-              <div className="text-4xl gradient-text leading-none mb-2">"</div>
-              <p className="text-sm italic flex-1" style={{ color: "#C8D0E0" }}>
-                {t.quote}
-              </p>
+              <div className="text-4xl text-gradient-brand leading-none mb-2">"</div>
+              <p className="text-sm italic flex-1 text-hero-soft">{t.quote}</p>
               <div className="flex gap-0.5 mt-4">
                 {Array.from({ length: 5 }).map((_, k) => (
-                  <Star
-                    key={k}
-                    size={14}
-                    fill="url(#starGrad)"
-                    stroke="url(#starGrad)"
-                  />
+                  <Star key={k} size={14} fill="url(#starGrad)" stroke="url(#starGrad)" />
                 ))}
               </div>
               <div className="mt-3">
                 <div className="text-sm font-semibold text-white">{t.name}</div>
-                <div className="text-xs" style={{ color: "#8896B3" }}>{t.role}</div>
+                <div className="text-xs text-hero-muted">{t.role}</div>
               </div>
             </motion.div>
           ))}

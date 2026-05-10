@@ -21,9 +21,9 @@ const links = {
 
 export const Footer = () => {
   return (
-    <footer className="border-t border-border py-16">
-      <div className="container">
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+    <footer className="border-t border-border-subtle/10 py-12 sm:py-16">
+      <div className="container-app">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 mb-10 sm:mb-12">
           <div>
             <Logo size="sm" />
             <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
@@ -51,7 +51,7 @@ export const Footer = () => {
             </div>
           ))}
         </div>
-        <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="border-t border-border-subtle/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">{brand.footer.copyright}</p>
           <p className="text-xs text-muted-foreground">{brand.footer.madeIn}</p>
         </div>
