@@ -344,7 +344,9 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!activeSub || !activeSub.expires_at) {
-        return jsonResponse({ error: "No active subscription to upgrade" }, 400);
+        return jsonResponse({
+          error: "No active paid subscription. Please subscribe to Basic or Pro before upgrading view capacity.",
+        }, 400);
       }
 
       const basePlan = (activeSub.tier || activeSub.plan_key || "").split("_")[0];
@@ -352,11 +354,21 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Only Basic and Pro subscriptions support tier upgrades" }, 400);
       }
 
+      // Self-heal stale profile state: if the user has an active paid sub,
+      // their profile must reflect "active" (not "trial"/"expired"). This
+      // unblocks tier upgrades for users whose status was never updated.
       const { data: profileRow } = await serviceClient
         .from("profiles")
         .select("subscription_status, selected_tier_id, selected_daily_views")
         .eq("id", user.id)
         .maybeSingle();
+
+      if (profileRow && profileRow.subscription_status !== "active") {
+        await serviceClient
+          .from("profiles")
+          .update({ subscription_status: "active" })
+          .eq("id", user.id);
+      }
 
       // New tier
       const { data: newTier } = await serviceClient
