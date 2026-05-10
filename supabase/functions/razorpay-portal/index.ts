@@ -241,9 +241,16 @@ Deno.serve(async (req) => {
 
       await serviceClient.from("payment_audit_logs").insert({
         user_id: user.id,
-        event_type: "order_created",
+        event_type: isPlanUpgrade ? "plan_upgrade_order_created" : "order_created",
         razorpay_order_id: order.id,
-        payload: { plan_key, amount: authoritativeAmount },
+        payload: {
+          plan_key,
+          amount: authoritativeAmount,
+          is_plan_upgrade: isPlanUpgrade,
+          prorated_charge: isPlanUpgrade ? proratedCharge : null,
+          price_diff: isPlanUpgrade ? priceDiff : null,
+          days_remaining: isPlanUpgrade ? daysRemaining : null,
+        },
         source: "frontend",
         idempotency_key: `order_${order.id}`,
       });
@@ -253,6 +260,11 @@ Deno.serve(async (req) => {
         amount: order.amount,
         currency: order.currency,
         key_id: RAZORPAY_KEY_ID,
+        is_plan_upgrade: isPlanUpgrade,
+        prorated_charge: isPlanUpgrade ? proratedCharge : null,
+        price_difference: isPlanUpgrade ? priceDiff : null,
+        days_remaining: isPlanUpgrade ? daysRemaining : null,
+        target_price: isPlanUpgrade ? targetPlanPrice : null,
       });
     }
 
