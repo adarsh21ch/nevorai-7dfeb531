@@ -36,3 +36,12 @@ export const useParams = <T extends Record<string, string> = Record<string, stri
   const params = useTParams({ strict: false }) as Record<string, string>;
   return params as T;
 };
+
+// react-router-dom-style <Navigate to="..." replace />
+export const Navigate = ({ to, replace }: { to: string; replace?: boolean }) => {
+  const router = useRouter();
+  React.useEffect(() => {
+    router.navigate({ to: to as any, replace });
+  }, [to, replace]);
+  return null;
+};

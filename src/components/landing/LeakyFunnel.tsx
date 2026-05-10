@@ -1,0 +1,350 @@
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+type TabKey = "youtube" | "nflow";
+
+const youtubeSteps = [
+  { count: 100, label: "Prospects receive and open your YouTube link", sublabel: null as string | null, barWidth: 100 },
+  { count: 74, label: "Still watching after YouTube recommends other videos", sublabel: "−26 leave immediately for recommended content", barWidth: 74 },
+  { count: 52, label: "Didn't get distracted by comments below the video", sublabel: "−22 scroll down, start engaging with comments", barWidth: 52 },
+  { count: 31, label: "Watched without skipping ahead to the end", sublabel: "−21 skip forward, miss your entire pitch", barWidth: 31 },
+  { count: 8, label: "No follow-up system — only 8 accidentally convert", sublabel: "−23 YouTube autoplays next video, they forget you exist", barWidth: 8, isFinal: true },
+];
+
+const nflowSteps = [
+  { count: 100, label: "Prospects open your nFlow link", sublabel: "Clean player loads instantly — no distractions anywhere", barWidth: 100 },
+  { count: 96, label: "Watch in a fully distraction-free environment", sublabel: "No recommendations. No comments. No autoplay. Just your video.", barWidth: 96 },
+  { count: 91, label: "Watch your full message — skip is disabled", sublabel: "They hear every word of your pitch, not just the first 30 seconds", barWidth: 91 },
+  { count: 71, label: "Enter their name + phone when prompted", sublabel: "Lead captured automatically — goes straight to your dashboard", barWidth: 71 },
+  { count: 18, label: "Convert after your automated WhatsApp follow-up", sublabel: "WhatsApp sent the moment video ends. Follow-up reminders scheduled.", barWidth: 18, isFinal: true },
+];
+
+export const LeakyFunnel = () => {
+  const [activeTab, setActiveTab] = useState<TabKey>("youtube");
+
+  // Auto-switch from problem → solution after 6s the first time
+  useEffect(() => {
+    if (activeTab !== "youtube") return;
+    const t = setTimeout(() => setActiveTab("nflow"), 6000);
+    return () => clearTimeout(t);
+  }, [activeTab]);
+
+  const isDark = activeTab === "nflow";
+
+  return (
+    <section
+      className="relative overflow-hidden transition-colors duration-700 ease-out py-20 px-4 md:px-8"
+      style={{ backgroundColor: isDark ? "#060C1A" : "#FFF8F8" }}
+    >
+      {/* Ambient glows */}
+      {isDark && (
+        <>
+          <div className="pointer-events-none absolute -top-32 -right-32 w-[480px] h-[480px] rounded-full blur-3xl opacity-30"
+            style={{ background: "radial-gradient(circle, #00C896 0%, transparent 70%)" }} />
+          <div className="pointer-events-none absolute -bottom-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-25"
+            style={{ background: "radial-gradient(circle, #0066FF 0%, transparent 70%)" }} />
+        </>
+      )}
+      {!isDark && (
+        <div className="pointer-events-none absolute -top-32 -left-32 w-[420px] h-[420px] rounded-full blur-3xl opacity-30"
+          style={{ background: "radial-gradient(circle, #ef4444 0%, transparent 70%)" }} />
+      )}
+
+      <div className="relative max-w-5xl mx-auto">
+        {/* Tab switcher */}
+        <div className="flex justify-center mb-4">
+          <div
+            className={`inline-flex items-center gap-1 p-1.5 rounded-2xl border transition-colors duration-700 ${
+              isDark ? "bg-white/5 border-white/10" : "bg-white border-gray-200 shadow-sm"
+            }`}
+          >
+            <button
+              onClick={() => setActiveTab("youtube")}
+              className={`flex items-center gap-2.5 px-5 md:px-6 py-3 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 min-h-[48px] ${
+                activeTab === "youtube"
+                  ? "bg-white shadow-sm text-red-600"
+                  : isDark ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <span className="text-lg">📺</span>
+              Without nFlow
+            </button>
+            <button
+              onClick={() => setActiveTab("nflow")}
+              className={`flex items-center gap-2.5 px-5 md:px-6 py-3 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 min-h-[48px] ${
+                activeTab === "nflow" ? "text-white shadow-lg" : isDark ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"
+              }`}
+              style={
+                activeTab === "nflow"
+                  ? { background: "linear-gradient(135deg, #00C896, #0066FF)" }
+                  : {}
+              }
+            >
+              <span className="text-lg">🎯</span>
+              With nFlow
+            </button>
+          </div>
+        </div>
+
+        {/* Auto-switch progress bar */}
+        <div className="h-1 w-full max-w-xs mx-auto mb-12 overflow-hidden">
+          {activeTab === "youtube" && (
+            <div
+              className="h-full bg-red-400/60 rounded-full"
+              style={{ animation: "leakyFill 6s linear forwards" }}
+            />
+          )}
+        </div>
+
+        <style>{`
+          @keyframes leakyFill { from { width: 0%; } to { width: 100%; } }
+          @media (max-width: 767px) {
+            .funnel-count { font-size: 24px !important; }
+            .funnel-count-final { font-size: 36px !important; }
+            .funnel-bar { height: 32px !important; }
+            .funnel-stats-grid { gap: 12px !important; }
+          }
+        `}</style>
+
+        <AnimatePresence mode="wait">
+          {activeTab === "youtube" ? (
+            <motion.div
+              key="youtube"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.4 }}
+            >
+              {/* Heading */}
+              <div className="text-center mb-12 max-w-3xl mx-auto">
+                <div className="inline-block text-xs font-semibold tracking-wider uppercase text-red-600 bg-red-100 px-3 py-1.5 rounded-full mb-4">
+                  The Leaky Funnel
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight">
+                  Where Your Prospects
+                  <br />
+                  <span className="text-red-600">Are Leaking Right Now</span>
+                </h2>
+                <p className="mt-4 text-base md:text-lg text-gray-600">
+                  Every time you send a YouTube link, this is what actually happens.
+                </p>
+              </div>
+
+              {/* Funnel rows */}
+              <div className="space-y-4 md:space-y-5">
+                {youtubeSteps.map((step, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.08 }}
+                    className="flex items-center gap-4 md:gap-6"
+                  >
+                    {/* Number */}
+                    <div className="w-16 md:w-24 shrink-0 text-right">
+                      <span
+                        className={`funnel-count${step.isFinal ? " funnel-count-final" : ""} font-bold ${
+                          step.isFinal ? "text-red-600" : "text-gray-900"
+                        }`}
+                        style={{ fontSize: step.isFinal ? 48 : 32 }}
+                      >
+                        {step.count}
+                      </span>
+                    </div>
+
+                    {/* Bar + labels */}
+                    <div className="flex-1 min-w-0">
+                      <motion.div
+                        className="funnel-bar rounded-r-lg flex items-center px-4"
+                        style={{
+                          height: 40,
+                          background: step.isFinal
+                            ? "linear-gradient(90deg, #ef4444, #dc2626)"
+                            : `rgba(239, 68, 68, ${0.25 + (i * 0.1)})`,
+                        }}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${step.barWidth}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.2 + i * 0.08, ease: "easeOut" }}
+                      >
+                        {step.isFinal && (
+                          <span className="text-white text-xs md:text-sm font-bold whitespace-nowrap">
+                            8% converted 📉
+                          </span>
+                        )}
+                      </motion.div>
+                      <div className="text-sm md:text-base font-semibold text-gray-800 mt-2">{step.label}</div>
+                      {step.sublabel && (
+                        <div className="text-xs md:text-sm text-red-600 mt-0.5">↓ {step.sublabel}</div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Bottom callout */}
+              <div className="mt-14 text-center max-w-2xl mx-auto">
+                <p className="text-xl md:text-2xl font-bold text-gray-900">
+                  92 prospects lost. YouTube kept them — you didn't.
+                </p>
+                <p className="mt-2 text-sm md:text-base text-gray-600">
+                  Not because your content is bad. Because YouTube works against you.
+                </p>
+                <button
+                  onClick={() => setActiveTab("nflow")}
+                  className="mt-6 inline-flex items-center gap-2 bg-red-500 text-white text-sm md:text-base font-semibold px-6 py-3 rounded-xl hover:bg-red-600 transition-colors"
+                >
+                  See what nFlow does differently →
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="nflow"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.4 }}
+            >
+              {/* Heading */}
+              <div className="text-center mb-12 max-w-3xl mx-auto">
+                <div className="inline-block text-xs font-semibold tracking-wider uppercase text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full mb-4">
+                  The nFlow Difference
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+                  What Happens When You
+                  <br />
+                  Send an{" "}
+                  <span style={{ background: "linear-gradient(135deg, #00C896, #0066FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    nFlow Link
+                  </span>{" "}
+                  Instead
+                </h2>
+                <p className="mt-4 text-base md:text-lg text-gray-400">
+                  Same prospect. Same video. Completely different outcome.
+                </p>
+              </div>
+
+              {/* Funnel rows */}
+              <div className="space-y-4 md:space-y-5">
+                {nflowSteps.map((step, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.08 }}
+                    className="flex items-center gap-4 md:gap-6"
+                  >
+                    {/* Number */}
+                    <div className="w-16 md:w-24 shrink-0 text-right">
+                      <span
+                        className={`funnel-count${step.isFinal ? " funnel-count-final" : ""} font-bold ${
+                          step.isFinal ? "text-emerald-400" : "text-white"
+                        }`}
+                        style={{ fontSize: step.isFinal ? 48 : 32 }}
+                      >
+                        {step.count}
+                      </span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <motion.div
+                        className="funnel-bar rounded-r-lg flex items-center px-4"
+                        style={{
+                          height: 40,
+                          background: step.isFinal
+                            ? "linear-gradient(90deg, #00C896, #0066FF)"
+                            : `linear-gradient(90deg, rgba(0,200,150,${0.25 + i * 0.12}), rgba(0,102,255,${0.25 + i * 0.12}))`,
+                        }}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${step.barWidth}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.2 + i * 0.08, ease: "easeOut" }}
+                      >
+                        {step.isFinal && (
+                          <span className="text-white text-xs md:text-sm font-bold whitespace-nowrap">
+                            16–18% converted 📈
+                          </span>
+                        )}
+                      </motion.div>
+                      <div className="text-sm md:text-base font-semibold text-gray-100 mt-2">{step.label}</div>
+                      {step.sublabel && (
+                        <div className="text-xs md:text-sm text-emerald-300 mt-0.5">✓ {step.sublabel}</div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Explanatory note about lead-to-customer timing */}
+              <p className="text-gray-500 text-xs mt-6 text-center max-w-sm mx-auto">
+                Not every captured lead joins immediately — and that's normal.
+                nFlow keeps following up automatically until they're ready.
+              </p>
+
+              {/* Bottom result */}
+              <div className="mt-10 max-w-4xl mx-auto">
+                <div
+                  className="funnel-stats-grid grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 p-6 md:p-8 rounded-2xl border border-white/10"
+                  style={{ background: "rgba(255,255,255,0.03)" }}
+                >
+                  <div className="text-center">
+                    <p className="text-red-400 text-3xl md:text-4xl font-black">8</p>
+                    <p className="text-gray-500 text-xs mt-1">YouTube conversions</p>
+                    <p className="text-gray-600 text-xs">0 leads captured</p>
+                  </div>
+                  <div className="text-center">
+                    <p
+                      className="text-3xl md:text-4xl font-black"
+                      style={{
+                        background: "linear-gradient(90deg, #00C896, #0066FF)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }}
+                    >
+                      18
+                    </p>
+                    <p className="text-gray-500 text-xs mt-1">nFlow conversions</p>
+                    <p className="text-emerald-500 text-xs">71 leads captured</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white text-3xl md:text-4xl font-black">+125%</p>
+                    <p className="text-gray-500 text-xs mt-1">more conversions</p>
+                    <p className="text-gray-600 text-xs">from same prospects</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white text-3xl md:text-4xl font-black">Auto</p>
+                    <p className="text-gray-500 text-xs mt-1">WhatsApp follow-up</p>
+                    <p className="text-emerald-500 text-xs">zero manual work</p>
+                  </div>
+                </div>
+
+                <p className="mt-8 text-center text-xl md:text-2xl font-bold text-white">
+                  Same 100 prospects. Same content. 125% more conversions.
+                </p>
+                <p className="mt-2 text-center text-sm md:text-base text-gray-400">
+                  The only difference is the link you share.
+                </p>
+
+                <div className="mt-8 text-center">
+                  <a
+                    href="/auth"
+                    className="inline-flex items-center gap-2 text-white text-sm md:text-base font-semibold px-7 py-3.5 rounded-xl shadow-lg hover:opacity-90 transition-opacity"
+                    style={{ background: "linear-gradient(135deg, #00C896, #0066FF)" }}
+                  >
+                    Start Your Free 7-Day Trial →
+                  </a>
+                  <p className="mt-3 text-xs text-gray-500">No card needed. Full access for 7 days.</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </section>
+  );
+};
+
+export default LeakyFunnel;
