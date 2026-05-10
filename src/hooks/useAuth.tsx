@@ -40,10 +40,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    setProfile((prev) => {
-      const next = (data as Profile | null) ?? null;
-      return JSON.stringify(prev) === JSON.stringify(next) ? prev : next;
-    });
+    setProfile((data as Profile | null) ?? null);
+    return (data as Profile | null) ?? null;
   };
 
   const refreshProfile = async () => {
@@ -99,7 +97,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (!error) {
+      setSession(data.session ?? null);
+      setUser(data.user ?? null);
+      setLoading(false);
+
+      if (data.user?.id) {
+        void fetchProfile(data.user.id);
+      } else {
+        setProfile(null);
+      }
+    }
+
     return { error };
   };
 
