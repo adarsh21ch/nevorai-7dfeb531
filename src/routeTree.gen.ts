@@ -9,11 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LiveRouteImport } from './routes/live'
 import { Route as LandingPagesRouteImport } from './routes/landing-pages'
 import { Route as FunnelsRouteImport } from './routes/funnels'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SSlugRouteImport } from './routes/s.$slug'
+import { Route as LiveIdRouteImport } from './routes/live.$id'
 import { Route as LandingPagesCreateRouteImport } from './routes/landing-pages.create'
 import { Route as LandingPagesIdRouteImport } from './routes/landing-pages.$id'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
@@ -25,6 +28,11 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-passw
 import { Route as LandingPagesIdEditRouteImport } from './routes/landing-pages.$id.edit'
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
 
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LandingPagesRoute = LandingPagesRouteImport.update({
   id: '/landing-pages',
   path: '/landing-pages',
@@ -49,6 +57,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SSlugRoute = SSlugRouteImport.update({
+  id: '/s/$slug',
+  path: '/s/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveIdRoute = LiveIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => LiveRoute,
 } as any)
 const LandingPagesCreateRoute = LandingPagesCreateRouteImport.update({
   id: '/create',
@@ -107,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/funnels': typeof FunnelsRouteWithChildren
   '/landing-pages': typeof LandingPagesRouteWithChildren
+  '/live': typeof LiveRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
@@ -115,6 +134,8 @@ export interface FileRoutesByFullPath {
   '/l/$slug': typeof LSlugRoute
   '/landing-pages/$id': typeof LandingPagesIdRouteWithChildren
   '/landing-pages/create': typeof LandingPagesCreateRoute
+  '/live/$id': typeof LiveIdRoute
+  '/s/$slug': typeof SSlugRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -124,6 +145,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/funnels': typeof FunnelsRouteWithChildren
   '/landing-pages': typeof LandingPagesRouteWithChildren
+  '/live': typeof LiveRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
@@ -132,6 +154,8 @@ export interface FileRoutesByTo {
   '/l/$slug': typeof LSlugRoute
   '/landing-pages/$id': typeof LandingPagesIdRouteWithChildren
   '/landing-pages/create': typeof LandingPagesCreateRoute
+  '/live/$id': typeof LiveIdRoute
+  '/s/$slug': typeof SSlugRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -142,6 +166,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/funnels': typeof FunnelsRouteWithChildren
   '/landing-pages': typeof LandingPagesRouteWithChildren
+  '/live': typeof LiveRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
@@ -150,6 +175,8 @@ export interface FileRoutesById {
   '/l/$slug': typeof LSlugRoute
   '/landing-pages/$id': typeof LandingPagesIdRouteWithChildren
   '/landing-pages/create': typeof LandingPagesCreateRoute
+  '/live/$id': typeof LiveIdRoute
+  '/s/$slug': typeof SSlugRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -161,6 +188,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/funnels'
     | '/landing-pages'
+    | '/live'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
@@ -169,6 +197,8 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/landing-pages/$id'
     | '/landing-pages/create'
+    | '/live/$id'
+    | '/s/$slug'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -178,6 +208,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/funnels'
     | '/landing-pages'
+    | '/live'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
@@ -186,6 +217,8 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/landing-pages/$id'
     | '/landing-pages/create'
+    | '/live/$id'
+    | '/s/$slug'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   id:
@@ -195,6 +228,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/funnels'
     | '/landing-pages'
+    | '/live'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
@@ -203,6 +237,8 @@ export interface FileRouteTypes {
     | '/l/$slug'
     | '/landing-pages/$id'
     | '/landing-pages/create'
+    | '/live/$id'
+    | '/s/$slug'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   fileRoutesById: FileRoutesById
@@ -213,12 +249,21 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   FunnelsRoute: typeof FunnelsRouteWithChildren
   LandingPagesRoute: typeof LandingPagesRouteWithChildren
+  LiveRoute: typeof LiveRouteWithChildren
   FSlugRoute: typeof FSlugRoute
   LSlugRoute: typeof LSlugRoute
+  SSlugRoute: typeof SSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/landing-pages': {
       id: '/landing-pages'
       path: '/landing-pages'
@@ -253,6 +298,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/s/$slug': {
+      id: '/s/$slug'
+      path: '/s/$slug'
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof SSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live/$id': {
+      id: '/live/$id'
+      path: '/$id'
+      fullPath: '/live/$id'
+      preLoaderRoute: typeof LiveIdRouteImport
+      parentRoute: typeof LiveRoute
     }
     '/landing-pages/create': {
       id: '/landing-pages/create'
@@ -390,15 +449,37 @@ const LandingPagesRouteWithChildren = LandingPagesRoute._addFileChildren(
   LandingPagesRouteChildren,
 )
 
+interface LiveRouteChildren {
+  LiveIdRoute: typeof LiveIdRoute
+}
+
+const LiveRouteChildren: LiveRouteChildren = {
+  LiveIdRoute: LiveIdRoute,
+}
+
+const LiveRouteWithChildren = LiveRoute._addFileChildren(LiveRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRoute,
   FunnelsRoute: FunnelsRouteWithChildren,
   LandingPagesRoute: LandingPagesRouteWithChildren,
+  LiveRoute: LiveRouteWithChildren,
   FSlugRoute: FSlugRoute,
   LSlugRoute: LSlugRoute,
+  SSlugRoute: SSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
