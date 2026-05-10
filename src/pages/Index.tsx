@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { Navigate } from "@/lib/router-compat";
+// Navigate shim fallback
+
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { LeakyFunnel } from "@/components/landing/LeakyFunnel";
