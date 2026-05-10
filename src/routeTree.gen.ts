@@ -12,12 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as LeadsRouteImport } from './routes/leads'
-import { Route as LandingPagesRouteImport } from './routes/landing-pages'
-import { Route as FunnelsRouteImport } from './routes/funnels'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LandingPagesIndexRouteImport } from './routes/landing-pages.index'
+import { Route as FunnelsIndexRouteImport } from './routes/funnels.index'
 import { Route as VIdRouteImport } from './routes/v.$id'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as LiveIdRouteImport } from './routes/live.$id'
@@ -54,16 +54,6 @@ const LeadsRoute = LeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LandingPagesRoute = LandingPagesRouteImport.update({
-  id: '/landing-pages',
-  path: '/landing-pages',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FunnelsRoute = FunnelsRouteImport.update({
-  id: '/funnels',
-  path: '/funnels',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -82,6 +72,16 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingPagesIndexRoute = LandingPagesIndexRouteImport.update({
+  id: '/landing-pages/',
+  path: '/landing-pages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FunnelsIndexRoute = FunnelsIndexRouteImport.update({
+  id: '/funnels/',
+  path: '/funnels/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VIdRoute = VIdRouteImport.update({
@@ -190,8 +190,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/funnels': typeof FunnelsRouteWithChildren
-  '/landing-pages': typeof LandingPagesRouteWithChildren
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
   '/videos': typeof VideosRoute
@@ -213,6 +211,8 @@ export interface FileRoutesByFullPath {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/funnels/': typeof FunnelsIndexRoute
+  '/landing-pages/': typeof LandingPagesIndexRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -221,8 +221,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/funnels': typeof FunnelsRouteWithChildren
-  '/landing-pages': typeof LandingPagesRouteWithChildren
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
   '/videos': typeof VideosRoute
@@ -244,6 +242,8 @@ export interface FileRoutesByTo {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/funnels': typeof FunnelsIndexRoute
+  '/landing-pages': typeof LandingPagesIndexRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -253,8 +253,6 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/funnels': typeof FunnelsRouteWithChildren
-  '/landing-pages': typeof LandingPagesRouteWithChildren
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
   '/videos': typeof VideosRoute
@@ -276,6 +274,8 @@ export interface FileRoutesById {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/funnels/': typeof FunnelsIndexRoute
+  '/landing-pages/': typeof LandingPagesIndexRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
@@ -286,8 +286,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
-    | '/funnels'
-    | '/landing-pages'
     | '/leads'
     | '/live'
     | '/videos'
@@ -309,6 +307,8 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/funnels/'
+    | '/landing-pages/'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -317,8 +317,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
-    | '/funnels'
-    | '/landing-pages'
     | '/leads'
     | '/live'
     | '/videos'
@@ -340,6 +338,8 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/funnels'
+    | '/landing-pages'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   id:
@@ -348,8 +348,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
-    | '/funnels'
-    | '/landing-pages'
     | '/leads'
     | '/live'
     | '/videos'
@@ -371,6 +369,8 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/funnels/'
+    | '/landing-pages/'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
   fileRoutesById: FileRoutesById
@@ -380,8 +380,6 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRoute
-  FunnelsRoute: typeof FunnelsRouteWithChildren
-  LandingPagesRoute: typeof LandingPagesRouteWithChildren
   LeadsRoute: typeof LeadsRoute
   LiveRoute: typeof LiveRouteWithChildren
   VideosRoute: typeof VideosRoute
@@ -389,6 +387,8 @@ export interface RootRouteChildren {
   LSlugRoute: typeof LSlugRoute
   SSlugRoute: typeof SSlugRoute
   VIdRoute: typeof VIdRoute
+  FunnelsIndexRoute: typeof FunnelsIndexRoute
+  LandingPagesIndexRoute: typeof LandingPagesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,20 +412,6 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/leads'
       preLoaderRoute: typeof LeadsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/landing-pages': {
-      id: '/landing-pages'
-      path: '/landing-pages'
-      fullPath: '/landing-pages'
-      preLoaderRoute: typeof LandingPagesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/funnels': {
-      id: '/funnels'
-      path: '/funnels'
-      fullPath: '/funnels'
-      preLoaderRoute: typeof FunnelsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -454,6 +440,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing-pages/': {
+      id: '/landing-pages/'
+      path: '/landing-pages'
+      fullPath: '/landing-pages/'
+      preLoaderRoute: typeof LandingPagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/funnels/': {
+      id: '/funnels/'
+      path: '/funnels'
+      fullPath: '/funnels/'
+      preLoaderRoute: typeof FunnelsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/v/$id': {
@@ -633,57 +633,6 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface FunnelsIdRouteChildren {
-  FunnelsIdEditRoute: typeof FunnelsIdEditRoute
-}
-
-const FunnelsIdRouteChildren: FunnelsIdRouteChildren = {
-  FunnelsIdEditRoute: FunnelsIdEditRoute,
-}
-
-const FunnelsIdRouteWithChildren = FunnelsIdRoute._addFileChildren(
-  FunnelsIdRouteChildren,
-)
-
-interface FunnelsRouteChildren {
-  FunnelsIdRoute: typeof FunnelsIdRouteWithChildren
-  FunnelsCreateRoute: typeof FunnelsCreateRoute
-}
-
-const FunnelsRouteChildren: FunnelsRouteChildren = {
-  FunnelsIdRoute: FunnelsIdRouteWithChildren,
-  FunnelsCreateRoute: FunnelsCreateRoute,
-}
-
-const FunnelsRouteWithChildren =
-  FunnelsRoute._addFileChildren(FunnelsRouteChildren)
-
-interface LandingPagesIdRouteChildren {
-  LandingPagesIdEditRoute: typeof LandingPagesIdEditRoute
-}
-
-const LandingPagesIdRouteChildren: LandingPagesIdRouteChildren = {
-  LandingPagesIdEditRoute: LandingPagesIdEditRoute,
-}
-
-const LandingPagesIdRouteWithChildren = LandingPagesIdRoute._addFileChildren(
-  LandingPagesIdRouteChildren,
-)
-
-interface LandingPagesRouteChildren {
-  LandingPagesIdRoute: typeof LandingPagesIdRouteWithChildren
-  LandingPagesCreateRoute: typeof LandingPagesCreateRoute
-}
-
-const LandingPagesRouteChildren: LandingPagesRouteChildren = {
-  LandingPagesIdRoute: LandingPagesIdRouteWithChildren,
-  LandingPagesCreateRoute: LandingPagesCreateRoute,
-}
-
-const LandingPagesRouteWithChildren = LandingPagesRoute._addFileChildren(
-  LandingPagesRouteChildren,
-)
-
 interface LiveRouteChildren {
   LiveIdRoute: typeof LiveIdRoute
 }
@@ -699,8 +648,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRoute,
-  FunnelsRoute: FunnelsRouteWithChildren,
-  LandingPagesRoute: LandingPagesRouteWithChildren,
   LeadsRoute: LeadsRoute,
   LiveRoute: LiveRouteWithChildren,
   VideosRoute: VideosRoute,
@@ -708,7 +655,19 @@ const rootRouteChildren: RootRouteChildren = {
   LSlugRoute: LSlugRoute,
   SSlugRoute: SSlugRoute,
   VIdRoute: VIdRoute,
+  FunnelsIndexRoute: FunnelsIndexRoute,
+  LandingPagesIndexRoute: LandingPagesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
