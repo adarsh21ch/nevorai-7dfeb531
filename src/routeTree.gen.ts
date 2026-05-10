@@ -9,17 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LandingPagesRouteImport } from './routes/landing-pages'
 import { Route as FunnelsRouteImport } from './routes/funnels'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LandingPagesCreateRouteImport } from './routes/landing-pages.create'
+import { Route as LandingPagesIdRouteImport } from './routes/landing-pages.$id'
+import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as FunnelsCreateRouteImport } from './routes/funnels.create'
 import { Route as FunnelsIdRouteImport } from './routes/funnels.$id'
 import { Route as FSlugRouteImport } from './routes/f.$slug'
 import { Route as AuthUpdatePasswordRouteImport } from './routes/auth.update-password'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
+import { Route as LandingPagesIdEditRouteImport } from './routes/landing-pages.$id.edit'
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
 
+const LandingPagesRoute = LandingPagesRouteImport.update({
+  id: '/landing-pages',
+  path: '/landing-pages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FunnelsRoute = FunnelsRouteImport.update({
   id: '/funnels',
   path: '/funnels',
@@ -38,6 +48,21 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LandingPagesCreateRoute = LandingPagesCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => LandingPagesRoute,
+} as any)
+const LandingPagesIdRoute = LandingPagesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => LandingPagesRoute,
+} as any)
+const LSlugRoute = LSlugRouteImport.update({
+  id: '/l/$slug',
+  path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FunnelsCreateRoute = FunnelsCreateRouteImport.update({
@@ -65,6 +90,11 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const LandingPagesIdEditRoute = LandingPagesIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => LandingPagesIdRoute,
+} as any)
 const FunnelsIdEditRoute = FunnelsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -76,24 +106,34 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/funnels': typeof FunnelsRouteWithChildren
+  '/landing-pages': typeof LandingPagesRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
   '/funnels/$id': typeof FunnelsIdRouteWithChildren
   '/funnels/create': typeof FunnelsCreateRoute
+  '/l/$slug': typeof LSlugRoute
+  '/landing-pages/$id': typeof LandingPagesIdRouteWithChildren
+  '/landing-pages/create': typeof LandingPagesCreateRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
+  '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/funnels': typeof FunnelsRouteWithChildren
+  '/landing-pages': typeof LandingPagesRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
   '/funnels/$id': typeof FunnelsIdRouteWithChildren
   '/funnels/create': typeof FunnelsCreateRoute
+  '/l/$slug': typeof LSlugRoute
+  '/landing-pages/$id': typeof LandingPagesIdRouteWithChildren
+  '/landing-pages/create': typeof LandingPagesCreateRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
+  '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -101,12 +141,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/funnels': typeof FunnelsRouteWithChildren
+  '/landing-pages': typeof LandingPagesRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
   '/f/$slug': typeof FSlugRoute
   '/funnels/$id': typeof FunnelsIdRouteWithChildren
   '/funnels/create': typeof FunnelsCreateRoute
+  '/l/$slug': typeof LSlugRoute
+  '/landing-pages/$id': typeof LandingPagesIdRouteWithChildren
+  '/landing-pages/create': typeof LandingPagesCreateRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
+  '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -115,36 +160,51 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/funnels'
+    | '/landing-pages'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
     | '/funnels/$id'
     | '/funnels/create'
+    | '/l/$slug'
+    | '/landing-pages/$id'
+    | '/landing-pages/create'
     | '/funnels/$id/edit'
+    | '/landing-pages/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/dashboard'
     | '/funnels'
+    | '/landing-pages'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
     | '/funnels/$id'
     | '/funnels/create'
+    | '/l/$slug'
+    | '/landing-pages/$id'
+    | '/landing-pages/create'
     | '/funnels/$id/edit'
+    | '/landing-pages/$id/edit'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/dashboard'
     | '/funnels'
+    | '/landing-pages'
     | '/auth/reset-password'
     | '/auth/update-password'
     | '/f/$slug'
     | '/funnels/$id'
     | '/funnels/create'
+    | '/l/$slug'
+    | '/landing-pages/$id'
+    | '/landing-pages/create'
     | '/funnels/$id/edit'
+    | '/landing-pages/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -152,11 +212,20 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   FunnelsRoute: typeof FunnelsRouteWithChildren
+  LandingPagesRoute: typeof LandingPagesRouteWithChildren
   FSlugRoute: typeof FSlugRoute
+  LSlugRoute: typeof LSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/landing-pages': {
+      id: '/landing-pages'
+      path: '/landing-pages'
+      fullPath: '/landing-pages'
+      preLoaderRoute: typeof LandingPagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/funnels': {
       id: '/funnels'
       path: '/funnels'
@@ -183,6 +252,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/landing-pages/create': {
+      id: '/landing-pages/create'
+      path: '/create'
+      fullPath: '/landing-pages/create'
+      preLoaderRoute: typeof LandingPagesCreateRouteImport
+      parentRoute: typeof LandingPagesRoute
+    }
+    '/landing-pages/$id': {
+      id: '/landing-pages/$id'
+      path: '/$id'
+      fullPath: '/landing-pages/$id'
+      preLoaderRoute: typeof LandingPagesIdRouteImport
+      parentRoute: typeof LandingPagesRoute
+    }
+    '/l/$slug': {
+      id: '/l/$slug'
+      path: '/l/$slug'
+      fullPath: '/l/$slug'
+      preLoaderRoute: typeof LSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/funnels/create': {
@@ -219,6 +309,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/reset-password'
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/landing-pages/$id/edit': {
+      id: '/landing-pages/$id/edit'
+      path: '/edit'
+      fullPath: '/landing-pages/$id/edit'
+      preLoaderRoute: typeof LandingPagesIdEditRouteImport
+      parentRoute: typeof LandingPagesIdRoute
     }
     '/funnels/$id/edit': {
       id: '/funnels/$id/edit'
@@ -267,13 +364,51 @@ const FunnelsRouteChildren: FunnelsRouteChildren = {
 const FunnelsRouteWithChildren =
   FunnelsRoute._addFileChildren(FunnelsRouteChildren)
 
+interface LandingPagesIdRouteChildren {
+  LandingPagesIdEditRoute: typeof LandingPagesIdEditRoute
+}
+
+const LandingPagesIdRouteChildren: LandingPagesIdRouteChildren = {
+  LandingPagesIdEditRoute: LandingPagesIdEditRoute,
+}
+
+const LandingPagesIdRouteWithChildren = LandingPagesIdRoute._addFileChildren(
+  LandingPagesIdRouteChildren,
+)
+
+interface LandingPagesRouteChildren {
+  LandingPagesIdRoute: typeof LandingPagesIdRouteWithChildren
+  LandingPagesCreateRoute: typeof LandingPagesCreateRoute
+}
+
+const LandingPagesRouteChildren: LandingPagesRouteChildren = {
+  LandingPagesIdRoute: LandingPagesIdRouteWithChildren,
+  LandingPagesCreateRoute: LandingPagesCreateRoute,
+}
+
+const LandingPagesRouteWithChildren = LandingPagesRoute._addFileChildren(
+  LandingPagesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRoute,
   FunnelsRoute: FunnelsRouteWithChildren,
+  LandingPagesRoute: LandingPagesRouteWithChildren,
   FSlugRoute: FSlugRoute,
+  LSlugRoute: LSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
