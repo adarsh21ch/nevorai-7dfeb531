@@ -9,12 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as FunnelsRouteImport } from './routes/funnels'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FunnelsCreateRouteImport } from './routes/funnels.create'
+import { Route as FunnelsIdRouteImport } from './routes/funnels.$id'
+import { Route as FSlugRouteImport } from './routes/f.$slug'
 import { Route as AuthUpdatePasswordRouteImport } from './routes/auth.update-password'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
+import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
 
+const FunnelsRoute = FunnelsRouteImport.update({
+  id: '/funnels',
+  path: '/funnels',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -30,6 +40,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FunnelsCreateRoute = FunnelsCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => FunnelsRoute,
+} as any)
+const FunnelsIdRoute = FunnelsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => FunnelsRoute,
+} as any)
+const FSlugRoute = FSlugRouteImport.update({
+  id: '/f/$slug',
+  path: '/f/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthUpdatePasswordRoute = AuthUpdatePasswordRouteImport.update({
   id: '/update-password',
   path: '/update-password',
@@ -40,28 +65,48 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => AuthRoute,
 } as any)
+const FunnelsIdEditRoute = FunnelsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => FunnelsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/funnels': typeof FunnelsRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
+  '/f/$slug': typeof FSlugRoute
+  '/funnels/$id': typeof FunnelsIdRouteWithChildren
+  '/funnels/create': typeof FunnelsCreateRoute
+  '/funnels/$id/edit': typeof FunnelsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/funnels': typeof FunnelsRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
+  '/f/$slug': typeof FSlugRoute
+  '/funnels/$id': typeof FunnelsIdRouteWithChildren
+  '/funnels/create': typeof FunnelsCreateRoute
+  '/funnels/$id/edit': typeof FunnelsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/funnels': typeof FunnelsRouteWithChildren
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
+  '/f/$slug': typeof FSlugRoute
+  '/funnels/$id': typeof FunnelsIdRouteWithChildren
+  '/funnels/create': typeof FunnelsCreateRoute
+  '/funnels/$id/edit': typeof FunnelsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -69,32 +114,56 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/funnels'
     | '/auth/reset-password'
     | '/auth/update-password'
+    | '/f/$slug'
+    | '/funnels/$id'
+    | '/funnels/create'
+    | '/funnels/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/funnels'
     | '/auth/reset-password'
     | '/auth/update-password'
+    | '/f/$slug'
+    | '/funnels/$id'
+    | '/funnels/create'
+    | '/funnels/$id/edit'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/dashboard'
+    | '/funnels'
     | '/auth/reset-password'
     | '/auth/update-password'
+    | '/f/$slug'
+    | '/funnels/$id'
+    | '/funnels/create'
+    | '/funnels/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  FunnelsRoute: typeof FunnelsRouteWithChildren
+  FSlugRoute: typeof FSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/funnels': {
+      id: '/funnels'
+      path: '/funnels'
+      fullPath: '/funnels'
+      preLoaderRoute: typeof FunnelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -116,6 +185,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/funnels/create': {
+      id: '/funnels/create'
+      path: '/create'
+      fullPath: '/funnels/create'
+      preLoaderRoute: typeof FunnelsCreateRouteImport
+      parentRoute: typeof FunnelsRoute
+    }
+    '/funnels/$id': {
+      id: '/funnels/$id'
+      path: '/$id'
+      fullPath: '/funnels/$id'
+      preLoaderRoute: typeof FunnelsIdRouteImport
+      parentRoute: typeof FunnelsRoute
+    }
+    '/f/$slug': {
+      id: '/f/$slug'
+      path: '/f/$slug'
+      fullPath: '/f/$slug'
+      preLoaderRoute: typeof FSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/update-password': {
       id: '/auth/update-password'
       path: '/update-password'
@@ -129,6 +219,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/reset-password'
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/funnels/$id/edit': {
+      id: '/funnels/$id/edit'
+      path: '/edit'
+      fullPath: '/funnels/$id/edit'
+      preLoaderRoute: typeof FunnelsIdEditRouteImport
+      parentRoute: typeof FunnelsIdRoute
     }
   }
 }
@@ -145,11 +242,48 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface FunnelsIdRouteChildren {
+  FunnelsIdEditRoute: typeof FunnelsIdEditRoute
+}
+
+const FunnelsIdRouteChildren: FunnelsIdRouteChildren = {
+  FunnelsIdEditRoute: FunnelsIdEditRoute,
+}
+
+const FunnelsIdRouteWithChildren = FunnelsIdRoute._addFileChildren(
+  FunnelsIdRouteChildren,
+)
+
+interface FunnelsRouteChildren {
+  FunnelsIdRoute: typeof FunnelsIdRouteWithChildren
+  FunnelsCreateRoute: typeof FunnelsCreateRoute
+}
+
+const FunnelsRouteChildren: FunnelsRouteChildren = {
+  FunnelsIdRoute: FunnelsIdRouteWithChildren,
+  FunnelsCreateRoute: FunnelsCreateRoute,
+}
+
+const FunnelsRouteWithChildren =
+  FunnelsRoute._addFileChildren(FunnelsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  FunnelsRoute: FunnelsRouteWithChildren,
+  FSlugRoute: FSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
