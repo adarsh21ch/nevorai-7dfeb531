@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { getSupabaseFunctionErrorMessage } from "@/lib/supabase-function-error";
 
 declare global {
   interface Window { Razorpay: any; }
@@ -136,6 +137,7 @@ const PricingFullPage = () => {
   const { currency, gateway } = useCurrency();
   
   const autoTriggeredRef = useRef(false);
+  const isDashboardUpgradeView = typeof window !== "undefined" && window.history.length > 1 && !!user;
 
   // Mobile carousel state
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
@@ -235,7 +237,10 @@ const PricingFullPage = () => {
       const { data, error } = await supabase.functions.invoke("razorpay-portal", {
         body: { action: "create_order", plan_key: planKey },
       });
-      if (error || !data?.order_id) throw new Error(error?.message || "Failed to create order");
+      if (error || !data?.order_id) {
+        const message = await getSupabaseFunctionErrorMessage(error, data?.error || "Failed to create order");
+        throw new Error(message);
+      }
 
       const options = {
         key: data.key_id,
@@ -395,8 +400,8 @@ const PricingFullPage = () => {
         </>
       ) : (
         <>
-          <Button variant="outline" onClick={() => navigate(user ? "/dashboard" : "/auth?tab=signup")} className="w-full">
-            {user ? "Stay Free" : "Get Started"}
+          <Button variant="outline" onClick={() => navigate(user ? "/billing" : "/auth?tab=signup")} className="w-full">
+            {user ? "Back to Billing" : "Get Started"}
           </Button>
           <p className="text-[11px] text-muted-foreground text-center mt-2 leading-snug">
             No credit card required. Start building your first funnel in minutes.
@@ -500,7 +505,7 @@ const PricingFullPage = () => {
       ) : (
         <>
           <GuaranteePill />
-          <Button className="w-full gap-2" onClick={() => handlePayment("pro")} disabled={loading === `pro_${billing}`}>
+              <Button className="w-full gap-2" onClick={() => handlePayment("pro")} disabled={loading === `pro_${billing}`}>
             {loading === `pro_${billing}` ? <Loader2 size={16} className="animate-spin" /> : effectiveBasic ? <ArrowUp size={16} /> : <Crown size={16} />}
             {effectiveBasic
               ? `Upgrade to Pro${upgradeDiffMonthly !== null && billing === "monthly" ? ` — +${formatPrice(upgradeDiffMonthly, currency)}/mo` : ""}`
@@ -535,10 +540,10 @@ const PricingFullPage = () => {
         <div className="container-app">
           <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-3xl md:text-5xl font-heading font-bold mb-4">
-              Choose Your <span className="gradient-text">Growth Plan</span>
+              {isDashboardUpgradeView ? <>Upgrade to <span className="gradient-text">Pro</span></> : <>Choose Your <span className="gradient-text">Growth Plan</span></>}
             </h1>
             <p className="text-muted-foreground max-w-lg mx-auto mb-6">
-              Start risk-free. 7-day money-back guarantee on all paid plans.
+              {isDashboardUpgradeView ? "Manage your subscription without leaving your account." : "Start risk-free. 7-day money-back guarantee on all paid plans."}
             </p>
             {plan.isExpired && (
               <p className="text-sm text-destructive font-medium">Your plan has expired. Renew to restore access.</p>
