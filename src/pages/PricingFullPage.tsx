@@ -4,6 +4,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Check, X, Crown, Shield, Loader2, User, Lock, Tag, Sparkles, ArrowUp } from "lucide-react";
 import { GuaranteeBanner, GuaranteePill } from "@/components/GuaranteeBanner";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { useNevoraiMember } from "@/hooks/useNevoraiMember";
@@ -137,7 +138,7 @@ const PricingFullPage = () => {
   const { currency, gateway } = useCurrency();
   
   const autoTriggeredRef = useRef(false);
-  const isDashboardUpgradeView = typeof window !== "undefined" && window.history.length > 1 && !!user;
+  const isDashboardUpgradeView = !!user;
 
   // Mobile carousel state
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
