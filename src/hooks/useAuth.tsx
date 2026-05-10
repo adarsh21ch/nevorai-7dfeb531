@@ -117,8 +117,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+const noopAuth: AuthContextType = {
+  user: null,
+  session: null,
+  profile: null,
+  loading: true,
+  signUp: async () => ({ error: new Error("Auth not ready") }),
+  signIn: async () => ({ error: new Error("Auth not ready") }),
+  signOut: async () => {},
+  refreshProfile: async () => {},
+};
+
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  // During SSR or before the provider mounts, return safe defaults instead of
+  // throwing so public/marketing components can render without an auth shell.
+  return ctx ?? noopAuth;
 };

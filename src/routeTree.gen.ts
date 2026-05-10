@@ -10,10 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
+import { Route as UpgradeRouteImport } from './routes/upgrade'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PaymentsRouteImport } from './routes/payments'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as LeadsRouteImport } from './routes/leads'
+import { Route as KycRouteImport } from './routes/kyc'
+import { Route as InstallRouteImport } from './routes/install'
+import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as EnterpriseRouteImport } from './routes/enterprise'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LandingPagesIndexRouteImport } from './routes/landing-pages.index'
 import { Route as FunnelsIndexRouteImport } from './routes/funnels.index'
@@ -26,7 +46,7 @@ import { Route as LandingPagesIdRouteImport } from './routes/landing-pages.$id'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as FunnelsCreateRouteImport } from './routes/funnels.create'
 import { Route as FunnelsIdRouteImport } from './routes/funnels.$id'
-import { Route as FSlugRouteImport } from './routes/f.$slug'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as AuthUpdatePasswordRouteImport } from './routes/auth.update-password'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AdminWhatsappRouteImport } from './routes/admin.whatsapp'
@@ -36,14 +56,66 @@ import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
+import { Route as FSlugIndexRouteImport } from './routes/f.$slug.index'
 import { Route as LandingPagesIdEditRouteImport } from './routes/landing-pages.$id.edit'
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
+import { Route as FSlugMemberRouteImport } from './routes/f.$slug.member'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
   path: '/videos',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/videos.lazy').then((d) => d.Route))
+const UpgradeRoute = UpgradeRouteImport.update({
+  id: '/upgrade',
+  path: '/upgrade',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/upgrade.lazy').then((d) => d.Route))
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/terms.lazy').then((d) => d.Route))
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/settings.lazy').then((d) => d.Route))
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/refund-policy.lazy').then((d) => d.Route))
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/profile.lazy').then((d) => d.Route))
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/privacy.lazy').then((d) => d.Route))
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/pricing.lazy').then((d) => d.Route))
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/payments.lazy').then((d) => d.Route))
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/onboarding.lazy').then((d) => d.Route))
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/notifications.lazy').then((d) => d.Route))
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -54,16 +126,66 @@ const LeadsRoute = LeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/leads.lazy').then((d) => d.Route))
+const KycRoute = KycRouteImport.update({
+  id: '/kyc',
+  path: '/kyc',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/kyc.lazy').then((d) => d.Route))
+const InstallRoute = InstallRouteImport.update({
+  id: '/install',
+  path: '/install',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/install.lazy').then((d) => d.Route))
+const InsightsRoute = InsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/insights.lazy').then((d) => d.Route))
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/features.lazy').then((d) => d.Route))
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/faq.lazy').then((d) => d.Route))
+const EnterpriseRoute = EnterpriseRouteImport.update({
+  id: '/enterprise',
+  path: '/enterprise',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/enterprise.lazy').then((d) => d.Route))
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/contact.lazy').then((d) => d.Route))
+const BillingRoute = BillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/billing.lazy').then((d) => d.Route))
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/auth.lazy').then((d) => d.Route))
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/analytics.lazy').then((d) => d.Route))
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -132,11 +254,13 @@ const FunnelsIdRoute = FunnelsIdRouteImport.update({
   path: '/funnels/$id',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/funnels.$id.lazy').then((d) => d.Route))
-const FSlugRoute = FSlugRouteImport.update({
-  id: '/f/$slug',
-  path: '/f/$slug',
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/f.$slug.lazy').then((d) => d.Route))
+} as any).lazy(() =>
+  import('./routes/checkout.return.lazy').then((d) => d.Route),
+)
 const AuthUpdatePasswordRoute = AuthUpdatePasswordRouteImport.update({
   id: '/update-password',
   path: '/update-password',
@@ -148,46 +272,51 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 const AdminWhatsappRoute = AdminWhatsappRouteImport.update({
-  id: '/admin/whatsapp',
-  path: '/admin/whatsapp',
-  getParentRoute: () => rootRouteImport,
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => AdminRoute,
 } as any).lazy(() =>
   import('./routes/admin.whatsapp.lazy').then((d) => d.Route),
 )
 const AdminVideosRoute = AdminVideosRouteImport.update({
-  id: '/admin/videos',
-  path: '/admin/videos',
-  getParentRoute: () => rootRouteImport,
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => AdminRoute,
 } as any).lazy(() => import('./routes/admin.videos.lazy').then((d) => d.Route))
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => rootRouteImport,
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
 } as any).lazy(() => import('./routes/admin.users.lazy').then((d) => d.Route))
 const AdminSupportRoute = AdminSupportRouteImport.update({
-  id: '/admin/support',
-  path: '/admin/support',
-  getParentRoute: () => rootRouteImport,
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
 } as any).lazy(() => import('./routes/admin.support.lazy').then((d) => d.Route))
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
-  id: '/admin/subscriptions',
-  path: '/admin/subscriptions',
-  getParentRoute: () => rootRouteImport,
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => AdminRoute,
 } as any).lazy(() =>
   import('./routes/admin.subscriptions.lazy').then((d) => d.Route),
 )
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/admin/settings',
-  path: '/admin/settings',
-  getParentRoute: () => rootRouteImport,
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
 } as any).lazy(() =>
   import('./routes/admin.settings.lazy').then((d) => d.Route),
 )
 const AdminKycRoute = AdminKycRouteImport.update({
-  id: '/admin/kyc',
-  path: '/admin/kyc',
-  getParentRoute: () => rootRouteImport,
+  id: '/kyc',
+  path: '/kyc',
+  getParentRoute: () => AdminRoute,
 } as any).lazy(() => import('./routes/admin.kyc.lazy').then((d) => d.Route))
+const FSlugIndexRoute = FSlugIndexRouteImport.update({
+  id: '/f/$slug/',
+  path: '/f/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/f.$slug.index.lazy').then((d) => d.Route))
 const LandingPagesIdEditRoute = LandingPagesIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -202,13 +331,40 @@ const FunnelsIdEditRoute = FunnelsIdEditRouteImport.update({
 } as any).lazy(() =>
   import('./routes/funnels.$id.edit.lazy').then((d) => d.Route),
 )
+const FSlugMemberRoute = FSlugMemberRouteImport.update({
+  id: '/member',
+  path: '/member',
+  getParentRoute: () => FSlugRoute,
+} as any).lazy(() =>
+  import('./routes/f.$slug.member.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRouteWithChildren
+  '/billing': typeof BillingRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/enterprise': typeof EnterpriseRoute
+  '/faq': typeof FaqRoute
+  '/features': typeof FeaturesRoute
+  '/insights': typeof InsightsRoute
+  '/install': typeof InstallRoute
+  '/kyc': typeof KycRoute
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
+  '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
+  '/payments': typeof PaymentsRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
+  '/upgrade': typeof UpgradeRoute
   '/videos': typeof VideosRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -219,7 +375,7 @@ export interface FileRoutesByFullPath {
   '/admin/whatsapp': typeof AdminWhatsappRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
-  '/f/$slug': typeof FSlugRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/funnels/$id': typeof FunnelsIdRouteWithChildren
   '/funnels/create': typeof FunnelsCreateRoute
   '/l/$slug': typeof LSlugRoute
@@ -231,15 +387,37 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
+  '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
+  '/f/$slug/': typeof FSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRouteWithChildren
+  '/billing': typeof BillingRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/enterprise': typeof EnterpriseRoute
+  '/faq': typeof FaqRoute
+  '/features': typeof FeaturesRoute
+  '/insights': typeof InsightsRoute
+  '/install': typeof InstallRoute
+  '/kyc': typeof KycRoute
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
+  '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
+  '/payments': typeof PaymentsRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
+  '/upgrade': typeof UpgradeRoute
   '/videos': typeof VideosRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -250,7 +428,7 @@ export interface FileRoutesByTo {
   '/admin/whatsapp': typeof AdminWhatsappRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
-  '/f/$slug': typeof FSlugRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/funnels/$id': typeof FunnelsIdRouteWithChildren
   '/funnels/create': typeof FunnelsCreateRoute
   '/l/$slug': typeof LSlugRoute
@@ -262,16 +440,38 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/funnels': typeof FunnelsIndexRoute
   '/landing-pages': typeof LandingPagesIndexRoute
+  '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
+  '/f/$slug': typeof FSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRouteWithChildren
+  '/billing': typeof BillingRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/enterprise': typeof EnterpriseRoute
+  '/faq': typeof FaqRoute
+  '/features': typeof FeaturesRoute
+  '/insights': typeof InsightsRoute
+  '/install': typeof InstallRoute
+  '/kyc': typeof KycRoute
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
+  '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
+  '/payments': typeof PaymentsRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
+  '/upgrade': typeof UpgradeRoute
   '/videos': typeof VideosRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -282,7 +482,7 @@ export interface FileRoutesById {
   '/admin/whatsapp': typeof AdminWhatsappRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/update-password': typeof AuthUpdatePasswordRoute
-  '/f/$slug': typeof FSlugRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/funnels/$id': typeof FunnelsIdRouteWithChildren
   '/funnels/create': typeof FunnelsCreateRoute
   '/l/$slug': typeof LSlugRoute
@@ -294,17 +494,39 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
+  '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
+  '/f/$slug/': typeof FSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
+    | '/analytics'
     | '/auth'
+    | '/billing'
+    | '/contact'
     | '/dashboard'
+    | '/enterprise'
+    | '/faq'
+    | '/features'
+    | '/insights'
+    | '/install'
+    | '/kyc'
     | '/leads'
     | '/live'
+    | '/notifications'
+    | '/onboarding'
+    | '/payments'
+    | '/pricing'
+    | '/privacy'
+    | '/profile'
+    | '/refund-policy'
+    | '/settings'
+    | '/terms'
+    | '/upgrade'
     | '/videos'
     | '/admin/kyc'
     | '/admin/settings'
@@ -315,7 +537,7 @@ export interface FileRouteTypes {
     | '/admin/whatsapp'
     | '/auth/reset-password'
     | '/auth/update-password'
-    | '/f/$slug'
+    | '/checkout/return'
     | '/funnels/$id'
     | '/funnels/create'
     | '/l/$slug'
@@ -327,15 +549,37 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
+    | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
+    | '/f/$slug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
+    | '/analytics'
     | '/auth'
+    | '/billing'
+    | '/contact'
     | '/dashboard'
+    | '/enterprise'
+    | '/faq'
+    | '/features'
+    | '/insights'
+    | '/install'
+    | '/kyc'
     | '/leads'
     | '/live'
+    | '/notifications'
+    | '/onboarding'
+    | '/payments'
+    | '/pricing'
+    | '/privacy'
+    | '/profile'
+    | '/refund-policy'
+    | '/settings'
+    | '/terms'
+    | '/upgrade'
     | '/videos'
     | '/admin/kyc'
     | '/admin/settings'
@@ -346,7 +590,7 @@ export interface FileRouteTypes {
     | '/admin/whatsapp'
     | '/auth/reset-password'
     | '/auth/update-password'
-    | '/f/$slug'
+    | '/checkout/return'
     | '/funnels/$id'
     | '/funnels/create'
     | '/l/$slug'
@@ -358,15 +602,37 @@ export interface FileRouteTypes {
     | '/admin'
     | '/funnels'
     | '/landing-pages'
+    | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
+    | '/f/$slug'
   id:
     | '__root__'
     | '/'
+    | '/about'
+    | '/analytics'
     | '/auth'
+    | '/billing'
+    | '/contact'
     | '/dashboard'
+    | '/enterprise'
+    | '/faq'
+    | '/features'
+    | '/insights'
+    | '/install'
+    | '/kyc'
     | '/leads'
     | '/live'
+    | '/notifications'
+    | '/onboarding'
+    | '/payments'
+    | '/pricing'
+    | '/privacy'
+    | '/profile'
+    | '/refund-policy'
+    | '/settings'
+    | '/terms'
+    | '/upgrade'
     | '/videos'
     | '/admin/kyc'
     | '/admin/settings'
@@ -377,7 +643,7 @@ export interface FileRouteTypes {
     | '/admin/whatsapp'
     | '/auth/reset-password'
     | '/auth/update-password'
-    | '/f/$slug'
+    | '/checkout/return'
     | '/funnels/$id'
     | '/funnels/create'
     | '/l/$slug'
@@ -389,25 +655,40 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
+    | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
+    | '/f/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRouteWithChildren
+  BillingRoute: typeof BillingRoute
+  ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
+  EnterpriseRoute: typeof EnterpriseRoute
+  FaqRoute: typeof FaqRoute
+  FeaturesRoute: typeof FeaturesRoute
+  InsightsRoute: typeof InsightsRoute
+  InstallRoute: typeof InstallRoute
+  KycRoute: typeof KycRoute
   LeadsRoute: typeof LeadsRoute
   LiveRoute: typeof LiveRouteWithChildren
+  NotificationsRoute: typeof NotificationsRoute
+  OnboardingRoute: typeof OnboardingRoute
+  PaymentsRoute: typeof PaymentsRoute
+  PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
+  SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
+  UpgradeRoute: typeof UpgradeRoute
   VideosRoute: typeof VideosRoute
-  AdminKycRoute: typeof AdminKycRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
-  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
-  AdminSupportRoute: typeof AdminSupportRoute
-  AdminUsersRoute: typeof AdminUsersRoute
-  AdminVideosRoute: typeof AdminVideosRoute
-  AdminWhatsappRoute: typeof AdminWhatsappRoute
-  FSlugRoute: typeof FSlugRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   FunnelsIdRoute: typeof FunnelsIdRouteWithChildren
   FunnelsCreateRoute: typeof FunnelsCreateRoute
   LSlugRoute: typeof LSlugRoute
@@ -418,6 +699,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   FunnelsIndexRoute: typeof FunnelsIndexRoute
   LandingPagesIndexRoute: typeof LandingPagesIndexRoute
+  FSlugIndexRoute: typeof FSlugIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -427,6 +709,76 @@ declare module '@tanstack/react-router' {
       path: '/videos'
       fullPath: '/videos'
       preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/upgrade': {
+      id: '/upgrade'
+      path: '/upgrade'
+      fullPath: '/upgrade'
+      preLoaderRoute: typeof UpgradeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live': {
@@ -443,6 +795,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kyc': {
+      id: '/kyc'
+      path: '/kyc'
+      fullPath: '/kyc'
+      preLoaderRoute: typeof KycRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/install': {
+      id: '/install'
+      path: '/install'
+      fullPath: '/install'
+      preLoaderRoute: typeof InstallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insights': {
+      id: '/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof InsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enterprise': {
+      id: '/enterprise'
+      path: '/enterprise'
+      fullPath: '/enterprise'
+      preLoaderRoute: typeof EnterpriseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -450,11 +844,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/billing': {
+      id: '/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof BillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -541,11 +963,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FunnelsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/f/$slug': {
-      id: '/f/$slug'
-      path: '/f/$slug'
-      fullPath: '/f/$slug'
-      preLoaderRoute: typeof FSlugRouteImport
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/update-password': {
@@ -564,51 +986,58 @@ declare module '@tanstack/react-router' {
     }
     '/admin/whatsapp': {
       id: '/admin/whatsapp'
-      path: '/admin/whatsapp'
+      path: '/whatsapp'
       fullPath: '/admin/whatsapp'
       preLoaderRoute: typeof AdminWhatsappRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/videos': {
       id: '/admin/videos'
-      path: '/admin/videos'
+      path: '/videos'
       fullPath: '/admin/videos'
       preLoaderRoute: typeof AdminVideosRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/users': {
       id: '/admin/users'
-      path: '/admin/users'
+      path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/support': {
       id: '/admin/support'
-      path: '/admin/support'
+      path: '/support'
       fullPath: '/admin/support'
       preLoaderRoute: typeof AdminSupportRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
-      path: '/admin/subscriptions'
+      path: '/subscriptions'
       fullPath: '/admin/subscriptions'
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/settings': {
       id: '/admin/settings'
-      path: '/admin/settings'
+      path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/kyc': {
       id: '/admin/kyc'
-      path: '/admin/kyc'
+      path: '/kyc'
       fullPath: '/admin/kyc'
       preLoaderRoute: typeof AdminKycRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/f/$slug/': {
+      id: '/f/$slug/'
+      path: '/f/$slug'
+      fullPath: '/f/$slug/'
+      preLoaderRoute: typeof FSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/landing-pages/$id/edit': {
@@ -624,6 +1053,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/funnels/$id/edit'
       preLoaderRoute: typeof FunnelsIdEditRouteImport
       parentRoute: typeof FunnelsIdRoute
+    }
+    '/f/$slug/member': {
+      id: '/f/$slug/member'
+      path: '/member'
+      fullPath: '/f/$slug/member'
+      preLoaderRoute: typeof FSlugMemberRouteImport
+      parentRoute: typeof FSlugRoute
     }
   }
 }
@@ -676,19 +1112,32 @@ const LandingPagesIdRouteWithChildren = LandingPagesIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRouteWithChildren,
+  BillingRoute: BillingRoute,
+  ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
+  EnterpriseRoute: EnterpriseRoute,
+  FaqRoute: FaqRoute,
+  FeaturesRoute: FeaturesRoute,
+  InsightsRoute: InsightsRoute,
+  InstallRoute: InstallRoute,
+  KycRoute: KycRoute,
   LeadsRoute: LeadsRoute,
   LiveRoute: LiveRouteWithChildren,
+  NotificationsRoute: NotificationsRoute,
+  OnboardingRoute: OnboardingRoute,
+  PaymentsRoute: PaymentsRoute,
+  PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
+  SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
+  UpgradeRoute: UpgradeRoute,
   VideosRoute: VideosRoute,
-  AdminKycRoute: AdminKycRoute,
-  AdminSettingsRoute: AdminSettingsRoute,
-  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
-  AdminSupportRoute: AdminSupportRoute,
-  AdminUsersRoute: AdminUsersRoute,
-  AdminVideosRoute: AdminVideosRoute,
-  AdminWhatsappRoute: AdminWhatsappRoute,
-  FSlugRoute: FSlugRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   FunnelsIdRoute: FunnelsIdRouteWithChildren,
   FunnelsCreateRoute: FunnelsCreateRoute,
   LSlugRoute: LSlugRoute,
@@ -699,7 +1148,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   FunnelsIndexRoute: FunnelsIndexRoute,
   LandingPagesIndexRoute: LandingPagesIndexRoute,
+  FSlugIndexRoute: FSlugIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
