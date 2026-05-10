@@ -439,8 +439,17 @@ Deno.serve(async (req) => {
       });
 
       if (!orderRes.ok) {
-        console.error("Razorpay upgrade order error:", await orderRes.text());
-        return jsonResponse({ error: "Failed to create order" }, 500);
+        const errText = await orderRes.text();
+        console.error("Razorpay upgrade order error:", orderRes.status, errText);
+        let detail: any = errText;
+        try { detail = JSON.parse(errText); } catch {}
+        return jsonResponse({
+          error: "Failed to create order",
+          where: "tier_upgrade",
+          razorpay_status: orderRes.status,
+          razorpay_error: detail,
+          key_id_prefix: RAZORPAY_KEY_ID ? RAZORPAY_KEY_ID.slice(0, 8) : null,
+        }, 500);
       }
       const order = await orderRes.json();
 
