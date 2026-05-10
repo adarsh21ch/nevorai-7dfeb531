@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { Route as AuthRoute } from "@/routes/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ interface NevoraiInfo {
 export default function AuthPage() {
   const search = AuthRoute.useSearch();
   const navigate = useNavigate();
+  const router = useRouter();
   const { signIn, signUp, user, loading } = useAuth();
 
   const [stage, setStage] = useState<Stage>("email");
@@ -153,6 +154,10 @@ export default function AuthPage() {
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard" });
   }, [loading, user, navigate]);
+
+  useEffect(() => {
+    void router.preloadRoute({ to: "/dashboard" });
+  }, [router]);
 
   if (loading) {
     return (
@@ -301,13 +306,17 @@ export default function AuthPage() {
       } catch { /* lockout RPC missing — proceed */ }
 
       const { error } = await signIn(form.email, form.password);
-      try {
-        await supabase.rpc("record_auth_attempt", { _email: form.email, _ip: null, _success: !error });
-      } catch { /* ignore */ }
+      void (async () => {
+        try {
+          await supabase.rpc("record_auth_attempt", { _email: form.email, _ip: null, _success: !error });
+        } catch {
+          return undefined;
+        }
+      })();
 
       if (error) { toast.error("Invalid email or password."); return; }
       toast.success("Welcome back!");
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/dashboard", replace: true });
     } finally { setSubmitting(false); }
   };
 
@@ -319,7 +328,7 @@ export default function AuthPage() {
       const { error } = await supabase.auth.updateUser({ password: form.password });
       if (error) { toast.error(error.message || "Could not set password."); return; }
       toast.success("Password set.");
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/dashboard", replace: true });
     } finally { setSubmitting(false); }
   };
 

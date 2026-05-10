@@ -19,9 +19,9 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreload: "intent",         // preload route chunk on link hover
-    defaultPendingMs: 150,
-    defaultPendingMinMs: 250,
+    defaultPreload: "render",         // preload visible route chunks immediately
+    defaultPendingMs: 0,
+    defaultPendingMinMs: 0,
     defaultPreloadStaleTime: 0,
   });
 

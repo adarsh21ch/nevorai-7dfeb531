@@ -3,20 +3,23 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { Search, Crown, Ban, CheckCircle2, XCircle, Save, Target, BarChart3, MessageSquare, Video, FileText, Users, TrendingUp, Shield, Zap, Upload, Eye, Layers, Bell, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import type { PlanConfig } from "@/hooks/usePlanLimits";
-import { MemberGatewayTab } from "@/components/admin/MemberGatewayTab";
-import { EnterpriseInquiriesTab } from "@/components/admin/EnterpriseInquiriesTab";
 import { EnterpriseCardSettings } from "@/components/admin/EnterpriseCardSettings";
-import { RefundsTab } from "@/components/admin/RefundsTab";
 import { TrialSettingsStrip } from "@/components/admin/TrialSettingsStrip";
-import { ViewTiersManager } from "@/components/admin/ViewTiersManager";
 import { AdminOverrideAuditTable } from "@/components/admin/AdminOverrideAuditTable";
+
+const ViewTiersManager = lazy(() => import("@/components/admin/ViewTiersManager").then((m) => ({ default: m.ViewTiersManager })));
+const RefundsTab = lazy(() => import("@/components/admin/RefundsTab").then((m) => ({ default: m.RefundsTab })));
+const MemberGatewayTab = lazy(() => import("@/components/admin/MemberGatewayTab").then((m) => ({ default: m.MemberGatewayTab })));
+const EnterpriseInquiriesTab = lazy(() => import("@/components/admin/EnterpriseInquiriesTab").then((m) => ({ default: m.EnterpriseInquiriesTab })));
+
+const adminTabFallback = <div className="glass-card p-4 text-sm text-muted-foreground">Loading…</div>;
 
 
 const PlanField = ({ planName, field, label, type = "number", disabled = false, hint, value: initialValue, onSave }: {
@@ -339,7 +342,9 @@ const AdminSubscriptionsPage = () => {
 
           <TabsContent value="pricing" className="pt-2 space-y-2">
             {(planName === "basic" || planName === "pro") ? (
-              <ViewTiersManager planName={planName as "basic" | "pro"} />
+               <Suspense fallback={adminTabFallback}>
+                 <ViewTiersManager planName={planName as "basic" | "pro"} />
+               </Suspense>
             ) : (
               <p className="text-[11px] text-muted-foreground italic px-1">No pricing fields for this plan.</p>
             )}
@@ -551,11 +556,15 @@ const AdminSubscriptionsPage = () => {
           </TabsContent>
 
           <TabsContent value="refunds" className="space-y-3 pt-1">
-            <RefundsTab />
+            <Suspense fallback={adminTabFallback}>
+              <RefundsTab />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="gateway" className="space-y-3 pt-1">
-            <MemberGatewayTab />
+            <Suspense fallback={adminTabFallback}>
+              <MemberGatewayTab />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="enterprise" className="space-y-3 pt-1">
@@ -565,7 +574,9 @@ const AdminSubscriptionsPage = () => {
                 <TabsTrigger value="card" className="text-xs sm:text-sm">Card Settings</TabsTrigger>
               </TabsList>
               <TabsContent value="inquiries" className="space-y-3 pt-1">
-                <EnterpriseInquiriesTab />
+                <Suspense fallback={adminTabFallback}>
+                  <EnterpriseInquiriesTab />
+                </Suspense>
               </TabsContent>
               <TabsContent value="card" className="space-y-3 pt-1">
                 <EnterpriseCardSettings />
