@@ -3,7 +3,7 @@ import { Logo } from "@/components/landing/Logo";
 import {
   LayoutDashboard, Layers, Video, Users, IndianRupee, BarChart3,
   User, Bell, LogOut, ChevronLeft, ChevronRight, Shield, Sun, Moon,
-  Radio, FileText, Menu,
+  Radio, FileText, Menu, Crown,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ const navItems = [
   { icon: Radio, label: "Live", path: "/live" },
   { icon: Video, label: "Videos", path: "/videos" },
   { icon: Users, label: "Leads", path: "/leads" },
+  { icon: Crown, label: "Upgrade to Pro", path: "/billing" },
   { icon: IndianRupee, label: "Payments", path: "/payments" },
   { icon: BarChart3, label: "Insights", path: "/insights" },
 ];
