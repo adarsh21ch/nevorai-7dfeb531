@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, X, Crown, Info, Shield, Loader2, Sparkles, ArrowUp } from "lucide-react";
+import { Check, X, Crown, Info, Loader2, Sparkles, ArrowUp } from "lucide-react";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,24 +15,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getSupabaseFunctionErrorMessage } from "@/lib/supabase-function-error";
 
-const usePublicTrialSettings = () => {
-  return useQuery({
-    queryKey: ["app-settings-trial-public"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("app_settings" as any)
-        .select("key, value")
-        .in("key", ["trial_enabled", "trial_days"]);
-      const map: Record<string, string> = {};
-      (data || []).forEach((s: any) => { map[s.key] = s.value; });
-      return {
-        isTrialEnabled: map.trial_enabled === "true",
-        trialDays: parseInt(map.trial_days || "7", 10),
-      };
-    },
-    staleTime: 60_000,
-  });
-};
+// Trial system disabled. Free tier is the new entry point.
+
 
 const VIEWS_TOOLTIP = "Total unique viewers across all your funnels per day. Resets at midnight IST.";
 
@@ -146,9 +130,6 @@ export const PricingSection = () => {
   const { isMember: isNevoraiMember } = useNevoraiMember();
   const { openSupport } = useWhatsAppSupport();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const { data: trialSettings } = usePublicTrialSettings();
-  const isTrialEnabled = trialSettings?.isTrialEnabled ?? false;
-  const trialDays = trialSettings?.trialDays ?? 7;
 
   const isCurrentTier = (t: string) => userPlan.isPaid && userPlan.tier === t && !userPlan.isExpired;
   const onBasic = isCurrentTier("basic") || (!userPlan.isPaid && isNevoraiMember);
