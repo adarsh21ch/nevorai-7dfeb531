@@ -10,8 +10,8 @@ const RAZORPAY_KEY_ID = (Deno.env.get("RAZORPAY_KEY_ID") ?? "").trim();
 const RAZORPAY_KEY_SECRET = (Deno.env.get("RAZORPAY_KEY_SECRET") ?? "").trim();
 const RAZORPAY_API = "https://api.razorpay.com/v1";
 
-// Build marker — bumping this string forces a fresh deploy. v=2026-05-11g-upgradefix
-console.log("razorpay-portal build v=2026-05-11g-upgradefix key_id_prefix=", RAZORPAY_KEY_ID.slice(0, 8));
+// Build marker — bumping this string forces a fresh deploy. v=2026-05-11h-upgradefix2
+console.log("razorpay-portal build v=2026-05-11h-upgradefix2 key_id_prefix=", RAZORPAY_KEY_ID.slice(0, 8));
 
 function rzpHeaders() {
   return {
@@ -43,6 +43,36 @@ function getDefaultCycleDays(interval: string, explicitDays?: number | null) {
   return interval === "yearly" ? 365 : 30;
 }
 
+function resolveCycleEnd(
+  subscription: { expires_at?: string | null; started_at?: string | null } | null | undefined,
+  interval: string,
+  explicitDays?: number | null,
+) {
+  const cycleDays = getDefaultCycleDays(interval, explicitDays);
+
+  if (subscription?.expires_at) {
+    const expiresAt = new Date(subscription.expires_at);
+    if (!Number.isNaN(expiresAt.getTime())) {
+      return { expiresAt, cycleDays };
+    }
+  }
+
+  if (subscription?.started_at) {
+    const startedAt = new Date(subscription.started_at);
+    if (!Number.isNaN(startedAt.getTime())) {
+      return {
+        expiresAt: new Date(startedAt.getTime() + cycleDays * 86400000),
+        cycleDays,
+      };
+    }
+  }
+
+  return {
+    expiresAt: new Date(Date.now() + cycleDays * 86400000),
+    cycleDays,
+  };
+}
+
 function pickTierPrice(tierRow: any, interval: string) {
   const preferred = interval === "yearly"
     ? Number(tierRow?.yearly_price ?? 0)
@@ -58,7 +88,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   if (req.method === "GET" || url.searchParams.get("ping") === "1") {
     return jsonResponse({
-      build: "v=2026-05-11g-upgradefix",
+        build: "v=2026-05-11h-upgradefix2",
       key_id_prefix: RAZORPAY_KEY_ID ? RAZORPAY_KEY_ID.slice(0, 8) : null,
       key_id_len: RAZORPAY_KEY_ID.length,
       key_secret_len: RAZORPAY_KEY_SECRET.length,
@@ -160,7 +190,7 @@ Deno.serve(async (req) => {
       // the prorated price difference for the days remaining in the current cycle.
       const { data: activePaidSub } = await serviceClient
         .from("user_subscriptions")
-        .select("plan_key, tier, expires_at, amount_paid, status, billing_type")
+        .select("plan_key, tier, expires_at, started_at, amount_paid, status, billing_type")
         .eq("user_id", user.id)
         .eq("status", "active")
         .order("created_at", { ascending: false })
@@ -182,7 +212,6 @@ Deno.serve(async (req) => {
 
       if (
         activePaidSub &&
-        activePaidSub.expires_at &&
         currentBasePlan &&
         (PLAN_RANK[baseTier] ?? -1) > (PLAN_RANK[currentBasePlan] ?? -1) &&
         (currentBasePlan === "basic" || currentBasePlan === "pro")
@@ -200,11 +229,16 @@ Deno.serve(async (req) => {
         priceDiff = targetPlanPrice - currentPlanPrice;
 
         if (priceDiff > 0) {
-          const exp = new Date(activePaidSub.expires_at);
+          const currentCycle = resolveCycleEnd(
+            activePaidSub,
+            currentBillingInterval,
+            Number(planData.duration_days || 0),
+          );
+          const exp = currentCycle.expiresAt;
           const now = new Date();
           const msRemaining = exp.getTime() - now.getTime();
           daysRemaining = Math.max(1, Math.ceil(msRemaining / 86400000));
-          const daysInCycle = getDefaultCycleDays(currentBillingInterval, Number(planData.duration_days || 0));
+          const daysInCycle = currentCycle.cycleDays;
           const remainingFraction = Math.min(1, Math.max(0, msRemaining / (daysInCycle * 86400000)));
           proratedCharge = Math.max(
             1,
@@ -213,6 +247,7 @@ Deno.serve(async (req) => {
           isPlanUpgrade = true;
           fromPlanKey = activePaidSub.plan_key;
           authoritativeAmount = proratedCharge;
+          activePaidSub.expires_at = exp.toISOString();
         }
       }
 
@@ -407,8 +442,13 @@ Deno.serve(async (req) => {
       if (isPlanUpgradeOrder && orderExpiresAt) {
         // Plan upgrade: preserve current cycle's renewal date.
         expiresAt = orderExpiresAt;
-      } else if (planData?.duration_days) {
-        expiresAt = new Date(now.getTime() + planData.duration_days * 86400000).toISOString();
+      } else {
+        const subscriptionWindow = resolveCycleEnd(
+          { started_at: now.toISOString() },
+          getBillingInterval(pKey, planData?.billing_type),
+          Number(planData?.duration_days || 0),
+        );
+        expiresAt = subscriptionWindow.expiresAt.toISOString();
       }
 
       // Deactivate old subscriptions

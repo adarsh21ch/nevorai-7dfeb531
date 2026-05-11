@@ -234,6 +234,11 @@ export const PricingSection = () => {
         throw new Error(message);
       }
 
+      const requiresUpgradePricing = planName === "Pro" && userPlan.isPaid && userPlan.tier === "basic" && !userPlan.isExpired;
+      if (requiresUpgradePricing && !data.is_plan_upgrade) {
+        throw new Error("Upgrade pricing could not be calculated. Full-price checkout was blocked.");
+      }
+
       const payableToday = Number(data.prorated_charge ?? (Number(data.amount) / 100));
 
       const options = {

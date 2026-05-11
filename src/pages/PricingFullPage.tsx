@@ -243,6 +243,11 @@ const PricingFullPage = () => {
         throw new Error(message);
       }
 
+      const requiresUpgradePricing = planName === "pro" && plan.isPaid && plan.tier === "basic" && !plan.isExpired;
+      if (requiresUpgradePricing && !data.is_plan_upgrade) {
+        throw new Error("Upgrade pricing could not be calculated. Full-price checkout was blocked.");
+      }
+
       const payableToday = Number(data.prorated_charge ?? (Number(data.amount) / 100));
       const renewalLabel = billing === "yearly" ? "/yr" : "/mo";
 
