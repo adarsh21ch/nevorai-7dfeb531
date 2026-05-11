@@ -109,7 +109,26 @@ const VideosPage = () => {
     }
   };
 
-  const invalidateVideos = () => {
+  const deleteOwnedVideo = async (videoId: string) => {
+    if (!user) return;
+    // Detach from any funnels using this video first to avoid FK / orphaned references.
+    await supabase.from("funnels").update({ video_asset_id: null }).eq("video_asset_id", videoId).eq("owner_id", user.id);
+    await supabase.from("video_asset_access").delete().eq("video_id", videoId);
+    const { error } = await supabase.from("video_assets").delete().eq("id", videoId).eq("owner_id", user.id);
+    if (error) {
+      toast.error("Failed to delete video");
+    } else {
+      toast.success("Video deleted");
+      invalidateVideos();
+    }
+    setDeleteVideo(null);
+  };
+
+  const retryFailed = async (videoId: string) => {
+    const { error } = await supabase.from("video_assets").update({ status: "pending" }).eq("id", videoId).eq("owner_id", user!.id);
+    if (error) toast.error("Could not retry");
+    else { toast.success("Retry queued"); invalidateVideos(); }
+  };
     queryClient.invalidateQueries({ queryKey: ["videos"] });
     queryClient.invalidateQueries({ queryKey: ["shared-videos"] });
   };
