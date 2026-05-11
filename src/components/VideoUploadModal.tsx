@@ -179,12 +179,72 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
 
   const busy = uploading || processing;
 
+  const publicUrl = doneVideoId && typeof window !== "undefined" ? `${window.location.origin}/v/${doneVideoId}` : "";
+
+  const copyDoneLink = async () => {
+    if (!publicUrl) return;
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      toast.success("Public link copied!");
+    } catch { toast.error("Could not copy"); }
+  };
+
+  const finishAndClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="bg-card border-border max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading">Upload Video</DialogTitle>
+          <DialogTitle className="font-heading">{doneVideoId ? "Video ready 🎉" : "Upload Video"}</DialogTitle>
         </DialogHeader>
+
+        {doneVideoId ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-3">
+              <CheckCircle2 size={20} className="text-success shrink-0" />
+              <p className="text-sm">
+                Your video is uploaded. Share the link, or use it in a funnel, landing page, or live session.
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-xs">Public link</Label>
+              <div className="mt-1.5 flex gap-2">
+                <Input readOnly value={publicUrl} className="bg-muted border-border text-xs" />
+                <Button variant="outline" size="icon" onClick={copyDoneLink}><Copy size={14} /></Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="w-full"><ExternalLink size={14} /> Open Public Page</Button>
+              </a>
+              <Link to={`/videos/${doneVideoId}` as any} onClick={finishAndClose}>
+                <Button variant="outline" className="w-full"><FileVideo size={14} /> Edit Details</Button>
+              </Link>
+            </div>
+
+            <div className="border-t border-border pt-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Use this video in</p>
+              <div className="grid grid-cols-3 gap-2">
+                <Link to={`/funnels/create?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
+                  <Button variant="hero" className="w-full"><Layers size={14} /> Funnel</Button>
+                </Link>
+                <Link to={`/landing-pages/create?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
+                  <Button variant="outline" className="w-full"><FileText size={14} /> LP</Button>
+                </Link>
+                <Link to={`/live?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
+                  <Button variant="outline" className="w-full"><Radio size={14} /> Live</Button>
+                </Link>
+              </div>
+            </div>
+
+            <Button variant="ghost" className="w-full" onClick={finishAndClose}>Done</Button>
+          </div>
+        ) : (
         <div className="space-y-4">
           {/* Pro Tip collapsible */}
           <Collapsible open={tipOpen} onOpenChange={setTipOpen}>
