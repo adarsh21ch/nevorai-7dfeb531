@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
       // the prorated price difference for the days remaining in the current cycle.
       const { data: activePaidSub } = await serviceClient
         .from("user_subscriptions")
-        .select("plan_key, tier, expires_at, amount_paid, status, billing_type")
+        .select("plan_key, tier, expires_at, started_at, amount_paid, status, billing_type")
         .eq("user_id", user.id)
         .eq("status", "active")
         .order("created_at", { ascending: false })
@@ -212,7 +212,6 @@ Deno.serve(async (req) => {
 
       if (
         activePaidSub &&
-        activePaidSub.expires_at &&
         currentBasePlan &&
         (PLAN_RANK[baseTier] ?? -1) > (PLAN_RANK[currentBasePlan] ?? -1) &&
         (currentBasePlan === "basic" || currentBasePlan === "pro")
@@ -230,11 +229,16 @@ Deno.serve(async (req) => {
         priceDiff = targetPlanPrice - currentPlanPrice;
 
         if (priceDiff > 0) {
-          const exp = new Date(activePaidSub.expires_at);
+          const currentCycle = resolveCycleEnd(
+            activePaidSub,
+            currentBillingInterval,
+            Number(planData.duration_days || 0),
+          );
+          const exp = currentCycle.expiresAt;
           const now = new Date();
           const msRemaining = exp.getTime() - now.getTime();
           daysRemaining = Math.max(1, Math.ceil(msRemaining / 86400000));
-          const daysInCycle = getDefaultCycleDays(currentBillingInterval, Number(planData.duration_days || 0));
+          const daysInCycle = currentCycle.cycleDays;
           const remainingFraction = Math.min(1, Math.max(0, msRemaining / (daysInCycle * 86400000)));
           proratedCharge = Math.max(
             1,
@@ -243,6 +247,7 @@ Deno.serve(async (req) => {
           isPlanUpgrade = true;
           fromPlanKey = activePaidSub.plan_key;
           authoritativeAmount = proratedCharge;
+          activePaidSub.expires_at = exp.toISOString();
         }
       }
 
