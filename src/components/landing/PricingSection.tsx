@@ -13,6 +13,7 @@ import { useWhatsAppSupport } from "@/hooks/useWhatsAppSupport";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getSupabaseFunctionErrorMessage } from "@/lib/supabase-function-error";
 
 const usePublicTrialSettings = () => {
   return useQuery({
@@ -228,7 +229,12 @@ export const PricingSection = () => {
       const { data, error } = await supabase.functions.invoke("razorpay-portal", {
         body: { action: "create_order", plan_key: planKey },
       });
-      if (error || !data?.order_id) throw new Error(error?.message || "Failed to create order");
+      if (error || !data?.order_id) {
+        const message = await getSupabaseFunctionErrorMessage(error, data?.error || "Failed to create order");
+        throw new Error(message);
+      }
+
+      const payableToday = Number(data.prorated_charge ?? (Number(data.amount) / 100));
 
       const options = {
         key: data.key_id,
@@ -236,7 +242,7 @@ export const PricingSection = () => {
         currency: data.currency,
         name: "nFlow",
         description: data.is_plan_upgrade
-          ? `Upgrade to ${planName} — prorated for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} (renews at ₹${data.target_price}/mo)`
+          ? `Upgrade to ${planName} — pay ₹${payableToday} today for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} left (renews at ₹${data.target_price}/mo)`
           : `${planName} Plan — monthly`,
         order_id: data.order_id,
         handler: async (response: any) => {

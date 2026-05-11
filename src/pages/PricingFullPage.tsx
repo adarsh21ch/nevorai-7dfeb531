@@ -243,13 +243,16 @@ const PricingFullPage = () => {
         throw new Error(message);
       }
 
+      const payableToday = Number(data.prorated_charge ?? (Number(data.amount) / 100));
+      const renewalLabel = billing === "yearly" ? "/yr" : "/mo";
+
       const options = {
         key: data.key_id,
         amount: data.amount,
         currency: data.currency,
         name: "nFlow",
         description: data.is_plan_upgrade
-          ? `Upgrade to ${planName.charAt(0).toUpperCase() + planName.slice(1)} — prorated for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} (renews at ₹${data.target_price}/mo)`
+          ? `Upgrade to ${planName.charAt(0).toUpperCase() + planName.slice(1)} — pay ₹${payableToday} today for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} left (renews at ₹${data.target_price}${renewalLabel})`
           : `${planName.charAt(0).toUpperCase() + planName.slice(1)} Plan — ${billing}`,
         order_id: data.order_id,
         handler: async (response: any) => {

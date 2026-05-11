@@ -10,8 +10,8 @@ const RAZORPAY_KEY_ID = (Deno.env.get("RAZORPAY_KEY_ID") ?? "").trim();
 const RAZORPAY_KEY_SECRET = (Deno.env.get("RAZORPAY_KEY_SECRET") ?? "").trim();
 const RAZORPAY_API = "https://api.razorpay.com/v1";
 
-// Build marker — bumping this string forces a fresh deploy. v=2026-05-10f-planupg
-console.log("razorpay-portal build v=2026-05-10f-planupg key_id_prefix=", RAZORPAY_KEY_ID.slice(0, 8));
+// Build marker — bumping this string forces a fresh deploy. v=2026-05-11g-upgradefix
+console.log("razorpay-portal build v=2026-05-11g-upgradefix key_id_prefix=", RAZORPAY_KEY_ID.slice(0, 8));
 
 function rzpHeaders() {
   return {
@@ -27,6 +27,30 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
+const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, pro: 2 };
+
+function getBasePlanName(value: string | null | undefined) {
+  return (value || "").split("_")[0]?.toLowerCase() || "";
+}
+
+function getBillingInterval(planKey: string | null | undefined, fallback?: string | null) {
+  const raw = ((planKey || "").split("_").slice(1).join("_") || fallback || "monthly").toLowerCase();
+  return raw.includes("year") ? "yearly" : "monthly";
+}
+
+function getDefaultCycleDays(interval: string, explicitDays?: number | null) {
+  if (explicitDays && explicitDays > 0) return explicitDays;
+  return interval === "yearly" ? 365 : 30;
+}
+
+function pickTierPrice(tierRow: any, interval: string) {
+  const preferred = interval === "yearly"
+    ? Number(tierRow?.yearly_price ?? 0)
+    : Number(tierRow?.monthly_price ?? 0);
+  if (preferred > 0) return preferred;
+  return Number(tierRow?.monthly_price ?? tierRow?.yearly_price ?? 0);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -34,7 +58,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   if (req.method === "GET" || url.searchParams.get("ping") === "1") {
     return jsonResponse({
-      build: "v=2026-05-10f-planupg",
+      build: "v=2026-05-11g-upgradefix",
       key_id_prefix: RAZORPAY_KEY_ID ? RAZORPAY_KEY_ID.slice(0, 8) : null,
       key_id_len: RAZORPAY_KEY_ID.length,
       key_secret_len: RAZORPAY_KEY_SECRET.length,
@@ -81,6 +105,8 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Invalid or inactive plan" }, 400);
       }
 
+      const targetBillingInterval = getBillingInterval(plan_key, planData.billing_type);
+      const targetCycleDays = getDefaultCycleDays(targetBillingInterval, Number(planData.duration_days || 0));
       let authoritativeAmount = Number(planData.price_inr);
       let resolvedTierId: string | null = null;
       let resolvedDailyViews: number | null = null;
@@ -110,20 +136,20 @@ Deno.serve(async (req) => {
         if (activeSub && activeSub.tier && activeSub.tier !== tierRow.plan_name) {
           return jsonResponse({ error: "Tier does not belong to your current plan" }, 400);
         }
-        authoritativeAmount = Number(tierRow.monthly_price);
+        authoritativeAmount = pickTierPrice(tierRow, targetBillingInterval);
         resolvedTierId = tierRow.id;
         resolvedDailyViews = tierRow.daily_views;
       } else if (baseTier === "basic" || baseTier === "pro") {
         // Auto-resolve the base tier for the plan when no tier_id was supplied.
         const { data: baseRow } = await serviceClient
           .from("plan_view_tiers")
-          .select("id, daily_views, monthly_price")
+            .select("id, daily_views, monthly_price, yearly_price")
           .eq("plan_name", baseTier)
           .eq("is_active", true)
           .eq("is_base", true)
           .maybeSingle();
         if (baseRow) {
-          authoritativeAmount = Number(baseRow.monthly_price);
+          authoritativeAmount = pickTierPrice(baseRow, targetBillingInterval);
           resolvedTierId = baseRow.id;
           resolvedDailyViews = baseRow.daily_views;
         }
@@ -141,10 +167,10 @@ Deno.serve(async (req) => {
         .limit(1)
         .maybeSingle();
 
-      const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, pro: 2 };
       const currentBasePlan = activePaidSub
-        ? (activePaidSub.tier || activePaidSub.plan_key || "").split("_")[0]
+        ? getBasePlanName(activePaidSub.tier || activePaidSub.plan_key)
         : null;
+      const currentBillingInterval = getBillingInterval(activePaidSub?.plan_key, activePaidSub?.billing_type);
 
       let isPlanUpgrade = false;
       let proratedCharge = 0;
@@ -164,29 +190,25 @@ Deno.serve(async (req) => {
         // Resolve current plan's base monthly price
         const { data: currentBaseRow } = await serviceClient
           .from("plan_view_tiers")
-          .select("monthly_price")
+          .select("monthly_price, yearly_price")
           .eq("plan_name", currentBasePlan)
           .eq("is_base", true)
           .eq("is_active", true)
           .maybeSingle();
 
-        currentPlanPrice = Number(currentBaseRow?.monthly_price || activePaidSub.amount_paid || 0);
+        currentPlanPrice = pickTierPrice(currentBaseRow, currentBillingInterval) || Number(activePaidSub.amount_paid || 0);
         priceDiff = targetPlanPrice - currentPlanPrice;
 
         if (priceDiff > 0) {
-          const today = new Date();
-          today.setUTCHours(0, 0, 0, 0);
           const exp = new Date(activePaidSub.expires_at);
-          exp.setUTCHours(0, 0, 0, 0);
-          const msPerDay = 86400000;
-          daysRemaining = Math.max(
-            1,
-            Math.ceil((exp.getTime() - today.getTime()) / msPerDay)
-          );
-          const daysInCycle = 30;
+          const now = new Date();
+          const msRemaining = exp.getTime() - now.getTime();
+          daysRemaining = Math.max(1, Math.ceil(msRemaining / 86400000));
+          const daysInCycle = getDefaultCycleDays(currentBillingInterval, Number(planData.duration_days || 0));
+          const remainingFraction = Math.min(1, Math.max(0, msRemaining / (daysInCycle * 86400000)));
           proratedCharge = Math.max(
             1,
-            Math.round((priceDiff / daysInCycle) * Math.min(daysRemaining, daysInCycle))
+            Math.round(priceDiff * remainingFraction)
           );
           isPlanUpgrade = true;
           fromPlanKey = activePaidSub.plan_key;
@@ -210,6 +232,9 @@ Deno.serve(async (req) => {
         orderNotes.price_diff = String(priceDiff);
         orderNotes.prorated_charge = String(proratedCharge);
         orderNotes.days_remaining = String(daysRemaining);
+        orderNotes.current_interval = currentBillingInterval;
+        orderNotes.target_interval = targetBillingInterval;
+        orderNotes.cycle_days = String(targetCycleDays);
         orderNotes.expires_at = activePaidSub!.expires_at as string;
       }
 
@@ -326,10 +351,11 @@ Deno.serve(async (req) => {
 
       if (!planData) return jsonResponse({ error: "Plan not found or inactive" }, 400);
 
-      // Detect prorated plan upgrade orders (Basic → Pro for active paid users)
+      // Detect prorated plan upgrade orders (e.g. Basic → Pro for active paid users)
       const isPlanUpgradeOrder = order.notes?.kind === "plan_upgrade_prorated";
       const orderProratedCharge = Number(order.notes?.prorated_charge || 0);
       const orderExpiresAt: string | null = order.notes?.expires_at || null;
+      const orderTargetInterval = getBillingInterval(order.notes?.to_plan || pKey, order.notes?.target_interval || planData?.billing_type);
 
       // Resolve tier_id from order.notes (authoritative)
       const orderTierId: string | null = (order.notes?.tier_id || "") || null;
@@ -340,13 +366,13 @@ Deno.serve(async (req) => {
       if (orderTierId) {
         const { data: tr } = await serviceClient
           .from("plan_view_tiers")
-          .select("id, plan_name, daily_views, monthly_price")
+          .select("id, plan_name, daily_views, monthly_price, yearly_price")
           .eq("id", orderTierId)
           .maybeSingle();
         if (tr) {
           tierRow = tr;
           if (!isPlanUpgradeOrder) {
-            expectedAmountInr = Number(tr.monthly_price);
+            expectedAmountInr = pickTierPrice(tr, orderTargetInterval);
           }
         }
       }
