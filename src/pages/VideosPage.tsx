@@ -314,6 +314,23 @@ const VideosPage = () => {
             onSuccess={invalidateVideos}
           />
         )}
+
+        <AlertDialog open={!!deleteVideo} onOpenChange={(o) => !o && setDeleteVideo(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this video?</AlertDialogTitle>
+              <AlertDialogDescription>
+                "{deleteVideo?.title}" will be permanently removed. Any funnels using it will be detached. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => deleteVideo && deleteOwnedVideo(deleteVideo.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );
