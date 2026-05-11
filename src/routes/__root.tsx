@@ -11,6 +11,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { CurrencyProvider } from "@/hooks/useCurrency";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 
@@ -122,12 +124,58 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // Recover from stale chunk / dynamic-import failures (common cause of blank
+  // pages after a new deploy): auto-reload once when the browser fails to
+  // fetch a code-split chunk. Guarded with sessionStorage so we don't loop.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const RELOAD_KEY = "__chunk_reload_attempt__";
+
+    const isChunkError = (msg: unknown): boolean => {
+      const text = typeof msg === "string" ? msg : (msg as any)?.message || "";
+      return (
+        /Failed to fetch dynamically imported module/i.test(text) ||
+        /Importing a module script failed/i.test(text) ||
+        /ChunkLoadError/i.test(text) ||
+        /Loading chunk \d+ failed/i.test(text) ||
+        /error loading dynamically imported module/i.test(text)
+      );
+    };
+
+    const tryReload = () => {
+      if (sessionStorage.getItem(RELOAD_KEY)) return;
+      sessionStorage.setItem(RELOAD_KEY, "1");
+      window.location.reload();
+    };
+
+    const onError = (e: ErrorEvent) => {
+      if (isChunkError(e.message) || isChunkError(e.error)) tryReload();
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      if (isChunkError(e.reason)) tryReload();
+    };
+
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onRejection);
+
+    // Clear the guard once a healthy render lands.
+    const t = window.setTimeout(() => sessionStorage.removeItem(RELOAD_KEY), 4000);
+
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onRejection);
+      window.clearTimeout(t);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
           <CurrencyProvider>
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
             <Toaster />
           </CurrencyProvider>
         </AuthProvider>
