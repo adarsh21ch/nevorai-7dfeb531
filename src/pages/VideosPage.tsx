@@ -58,13 +58,31 @@ const VideosPage = () => {
     ...sharedVideos.filter((sv) => !ownVideos.find((ov) => ov.id === sv.id)).map((v) => ({ ...v, _source: "linked" as const })),
   ];
 
-  const filtered = allVideos.filter((v) => !search || v.title.toLowerCase().includes(search.toLowerCase()));
+  const counts = {
+    all: allVideos.length,
+    ready: allVideos.filter((v) => v.status === "ready").length,
+    processing: allVideos.filter((v) => v.status !== "ready" && v.status !== "failed").length,
+    failed: allVideos.filter((v) => v.status === "failed").length,
+  };
+
+  const filtered = allVideos
+    .filter((v) => statusFilter === "all" ? true
+      : statusFilter === "processing" ? (v.status !== "ready" && v.status !== "failed")
+      : v.status === statusFilter)
+    .filter((v) => !search || v.title.toLowerCase().includes(search.toLowerCase()));
 
   const formatSize = (bytes: number | null) => {
     if (!bytes) return "—";
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
     if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+
+  const formatDuration = (sec: number | null | undefined) => {
+    if (!sec || sec <= 0) return null;
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
   };
 
   const useInFunnel = (videoId: string) => {
