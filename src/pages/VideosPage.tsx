@@ -174,6 +174,26 @@ const VideosPage = () => {
           </div>
         </div>
 
+        {/* Status tabs */}
+        <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit overflow-x-auto max-w-full">
+          {([
+            { k: "all", label: "All", icon: null },
+            { k: "ready", label: "Ready", icon: <CheckCircle2 size={13} className="text-success" /> },
+            { k: "processing", label: "Processing", icon: <Loader2 size={13} className="text-warning animate-spin" /> },
+            { k: "failed", label: "Failed", icon: <AlertTriangle size={13} className="text-destructive" /> },
+          ] as const).map((t) => (
+            <button
+              key={t.k}
+              onClick={() => setStatusFilter(t.k)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${statusFilter === t.k ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {t.icon}
+              {t.label}
+              <span className="text-[10px] tabular-nums opacity-70">({counts[t.k]})</span>
+            </button>
+          ))}
+        </div>
+
         {/* Empty state */}
         {filtered.length === 0 ? (
           <div className="glass-card p-8 sm:p-12 text-center w-full max-w-full">
