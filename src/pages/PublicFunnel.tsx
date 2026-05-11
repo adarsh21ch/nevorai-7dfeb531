@@ -721,12 +721,11 @@ const PublicFunnel = () => {
   const { data: bundle, isLoading } = useQuery({
     queryKey: ["public-funnel-bundle", slug],
     queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-funnel-data?slug=${encodeURIComponent(slug!)}`,
-        { headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
-      );
-      if (!res.ok) throw new Error("Not found");
-      return res.json();
+      const { data, error } = await supabase.functions.invoke("get-funnel-data", {
+        body: { slug },
+      });
+      if (error) throw new Error(error.message || "Not found");
+      return data;
     },
     enabled: !!slug,
     staleTime: 5 * 60 * 1000,
