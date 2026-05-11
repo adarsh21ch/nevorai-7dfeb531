@@ -554,7 +554,7 @@ const PricingFullPage = () => {
               {isDashboardUpgradeView ? <>Upgrade to <span className="gradient-text">Pro</span></> : <>Choose Your <span className="gradient-text">Growth Plan</span></>}
             </h1>
             <p className="text-muted-foreground max-w-lg mx-auto mb-6">
-              {isDashboardUpgradeView ? "Manage your subscription without leaving your account." : "Start risk-free. 7-day money-back guarantee on all paid plans."}
+              {isDashboardUpgradeView ? "Manage your subscription without leaving your account." : "Start free forever with usage limits. Upgrade when you grow."}
             </p>
             {plan.isExpired && (
               <p className="text-sm text-destructive font-medium">Your plan has expired. Renew to restore access.</p>

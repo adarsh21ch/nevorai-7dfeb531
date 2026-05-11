@@ -19,6 +19,7 @@ import { FunnelDailyLimitGate } from "@/components/funnel/FunnelDailyLimitGate";
 import { CreatorInactiveGate } from "@/components/funnel/CreatorInactiveGate";
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
 import { sanitizeText, normalizePhone } from "@/lib/sanitize";
+import { BrandingWatermark } from "@/components/BrandingWatermark";
 
 /* ─── Speed Popover ─── */
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2];
@@ -1303,6 +1304,7 @@ const PublicFunnel = () => {
           50%      { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
         }
       `}</style>
+      <BrandingWatermark ownerId={(funnel as any)?.owner_id} />
     </div>
   );
 };

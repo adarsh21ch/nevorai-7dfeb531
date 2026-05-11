@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { VideoUploadModal } from "@/components/VideoUploadModal";
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
+import { BrandingWatermark } from "@/components/BrandingWatermark";
 
 const PublicVideoPage = () => {
   const { id } = useParams();
@@ -134,6 +135,7 @@ const PublicVideoPage = () => {
           onSuccess={() => { setVideoError(false); setReuploadOpen(false); refetch(); }}
         />
       )}
+      <BrandingWatermark ownerId={video?.owner_id} />
     </div>
   );
 };

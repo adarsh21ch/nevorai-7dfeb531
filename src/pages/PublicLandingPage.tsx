@@ -14,6 +14,7 @@ import { TestimonialsViewer } from "@/components/funnel/TestimonialsViewer";
 import { LandingPageCodeGate } from "@/components/funnel/LandingPageCodeGate";
 import { DateOfBirthInput } from "@/components/funnel/DateOfBirthInput";
 import { PostSubmitVideoPlayer } from "@/components/landing/PostSubmitVideoPlayer";
+import { BrandingWatermark } from "@/components/BrandingWatermark";
 
 const PublicLandingPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -390,6 +391,7 @@ const PublicLandingPage = () => {
       <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
         nFlow by Nevorai
       </footer>
+      <BrandingWatermark ownerId={page?.owner_id} />
     </div>
   );
 };
