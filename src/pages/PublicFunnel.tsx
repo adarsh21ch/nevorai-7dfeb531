@@ -19,6 +19,7 @@ import { FunnelDailyLimitGate } from "@/components/funnel/FunnelDailyLimitGate";
 import { CreatorInactiveGate } from "@/components/funnel/CreatorInactiveGate";
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
 import { sanitizeText, normalizePhone } from "@/lib/sanitize";
+import { BrandingWatermark } from "@/components/BrandingWatermark";
 
 /* ─── Speed Popover ─── */
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2];
