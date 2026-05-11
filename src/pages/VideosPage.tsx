@@ -66,8 +66,8 @@ const VideosPage = () => {
   };
 
   const copyLink = (videoId: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/video/${videoId}`);
-    toast.success("nFlow link copied to clipboard!");
+    navigator.clipboard.writeText(`${window.location.origin}/v/${videoId}`);
+    toast.success("Public video link copied!");
   };
 
   const removeLinkedVideo = async (videoId: string) => {
