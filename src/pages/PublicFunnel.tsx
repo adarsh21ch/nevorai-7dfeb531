@@ -721,9 +721,28 @@ const PublicFunnel = () => {
   const { data: bundle, isLoading } = useQuery({
     queryKey: ["public-funnel-bundle", slug],
     queryFn: async () => {
+      console.info("[PublicFunnel] loading slug", {
+        slug,
+        path: typeof window !== "undefined" ? window.location.pathname : null,
+      });
+
       const { data, error } = await supabase.functions.invoke("get-funnel-data", {
         body: { slug },
       });
+
+      console.info("[PublicFunnel] get-funnel-data response", {
+        slug,
+        hasData: !!data,
+        error: error
+          ? {
+              message: error.message,
+              name: error.name,
+              context: error.context,
+            }
+          : null,
+        data,
+      });
+
       if (error) throw new Error(error.message || "Not found");
       return data;
     },
