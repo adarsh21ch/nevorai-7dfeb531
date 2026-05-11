@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "@/lib/router-compat";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useVideoGate } from "@/hooks/useVideoGate";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,6 +133,8 @@ const LandingPageEditor = () => {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const isEdit = !!id;
+  // Phase 7 gate: must have at least one uploaded video before creating a new landing page.
+  useVideoGate(!isEdit);
   const isMobile = useIsMobile();
   const [wizardStep, setWizardStep] = useState(0);
   const [form, setForm] = useState(defaultFormState);

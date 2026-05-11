@@ -6,7 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Video, Search, Grid, List, Link2, Share2, Pencil, Rocket, Upload, Copy, Trash2, RefreshCw, Clock, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
+import { Video, Search, Grid, List, Link2, Share2, Pencil, Rocket, Upload, Copy, Trash2, RefreshCw, Clock, AlertTriangle, CheckCircle2, Loader2, Settings } from "lucide-react";
+import { Link } from "@/lib/router-compat";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -236,7 +237,13 @@ const VideosPage = () => {
                 </div>
 
                 {/* Title & meta */}
-                <h3 className="font-medium text-sm truncate max-w-full overflow-hidden">{v.title}</h3>
+                {v._source === "own" && v.status === "ready" ? (
+                  <Link to={`/videos/${v.id}` as any} className="block">
+                    <h3 className="font-medium text-sm truncate max-w-full overflow-hidden hover:text-primary transition-colors">{v.title}</h3>
+                  </Link>
+                ) : (
+                  <h3 className="font-medium text-sm truncate max-w-full overflow-hidden">{v.title}</h3>
+                )}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
                   <span>{formatSize(v.file_size_bytes)}</span>
                   <span className={`px-1.5 py-0.5 rounded text-[10px] ${v.status === "ready" ? "bg-success/10 text-success" : v.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
@@ -254,6 +261,13 @@ const VideosPage = () => {
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setRenameVideo({ id: v.id, title: v.title })} title="Rename">
                     <Pencil size={15} />
                   </Button>
+                  {v._source === "own" && v.status === "ready" && (
+                    <Link to={`/videos/${v.id}` as any}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Edit details">
+                        <Settings size={15} />
+                      </Button>
+                    </Link>
+                  )}
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => copyLink(v.id)} title="Copy Link" disabled={v.status !== "ready"}>
                     <Copy size={15} />
                   </Button>

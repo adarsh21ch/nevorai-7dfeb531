@@ -18,6 +18,7 @@ import { TrialExpiredGate } from "@/components/TrialExpiredGate";
 import { TrialBanner } from "@/components/TrialBanner";
 import { usePlan } from "@/hooks/usePlan";
 import { SupportFAB } from "@/components/SupportFAB";
+import { MobileCreateAction } from "@/components/layout/MobileCreateAction";
 import { useRouter } from "@tanstack/react-router";
 
 const navItems = [
@@ -273,12 +274,35 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         {showTrialGate && <TrialExpiredGate trialDays={trialDays} />}
 
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md md:hidden safe-area-pb">
-          <div className="grid grid-cols-5">
+          <div className="grid grid-cols-5 items-end">
             {[
               { icon: LayoutDashboard, label: "Home", path: "/dashboard" },
               { icon: Video, label: "Videos", path: "/videos" },
-              { icon: Layers, label: "Funnels", path: "/funnels" },
-              { icon: BarChart3, label: "Insights", path: "/insights" },
+            ].map((item) => {
+              const active = location.pathname.startsWith(item.path);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onMouseEnter={() => preloadRoute(item.path)}
+                  className={cn(
+                    "flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] transition-colors",
+                    active ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  <item.icon size={21} />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+
+            {/* Center create action */}
+            <div className="flex min-h-[64px] items-center justify-center">
+              <MobileCreateAction />
+            </div>
+
+            {[
+              { icon: Users, label: "Leads", path: "/leads" },
               { icon: User, label: "Profile", path: "/profile" },
             ].map((item) => {
               const active = location.pathname.startsWith(item.path);
@@ -287,7 +311,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                   key={item.path}
                   to={item.path}
                   onMouseEnter={() => preloadRoute(item.path)}
-                  onFocus={() => preloadRoute(item.path)}
                   className={cn(
                     "flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[11px] transition-colors",
                     active ? "text-primary" : "text-muted-foreground"

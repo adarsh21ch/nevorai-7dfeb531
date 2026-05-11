@@ -39,6 +39,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LandingPagesIndexRouteImport } from './routes/landing-pages.index'
 import { Route as FunnelsIndexRouteImport } from './routes/funnels.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as VideosIdRouteImport } from './routes/videos.$id'
 import { Route as VIdRouteImport } from './routes/v.$id'
 import { Route as SSlugRouteImport } from './routes/s.$slug'
 import { Route as LiveIdRouteImport } from './routes/live.$id'
@@ -216,6 +217,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.index.lazy').then((d) => d.Route))
+const VideosIdRoute = VideosIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => VideosRoute,
+} as any).lazy(() => import('./routes/videos.$id.lazy').then((d) => d.Route))
 const VIdRoute = VIdRouteImport.update({
   id: '/v/$id',
   path: '/v/$id',
@@ -374,7 +380,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/upgrade': typeof UpgradeRoute
-  '/videos': typeof VideosRoute
+  '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -393,6 +399,7 @@ export interface FileRoutesByFullPath {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/videos/$id': typeof VideosIdRoute
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
@@ -428,7 +435,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/upgrade': typeof UpgradeRoute
-  '/videos': typeof VideosRoute
+  '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -447,6 +454,7 @@ export interface FileRoutesByTo {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/videos/$id': typeof VideosIdRoute
   '/admin': typeof AdminIndexRoute
   '/funnels': typeof FunnelsIndexRoute
   '/landing-pages': typeof LandingPagesIndexRoute
@@ -483,7 +491,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
   '/upgrade': typeof UpgradeRoute
-  '/videos': typeof VideosRoute
+  '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -502,6 +510,7 @@ export interface FileRoutesById {
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
   '/v/$id': typeof VIdRoute
+  '/videos/$id': typeof VideosIdRoute
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
@@ -558,6 +567,7 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/videos/$id'
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
@@ -612,6 +622,7 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/videos/$id'
     | '/admin'
     | '/funnels'
     | '/landing-pages'
@@ -666,6 +677,7 @@ export interface FileRouteTypes {
     | '/live/$id'
     | '/s/$slug'
     | '/v/$id'
+    | '/videos/$id'
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
@@ -702,7 +714,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
   UpgradeRoute: typeof UpgradeRoute
-  VideosRoute: typeof VideosRoute
+  VideosRoute: typeof VideosRouteWithChildren
   AdminKycRoute: typeof AdminKycRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
@@ -937,6 +949,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/videos/$id': {
+      id: '/videos/$id'
+      path: '/$id'
+      fullPath: '/videos/$id'
+      preLoaderRoute: typeof VideosIdRouteImport
+      parentRoute: typeof VideosRoute
+    }
     '/v/$id': {
       id: '/v/$id'
       path: '/v/$id'
@@ -1116,6 +1135,17 @@ const LiveRouteChildren: LiveRouteChildren = {
 
 const LiveRouteWithChildren = LiveRoute._addFileChildren(LiveRouteChildren)
 
+interface VideosRouteChildren {
+  VideosIdRoute: typeof VideosIdRoute
+}
+
+const VideosRouteChildren: VideosRouteChildren = {
+  VideosIdRoute: VideosIdRoute,
+}
+
+const VideosRouteWithChildren =
+  VideosRoute._addFileChildren(VideosRouteChildren)
+
 interface FunnelsIdRouteChildren {
   FunnelsIdEditRoute: typeof FunnelsIdEditRoute
 }
@@ -1167,7 +1197,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
   UpgradeRoute: UpgradeRoute,
-  VideosRoute: VideosRoute,
+  VideosRoute: VideosRouteWithChildren,
   AdminKycRoute: AdminKycRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
