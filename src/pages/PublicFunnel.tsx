@@ -1,7 +1,6 @@
 import { useParams, Link } from "@/lib/router-compat";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase, supabaseProjectUrl, supabasePublishableKey } from "@/integrations/supabase/client";
-import { getSupabaseFunctionErrorMessage } from "@/lib/supabase-function-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -727,67 +726,35 @@ const PublicFunnel = () => {
         path: typeof window !== "undefined" ? window.location.pathname : null,
       });
 
-      const { data, error } = await supabase.functions.invoke("get-funnel-data", {
-        body: { slug },
+      const requestUrl = `${supabaseProjectUrl}/functions/v1/get-funnel-data?slug=${encodeURIComponent(slug ?? "")}`;
+      const response = await fetch(requestUrl, {
+        method: "GET",
+        headers: {
+          apikey: supabasePublishableKey,
+          Authorization: `Bearer ${supabasePublishableKey}`,
+        },
       });
 
-      const readableError = error
-        ? await getSupabaseFunctionErrorMessage(error, error.message || "Not found")
-        : null;
+      let payload: any = null;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
 
       console.info("[PublicFunnel] get-funnel-data response", {
         slug,
-        hasData: !!data,
-        error: error
-          ? {
-              message: readableError,
-              name: error.name,
-              context: error.context,
-            }
-          : null,
-        data,
+        requestUrl,
+        status: response.status,
+        ok: response.ok,
+        data: payload,
       });
 
-      if (!error) return data;
-
-      const isMissingSlugCompatCase = readableError?.toLowerCase().includes("slug is required");
-      if (isMissingSlugCompatCase) {
-        const fallbackUrl = `${supabaseProjectUrl}/functions/v1/get-funnel-data?slug=${encodeURIComponent(slug ?? "")}`;
-        console.warn("[PublicFunnel] falling back to GET for legacy get-funnel-data deployment", {
-          slug,
-          fallbackUrl,
-        });
-
-        const fallbackResponse = await fetch(fallbackUrl, {
-          method: "GET",
-          headers: {
-            apikey: supabasePublishableKey,
-            Authorization: `Bearer ${supabasePublishableKey}`,
-          },
-        });
-
-        let fallbackPayload: any = null;
-        try {
-          fallbackPayload = await fallbackResponse.json();
-        } catch {
-          fallbackPayload = null;
-        }
-
-        console.info("[PublicFunnel] legacy GET fallback response", {
-          slug,
-          status: fallbackResponse.status,
-          ok: fallbackResponse.ok,
-          data: fallbackPayload,
-        });
-
-        if (fallbackResponse.ok) return fallbackPayload;
-
-        throw new Error(
-          fallbackPayload?.error || fallbackPayload?.message || `Request failed (${fallbackResponse.status})`
-        );
+      if (!response.ok) {
+        throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);
       }
 
-      throw new Error(readableError || "Not found");
+      return payload;
     },
     enabled: !!slug,
     staleTime: 5 * 60 * 1000,
