@@ -104,16 +104,14 @@ export const HeroSection = () => {
               </Button>
             </a>
           </motion.div>
-          {isTrialEnabled && (
-            <motion.p
-              className="text-xs -mt-10 mb-14 text-hero-muted"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              {trialDays} days free · No credit card · Cancel anytime
-            </motion.p>
-          )}
+          <motion.p
+            className="text-xs -mt-10 mb-14 text-hero-muted"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            Start free · No credit card · Upgrade when you grow
+          </motion.p>
 
           <motion.div
             className="flex flex-wrap items-center justify-center gap-6 sm:gap-10"
