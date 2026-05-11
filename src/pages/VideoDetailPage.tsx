@@ -273,7 +273,7 @@ const VideoDetailPage = () => {
             </div>
 
             <UsageList title="Funnels using this video" icon={Layers} items={usage?.funnels.map((f) => ({ id: f.id, title: f.title, badge: f.is_published ? "Published" : "Draft", href: `/funnels/${f.id}` })) || []} emptyHint="Not used in any funnel yet." />
-            <UsageList title="Landing pages using this video" icon={FileText} items={usage?.landingPages.map((p) => ({ id: p.id, title: p.title, badge: p.is_published ? "Published" : "Draft", href: `/landing-pages/${p.id}` })) || []} emptyHint="Not used in any landing page yet." />
+            <UsageList title="Landing pages using this video" icon={FileText} items={usage?.landingPages.map((p) => ({ id: p.id, title: p.title, badge: p.status === "published" ? "Published" : (p.status || "Draft"), href: `/landing-pages/${p.id}` })) || []} emptyHint="Not used in any landing page yet." />
             <UsageList title="Live sessions using this video" icon={Radio} items={usage?.liveSessions.map((s) => ({ id: s.id, title: s.title, badge: s.status || "scheduled", href: `/live/${s.id}` })) || []} emptyHint="Not used in any live session yet." />
           </TabsContent>
 
