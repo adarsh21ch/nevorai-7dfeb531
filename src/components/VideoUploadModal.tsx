@@ -11,9 +11,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { uploadVideoToR2 } from "@/lib/r2VideoUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, X, FileVideo, Loader2, Info, AlertCircle, RotateCcw, ChevronDown, AlertTriangle, Copy } from "lucide-react";
+import { Upload, X, FileVideo, Loader2, Info, AlertCircle, RotateCcw, ChevronDown, AlertTriangle, Copy, ExternalLink, CheckCircle2, Layers, FileText, Radio } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { sanitizeText, sanitizeFilename } from "@/lib/sanitize";
+import { Link } from "@/lib/router-compat";
 
 interface Props {
   open: boolean;
@@ -67,6 +68,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
   const [formatWarning, setFormatWarning] = useState<string | null>(null);
   const [tipOpen, setTipOpen] = useState(false);
   const [allowCopyLink, setAllowCopyLink] = useState(true);
+  const [doneVideoId, setDoneVideoId] = useState<string | null>(null);
 
   const reset = () => {
     setFile(null);
@@ -79,6 +81,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
     setError(null);
     setFormatWarning(null);
     setAllowCopyLink(true);
+    setDoneVideoId(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,9 +150,12 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
       }
 
       toast.success("Video uploaded successfully!");
-      reset();
       onSuccess();
-      onClose();
+      // Show the Done/Share step instead of immediately closing.
+      setDoneVideoId(result?.videoId || null);
+      setUploading(false);
+      setProcessing(false);
+      return;
     } catch (err: any) {
       const msg = err?.message || "Upload failed. Please try again.";
       setError(msg);
