@@ -122,29 +122,6 @@ const BillingPage = () => {
           )}
         </div>
 
-        {/* 7-day guarantee window banner */}
-        {inGuaranteeWindow && startedAt && guaranteeExpiresAt && (
-          <div className="rounded-2xl p-5 border border-emerald-500/30 bg-emerald-500/[0.06] space-y-3">
-            <div className="flex items-start gap-3">
-              <Shield className="text-emerald-500 shrink-0 mt-0.5" size={20} />
-              <div className="flex-1 space-y-1">
-                <p className="font-semibold text-foreground">You're within your 7-day guarantee window.</p>
-                <p className="text-xs text-muted-foreground">
-                  Subscribed on {format(startedAt, "dd MMM yyyy")} · Guarantee valid until {format(guaranteeExpiresAt, "dd MMM yyyy")}
-                </p>
-                <p className="text-sm text-muted-foreground pt-1">Not satisfied? Request a refund — no questions asked.</p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-600"
-              onClick={() => setRefundModalOpen(true)}
-            >
-              Request Refund
-            </Button>
-          </div>
-        )}
 
         {/* Existing refund-request status banner */}
         {existingRefund && (
