@@ -27,6 +27,30 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
+const PLAN_RANK: Record<string, number> = { free: 0, basic: 1, pro: 2 };
+
+function getBasePlanName(value: string | null | undefined) {
+  return (value || "").split("_")[0]?.toLowerCase() || "";
+}
+
+function getBillingInterval(planKey: string | null | undefined, fallback?: string | null) {
+  const raw = ((planKey || "").split("_").slice(1).join("_") || fallback || "monthly").toLowerCase();
+  return raw.includes("year") ? "yearly" : "monthly";
+}
+
+function getDefaultCycleDays(interval: string, explicitDays?: number | null) {
+  if (explicitDays && explicitDays > 0) return explicitDays;
+  return interval === "yearly" ? 365 : 30;
+}
+
+function pickTierPrice(tierRow: any, interval: string) {
+  const preferred = interval === "yearly"
+    ? Number(tierRow?.yearly_price ?? 0)
+    : Number(tierRow?.monthly_price ?? 0);
+  if (preferred > 0) return preferred;
+  return Number(tierRow?.monthly_price ?? tierRow?.yearly_price ?? 0);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
