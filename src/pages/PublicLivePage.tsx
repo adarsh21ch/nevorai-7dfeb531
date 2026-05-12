@@ -831,7 +831,10 @@ const PublicLivePage = () => {
         )}
 
         {/* ===== STATE 4 — REPLAY ===== */}
-        {stateData.state === "replay" && stateData.video_url && (
+        {stateData.state === "replay" && stateData.video_url && (() => {
+          const replayAllowSeek = stateData.video_allow_seek !== false;
+          const replayAllowSpeed = stateData.video_allow_playback_speed !== false;
+          return (
           <div className="space-y-3">
             <div className="rounded-xl overflow-hidden bg-black aspect-video shadow-2xl relative">
               <video
@@ -839,7 +842,17 @@ const PublicLivePage = () => {
                 src={stateData.video_url}
                 className="w-full h-full"
                 controls
+                controlsList={`${!replayAllowSeek ? "noplaybackrate " : ""}${!replayAllowSpeed ? "noplaybackrate" : ""}`.trim() || undefined}
                 playsInline
+                onLoadedMetadata={(e) => {
+                  const v = e.currentTarget;
+                  const maxRef = { v: 0 };
+                  v.ontimeupdate = () => { if (v.currentTime > maxRef.v) maxRef.v = v.currentTime; };
+                  v.onseeking = () => {
+                    if (!replayAllowSeek && v.currentTime > maxRef.v + 0.5) v.currentTime = maxRef.v;
+                  };
+                  v.onratechange = () => { if (!replayAllowSpeed && v.playbackRate !== 1) v.playbackRate = 1; };
+                }}
               />
               <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-emerald-500/90 text-white text-[11px] font-bold shadow">
                 REPLAY
