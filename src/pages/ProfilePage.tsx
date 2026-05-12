@@ -209,6 +209,8 @@ const ProfilePage = () => {
         <div className="premium-card p-2 space-y-0.5">
           <p className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Account</p>
           {[
+            { icon: FileText, label: "Landing Pages", path: "/landing-pages", desc: "Create pages for your videos" },
+            { icon: Radio, label: "Live Sessions", path: "/live", desc: "Go live with your prospects" },
             { icon: CreditCard, label: "Billing", path: "/billing", desc: "Subscription & payments" },
             { icon: FileCheck, label: "Get Verified", path: "/kyc", desc: "KYC for payouts" },
             { icon: Bell, label: "Notifications", path: "/notifications", desc: "Alerts & updates" },
