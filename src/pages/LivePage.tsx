@@ -201,6 +201,7 @@ const LivePage = () => {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"upgrade" | "limit">("upgrade");
+  const [videoPickerOpen, setVideoPickerOpen] = useState(false);
   const { isFree, canCreateLive, config, counts, tier } = usePlanLimits() as any;
 
   const upd = <K extends keyof FormState>(key: K, val: FormState[K]) =>
