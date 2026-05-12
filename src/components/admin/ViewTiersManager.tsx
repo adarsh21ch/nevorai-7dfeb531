@@ -185,8 +185,10 @@ export const ViewTiersManager = ({ planName }: { planName: "basic" | "pro" }) =>
             <tbody>
               {tiers.map(t => (
                 <tr key={t.id} className="border-b border-border/30">
-                  <td className="py-1.5 font-semibold">{t.daily_views}/d</td>
-                  <td className="py-1.5 text-muted-foreground">{compact(t.monthly_views)}</td>
+                  <td className="py-1.5">
+                    <EditableNumberCell value={t.daily_views} onSave={(v) => updateTier(t.id, { daily_views: v })} />
+                  </td>
+                  <td className="py-1.5 text-muted-foreground">{compact(t.daily_views * 30)}</td>
                   <td className="py-1.5">
                     <EditableNumberCell value={t.monthly_price} prefix="₹" onSave={(v) => updateTier(t.id, { monthly_price: v })} />
                   </td>
