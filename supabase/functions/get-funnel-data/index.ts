@@ -262,15 +262,21 @@ Deno.serve(async (req) => {
             .filter((s) => s.step_type === "video" && s.video_asset_id)
             .map((s) => s.video_asset_id!);
 
-          let videoMap: Record<string, { public_url: string | null; thumbnail_url: string | null; allow_copy_link: boolean }> = {};
+          let videoMap: Record<string, { public_url: string | null; thumbnail_url: string | null; allow_copy_link: boolean; allow_seek: boolean; allow_playback_speed: boolean }> = {};
           if (videoIds.length > 0) {
             const { data: videos } = await supabase
               .from("video_assets")
-              .select("id, public_url, thumbnail_url, allow_copy_link")
+              .select("id, public_url, thumbnail_url, allow_copy_link, allow_seek, allow_playback_speed")
               .in("id", videoIds);
             if (videos) {
               for (const v of videos) {
-                videoMap[v.id] = { public_url: v.public_url, thumbnail_url: v.thumbnail_url, allow_copy_link: v.allow_copy_link !== false };
+                videoMap[v.id] = {
+                  public_url: v.public_url,
+                  thumbnail_url: v.thumbnail_url,
+                  allow_copy_link: v.allow_copy_link !== false,
+                  allow_seek: (v as any).allow_seek !== false,
+                  allow_playback_speed: (v as any).allow_playback_speed !== false,
+                };
               }
             }
           }
@@ -280,6 +286,8 @@ Deno.serve(async (req) => {
             video_url: s.video_asset_id ? videoMap[s.video_asset_id]?.public_url || null : null,
             video_thumbnail: s.video_asset_id ? videoMap[s.video_asset_id]?.thumbnail_url || null : null,
             video_allow_copy_link: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_copy_link !== false : false,
+            video_allow_seek: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_seek !== false : true,
+            video_allow_playback_speed: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_playback_speed !== false : true,
           }));
 
           return { key: "steps", data: enrichedSteps };
