@@ -45,7 +45,7 @@ const timeAgo = (iso?: string | null) => {
 
 const LeadsPage = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  
   const navigate = useNavigate();
   const [activeSource, setActiveSource] = useState<SourceKey>("recent");
   const [drillItem, setDrillItem] = useState<{ id: string; title: string; source: SourceKey } | null>(null);
