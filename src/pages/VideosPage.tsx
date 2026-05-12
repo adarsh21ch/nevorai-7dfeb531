@@ -1,14 +1,12 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Video, Search, Grid, List, Link2, Share2, Pencil, Rocket, Upload, Copy, Trash2, RefreshCw, Clock, AlertTriangle, CheckCircle2, Loader2, Settings, Play, MoreVertical, Users } from "lucide-react";
+import { Search, Grid, List, Link2, Share2, Pencil, Rocket, Upload, Copy, Trash2, RefreshCw, Loader2, Settings, Play, MoreVertical, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Link } from "@/lib/router-compat";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -23,6 +21,31 @@ import { VideoRenameModal } from "@/components/VideoRenameModal";
 import { useNavigate } from "@/lib/router-compat";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const getDisplayTitle = (raw?: string | null): string => {
+  const t = (raw || "").trim();
+  if (!t || UUID_RE.test(t)) return "Untitled Video";
+  return t;
+};
+
+const VideoStatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, { label: string; className: string }> = {
+    ready:      { label: "✓ Ready",       className: "bg-success/10 text-success border border-success/20" },
+    processing: { label: "⏳ Processing",  className: "bg-warning/10 text-warning border border-warning/20" },
+    pending:    { label: "⏳ Processing",  className: "bg-warning/10 text-warning border border-warning/20" },
+    failed:     { label: "✗ Failed",      className: "bg-destructive/10 text-destructive border border-destructive/20" },
+    uploaded:   { label: "Uploaded",      className: "bg-primary/10 text-primary border border-primary/20" },
+    draft:      { label: "Draft",         className: "bg-muted text-muted-foreground border border-border" },
+  };
+  const cfg = map[(status || "").toLowerCase()] ?? map.draft;
+  return (
+    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${cfg.className}`}>
+      {cfg.label}
+    </span>
+  );
+};
+
 
 const VideosPage = () => {
   useDocumentTitle("My Videos");
