@@ -19,14 +19,14 @@ const PublicVideoPage = () => {
   const { data: video, isLoading, error, refetch } = useQuery({
     queryKey: ["public-video", id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("video_assets")
         .select("id, title, description, public_url, thumbnail_url, duration_seconds, is_shared, owner_id, allow_copy_link, allow_seek, allow_playback_speed")
         .eq("id", id!)
         .eq("is_shared", true)
         .single();
       if (error) throw error;
-      return data;
+      return data as any;
     },
     enabled: !!id,
     staleTime: 10 * 60 * 1000,
