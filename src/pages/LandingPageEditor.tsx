@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ImageUploadField } from "@/components/ui/image-upload-field";
 import { LandingPagePreview } from "@/components/funnel/LandingPagePreview";
+import { VideoPickerModal } from "@/components/VideoPickerModal";
+import { Video as VideoIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   FileText, Palette, ClipboardList, Mail, Video, Link2, Rocket, Mic,
