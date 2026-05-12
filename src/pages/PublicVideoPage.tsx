@@ -21,7 +21,7 @@ const PublicVideoPage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("video_assets")
-        .select("id, title, description, public_url, thumbnail_url, duration_seconds, is_shared, owner_id, allow_copy_link")
+        .select("id, title, description, public_url, thumbnail_url, duration_seconds, is_shared, owner_id, allow_copy_link, allow_seek, allow_playback_speed")
         .eq("id", id!)
         .eq("is_shared", true)
         .single();
