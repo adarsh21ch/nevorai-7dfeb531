@@ -18,7 +18,6 @@ export const Logo = ({ size = "default", showByline = false }: LogoProps) => {
       <img src={logoImg} alt="Nevorai Flow" className={`${s.img} object-contain`} />
       <div className="flex flex-col" style={{ lineHeight: 1 }}>
         <div className={`flex items-baseline ${s.text}`} style={{ lineHeight: 1 }}>
-          <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontStyle: "italic", fontWeight: 300, color: "hsl(var(--foreground))", letterSpacing: "-0.02em" }}>n</span>
           <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontWeight: 800, color: "hsl(var(--foreground))", letterSpacing: "-0.03em" }}>Flow</span>
         </div>
         {showByline && (
