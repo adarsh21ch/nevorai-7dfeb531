@@ -146,169 +146,222 @@ const VideosPage = () => {
     <DashboardLayout>
       <div className="space-y-6 w-full max-w-full overflow-x-hidden box-border">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full max-w-full">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-heading font-bold">My Videos</h1>
-            <div className="page-header-accent" />
-          </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Button
-              variant="hero"
-              className="flex-1 sm:flex-none"
-              onClick={() => setUploadModalOpen(true)}
-            >
-              <Upload size={16} /> Upload Video
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 sm:flex-none border-primary/50 text-primary hover:bg-primary/10"
-              onClick={() => setLinkModalOpen(true)}
-            >
-              <Link2 size={16} /> Add by Nevorai Flow Link
-            </Button>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl font-heading font-bold">My Videos</h1>
+          <Button size="sm" onClick={() => setUploadModalOpen(true)} className="flex items-center gap-1.5">
+            <Upload size={14} /> Upload Video
+          </Button>
+        </div>
+
+        <div className="-mt-2">
+          <button
+            onClick={() => setLinkModalOpen(true)}
+            className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
+          >
+            <Link2 size={12} /> Add by Nevorai Flow Link
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border">
+          <Search size={14} className="text-muted-foreground flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search videos..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 text-sm bg-transparent text-foreground placeholder:text-muted-foreground outline-none"
+          />
+          <div className="hidden sm:flex gap-1 ml-2">
+            <button onClick={() => setView("list")} className={cn("p-1.5 rounded-md transition-colors", view === "list" ? "bg-card shadow-sm" : "text-muted-foreground")}><List size={14} /></button>
+            <button onClick={() => setView("grid")} className={cn("p-1.5 rounded-md transition-colors", view === "grid" ? "bg-card shadow-sm" : "text-muted-foreground")}><Grid size={14} /></button>
           </div>
         </div>
 
-        {/* Search + View toggle */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-full">
-          <div className="relative flex-1 min-w-0 search-premium rounded-md">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search videos..." className="pl-9 bg-muted border-border w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-          <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
-            <button onClick={() => setView("grid")} className={`p-2 rounded-md transition-colors ${view === "grid" ? "bg-card shadow-sm" : ""}`}><Grid size={16} /></button>
-            <button onClick={() => setView("list")} className={`p-2 rounded-md transition-colors ${view === "list" ? "bg-card shadow-sm" : ""}`}><List size={16} /></button>
-          </div>
-        </div>
-
-        {/* Status tabs */}
-        <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit overflow-x-auto max-w-full">
+        {/* Filter pills */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {([
-            { k: "all", label: "All", icon: null },
-            { k: "ready", label: "Ready", icon: <CheckCircle2 size={13} className="text-success" /> },
-            { k: "processing", label: "Processing", icon: <Loader2 size={13} className="text-warning animate-spin" /> },
-            { k: "failed", label: "Failed", icon: <AlertTriangle size={13} className="text-destructive" /> },
+            { k: "all", label: "All" },
+            { k: "ready", label: "Ready" },
+            { k: "processing", label: "Processing" },
+            { k: "failed", label: "Failed" },
           ] as const).map((t) => (
             <button
               key={t.k}
               onClick={() => setStatusFilter(t.k)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${statusFilter === t.k ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={cn(
+                "flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors",
+                statusFilter === t.k ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+              )}
             >
-              {t.icon}
-              {t.label}
-              <span className="text-[10px] tabular-nums opacity-70">({counts[t.k]})</span>
+              {t.label} ({counts[t.k]})
             </button>
           ))}
         </div>
 
         {/* Empty state */}
         {filtered.length === 0 ? (
-          <div className="glass-card p-8 sm:p-12 text-center w-full max-w-full">
-            <Video size={40} className="text-muted-foreground mx-auto mb-3" />
-            <h3 className="font-heading font-semibold mb-2">{search ? "No videos found" : "No videos yet"}</h3>
-            <p className="text-sm text-muted-foreground mb-6">Upload a video or add one using an Nevorai Flow link.</p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button variant="hero" onClick={() => setUploadModalOpen(true)}>
-                <Upload size={16} /> Upload Video
-              </Button>
-              <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => setLinkModalOpen(true)}>
-                <Link2 size={16} /> Add by Nevorai Flow Link
-              </Button>
+          <div className="rounded-xl border border-border bg-card p-10 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+              <Play size={22} className="text-primary" />
             </div>
+            <h3 className="text-base font-semibold mb-1">{search ? "No videos found" : "No videos yet"}</h3>
+            <p className="text-sm text-muted-foreground mb-5 max-w-[280px] mx-auto">Upload a video and share it with your clients. See exactly who watches and how much.</p>
+            <Button onClick={() => setUploadModalOpen(true)}>
+              <Upload size={14} className="mr-1.5" /> Upload Your First Video
+            </Button>
+          </div>
+        ) : (isMobile || view === "list") ? (
+          /* COMPACT LIST — YouTube Studio style */
+          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+            {filtered.map((v) => {
+              const title = getDisplayTitle(v.title);
+              const isReady = v.status === "ready";
+              const isFailed = v.status === "failed";
+              const dur = formatDuration(v.duration_seconds);
+              const dateLabel = v.created_at ? new Date(v.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : null;
+              const goEdit = () => navigate(`/videos/${v.id}`);
+              return (
+                <div
+                  key={v.id}
+                  onClick={() => isReady && v._source === "own" && goEdit()}
+                  className="flex items-center gap-3 px-3 sm:px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer"
+                >
+                  {/* Thumbnail */}
+                  <div className="relative flex-shrink-0 w-20 h-[50px] rounded-lg overflow-hidden bg-muted">
+                    {v.thumbnail_url ? (
+                      <img src={v.thumbnail_url} alt={title} className="w-full h-full object-cover" />
+                    ) : v.public_url ? (
+                      <video src={v.public_url} preload="metadata" playsInline muted className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center"><Play size={14} className="text-muted-foreground" /></div>
+                    )}
+                    {dur && (
+                      <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[9px] font-medium px-1 py-0.5 rounded">{dur}</span>
+                    )}
+                    {!isReady && !isFailed && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <Loader2 size={14} className="text-white animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate leading-snug">{title}</p>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <VideoStatusBadge status={v.status} />
+                      <span className="text-[11px] text-muted-foreground">{formatSize(v.file_size_bytes)}</span>
+                      {dateLabel && <>
+                        <span className="text-[11px] text-muted-foreground">·</span>
+                        <span className="text-[11px] text-muted-foreground">{dateLabel}</span>
+                      </>}
+                      {v._source === "linked" && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">Linked</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Kebab menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-shrink-0 p-1.5 rounded-lg hover:bg-muted transition-colors"
+                        aria-label="Video options"
+                      >
+                        <MoreVertical size={15} className="text-muted-foreground" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuItem onSelect={() => setRenameVideo({ id: v.id, title: v.title })}>
+                        <Pencil size={13} className="mr-2" /> Edit Title
+                      </DropdownMenuItem>
+                      {v._source === "own" && isReady && (
+                        <DropdownMenuItem onSelect={goEdit}>
+                          <Settings size={13} className="mr-2" /> Edit Details
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem disabled={!isReady} onSelect={() => copyLink(v.id)}>
+                        <Copy size={13} className="mr-2" /> Copy Share Link
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled={!isReady} onSelect={() => setShareVideo({ id: v.id, title: v.title })}>
+                        <Share2 size={13} className="mr-2" /> Share
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled={!isReady} onSelect={() => useInFunnel(v.id)}>
+                        <Rocket size={13} className="mr-2" /> Use in Funnel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => navigate(`/leads`)}>
+                        <Users size={13} className="mr-2" /> View Contacts
+                      </DropdownMenuItem>
+                      {v._source === "own" && isFailed && (
+                        <DropdownMenuItem onSelect={() => retryFailed(v.id)}>
+                          <RefreshCw size={13} className="mr-2" /> Retry Upload
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      {v._source === "linked" ? (
+                        <DropdownMenuItem onSelect={() => removeLinkedVideo(v.id)} className="text-destructive focus:text-destructive">
+                          <Trash2 size={13} className="mr-2" /> Remove from Gallery
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onSelect={() => setDeleteVideo({ id: v.id, title: v.title })} className="text-destructive focus:text-destructive">
+                          <Trash2 size={13} className="mr-2" /> Delete Video
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full max-w-full" : "space-y-2 w-full max-w-full"}>
-            {filtered.map((v) => (
-              <div key={v.id} className="premium-card p-3 sm:p-4 w-full max-w-full box-border min-w-0">
-                {/* Thumbnail */}
-                <div className="relative aspect-video bg-muted rounded-lg mb-3 flex items-center justify-center overflow-hidden w-full max-w-full">
-                  {v.thumbnail_url ? <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover rounded-lg block" /> :
-                    v.public_url ? <video src={v.public_url} preload="metadata" playsInline muted className="w-full h-full object-cover rounded-lg block" /> :
-                    <Video size={24} className="text-muted-foreground" />}
-                  {formatDuration(v.duration_seconds) && (
-                    <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-black/75 text-white tabular-nums">
-                      <Clock size={10} className="inline mr-1 -mt-0.5" />{formatDuration(v.duration_seconds)}
-                    </span>
-                  )}
-                  {v.status !== "ready" && v.status !== "failed" && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Loader2 size={20} className="text-white animate-spin" />
+          /* GRID — desktop opt-in */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((v) => {
+              const title = getDisplayTitle(v.title);
+              return (
+                <div key={v.id} className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors">
+                  <div className="relative aspect-video bg-muted">
+                    {v.thumbnail_url ? <img src={v.thumbnail_url} alt={title} className="w-full h-full object-cover" /> :
+                      v.public_url ? <video src={v.public_url} preload="metadata" playsInline muted className="w-full h-full object-cover" /> :
+                      <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-muted-foreground" /></div>}
+                    {formatDuration(v.duration_seconds) && (
+                      <span className="absolute bottom-1.5 right-1.5 bg-black/75 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">{formatDuration(v.duration_seconds)}</span>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm font-medium truncate">{title}</p>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <VideoStatusBadge status={v.status} />
+                      <span className="text-[11px] text-muted-foreground">{formatSize(v.file_size_bytes)}</span>
                     </div>
-                  )}
-                  {v.status === "failed" && (
-                    <div className="absolute inset-0 bg-destructive/30 flex items-center justify-center">
-                      <AlertTriangle size={22} className="text-destructive-foreground" />
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                      <Button variant="ghost" size="sm" disabled={v.status !== "ready"} onClick={() => copyLink(v.id)}><Copy size={13} className="mr-1" /> Copy</Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1.5 rounded-lg hover:bg-muted"><MoreVertical size={15} className="text-muted-foreground" /></button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onSelect={() => setRenameVideo({ id: v.id, title: v.title })}><Pencil size={13} className="mr-2" /> Edit Title</DropdownMenuItem>
+                          {v._source === "own" && v.status === "ready" && (
+                            <DropdownMenuItem onSelect={() => navigate(`/videos/${v.id}`)}><Settings size={13} className="mr-2" /> Edit Details</DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem disabled={v.status !== "ready"} onSelect={() => setShareVideo({ id: v.id, title: v.title })}><Share2 size={13} className="mr-2" /> Share</DropdownMenuItem>
+                          <DropdownMenuItem disabled={v.status !== "ready"} onSelect={() => useInFunnel(v.id)}><Rocket size={13} className="mr-2" /> Use in Funnel</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {v._source === "linked" ? (
+                            <DropdownMenuItem onSelect={() => removeLinkedVideo(v.id)} className="text-destructive focus:text-destructive"><Trash2 size={13} className="mr-2" /> Remove</DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onSelect={() => setDeleteVideo({ id: v.id, title: v.title })} className="text-destructive focus:text-destructive"><Trash2 size={13} className="mr-2" /> Delete</DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                  )}
+                  </div>
                 </div>
-
-                {/* Title & meta */}
-                {v._source === "own" && v.status === "ready" ? (
-                  <Link to={`/videos/${v.id}` as any} className="block">
-                    <h3 className="font-medium text-sm truncate max-w-full overflow-hidden hover:text-primary transition-colors">{v.title}</h3>
-                  </Link>
-                ) : (
-                  <h3 className="font-medium text-sm truncate max-w-full overflow-hidden">{v.title}</h3>
-                )}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
-                  <span>{formatSize(v.file_size_bytes)}</span>
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${v.status === "ready" ? "bg-success/10 text-success" : v.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
-                    {v.status === "ready" ? "✓ Ready" : v.status === "failed" ? "✗ Failed" : "⏳ Processing"}
-                  </span>
-                  {v._source === "linked" ? (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary">Added via Link</span>
-                  ) : (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-muted-foreground/10 text-muted-foreground">Uploaded</span>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center justify-center gap-1 mt-3 border-t border-border pt-3 w-full">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setRenameVideo({ id: v.id, title: v.title })} title="Rename">
-                    <Pencil size={15} />
-                  </Button>
-                  {v._source === "own" && v.status === "ready" && (
-                    <Link to={`/videos/${v.id}` as any}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Edit details">
-                        <Settings size={15} />
-                      </Button>
-                    </Link>
-                  )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => copyLink(v.id)} title="Copy Link" disabled={v.status !== "ready"}>
-                    <Copy size={15} />
-                  </Button>
-                  {v.status === "ready" && typeof window !== "undefined" && (
-                    <WhatsAppShareButton
-                      url={`${window.location.origin}/v/${v.id}`}
-                      message={`Watch this short video: ${v.title}`}
-                      variant="ghost"
-                      iconOnly
-                      className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                    />
-                  )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setShareVideo({ id: v.id, title: v.title })} title="Share" disabled={v.status !== "ready"}>
-                    <Share2 size={15} />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => useInFunnel(v.id)} title="Use in Funnel" disabled={v.status !== "ready"}>
-                    <Rocket size={15} />
-                  </Button>
-                  {v._source === "own" && v.status === "failed" && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-warning hover:text-warning" onClick={() => retryFailed(v.id)} title="Retry">
-                      <RefreshCw size={15} />
-                    </Button>
-                  )}
-                  {v._source === "linked" ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive" onClick={() => removeLinkedVideo(v.id)} title="Remove from gallery">
-                      <Trash2 size={15} />
-                    </Button>
-                  ) : (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:text-destructive" onClick={() => setDeleteVideo({ id: v.id, title: v.title })} title="Delete">
-                      <Trash2 size={15} />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
