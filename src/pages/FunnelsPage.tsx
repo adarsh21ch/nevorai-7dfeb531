@@ -123,46 +123,57 @@ const FunnelsPage = () => {
             )}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((f: any) => (
-              <div key={f.id} className="premium-card p-5 group relative">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${f.is_published ? "bg-success" : "bg-muted-foreground"}`} />
-                    <span className="text-xs text-muted-foreground">{f.is_published ? "Published" : "Draft"}</span>
-                    {f.visibility === "private" && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-medium flex items-center gap-1">🔒 Private</span>
-                    )}
-                  </div>
-                  {f.intent_type === "paid" && <span className="text-xs px-2 py-0.5 rounded-full bg-warning/10 text-warning">Paid</span>}
-                </div>
-                <h3 className="font-medium text-sm mb-1 truncate">{f.title}</h3>
-                {f.description && <p className="text-xs text-muted-foreground truncate mb-3">{f.description}</p>}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                  <span className="flex items-center gap-1"><Eye size={12} /> {f.total_views || 0}</span>
-                  <span className="flex items-center gap-1"><Users size={12} /> {f.total_leads || 0}</span>
-                  <span className="flex items-center gap-1"><IndianRupee size={12} /> {f.total_payments || 0}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link to={`/funnels/${f.id}`} className="flex-1"><Button variant="outline" size="sm" className="w-full text-xs">Insights</Button></Link>
-                  <Link to={`/funnels/${f.id}/edit`}><Button variant="secondary" size="sm" className="text-xs">Edit</Button></Link>
+          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+            {filtered.map((f: any) => {
+              const status = f.is_published ? "published" : "draft";
+              const statusCfg: Record<string, string> = {
+                published: "text-success bg-success/10 border border-success/20",
+                draft: "text-muted-foreground bg-muted border border-border",
+              };
+              return (
+                <div key={f.id} className="flex items-center gap-3 px-3 sm:px-4 py-3 hover:bg-muted/40 transition-colors">
+                  <Link to={`/funnels/${f.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex-shrink-0 w-20 h-[50px] rounded-lg bg-primary-subtle flex items-center justify-center">
+                      <Layers size={18} className="text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{f.title || "Untitled Funnel"}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${statusCfg[status]}`}>
+                          {status === "published" ? "● Published" : "○ Draft"}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Eye size={10} />{f.total_views || 0}</span>
+                        <span className="text-[11px] text-muted-foreground">·</span>
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Users size={10} />{f.total_leads || 0}</span>
+                        {f.intent_type === "paid" && <span className="text-[10px] text-warning">Paid</span>}
+                      </div>
+                    </div>
+                  </Link>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical size={14} /></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-card border-border">
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0"><MoreVertical size={15} /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => navigate(`/funnels/${f.id}/edit`)}>
+                        <Layers size={13} className="mr-2" /> Edit Funnel
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/f/${f.slug}`); toast.success("Link copied!"); }}>
-                        <Copy size={14} /> Copy Link
+                        <Copy size={13} className="mr-2" /> Copy Funnel Link
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`${window.location.origin}/f/${f.slug}`)}`)}>
-                        <Share2 size={14} /> Share on WhatsApp
+                        <Share2 size={13} className="mr-2" /> Share on WhatsApp
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/funnels/${f.id}`)}>
+                        <Eye size={13} className="mr-2" /> View Insights
                       </DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive" onClick={() => { if (confirm("Delete this funnel?")) deleteMutation.mutate(f.id); }}>
-                        <Trash2 size={14} /> Delete
+                        <Trash2 size={13} className="mr-2" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
