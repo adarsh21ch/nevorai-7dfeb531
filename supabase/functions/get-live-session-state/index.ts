@@ -297,6 +297,8 @@ Deno.serve(async (req) => {
       all_slots: slots.slice(0, 60).map((t) => new Date(t).toISOString()),
       concurrent_viewers: concurrentViewers,
       session: trimSession(session),
+      video_allow_seek: videoAllowSeek,
+      video_allow_playback_speed: videoAllowSpeed,
     });
   } catch (err) {
     console.error("get-live-session-state error", err);
