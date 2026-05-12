@@ -359,7 +359,14 @@ const AdminSubscriptionsPage = () => {
               <p className="text-[11px] text-muted-foreground italic px-1">No pricing fields for this plan.</p>
             )}
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground pt-3">General</p>
-            <PlanField planName={planName} field="yearly_validity_days" label="Validity (days)" value={config?.yearly_validity_days} onSave={saveField} disabled={isDisabled} />
+            <div className="flex items-center justify-between gap-2 px-1 py-1.5 rounded-md bg-muted/30">
+              <div className="flex flex-col">
+                <span className="text-xs font-medium">Monthly Validity</span>
+                <span className="text-[10px] text-muted-foreground">Fixed at 30 days per billing cycle</span>
+              </div>
+              <span className="text-xs font-mono text-muted-foreground">30</span>
+            </div>
+            <PlanField planName={planName} field="yearly_validity_days" label="Yearly Validity (days)" hint="How long a yearly subscription lasts before renewal. Default 365." value={config?.yearly_validity_days} onSave={saveField} disabled={isDisabled} />
             <PlanField planName={planName} field="plan_badge_text" label="Badge Text" type="text" value={config?.plan_badge_text || ""} onSave={saveField} disabled={isDisabled} hint="Shown on pricing page" />
           </TabsContent>
 
