@@ -411,7 +411,4 @@ const EmptyState = ({
   </div>
 );
 
-// Suppress unused-import warning for updateStatus helper — kept for future status editor
-void updateStatus;
-
 export default LeadsPage;
