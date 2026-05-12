@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMonthlyViews } from "@/hooks/useMonthlyViews";
 import { useDailyViews } from "@/hooks/useDailyViews";
+import { GettingStartedChecklist } from "@/components/dashboard/GettingStartedChecklist";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardPage });
 
@@ -127,6 +128,7 @@ function DashboardPage() {
 
         <UpgradeBanner />
         <MonthlyViewsBanner />
+        <GettingStartedChecklist />
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
