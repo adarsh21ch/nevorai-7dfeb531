@@ -55,6 +55,16 @@ export const DateOfBirthInput = ({ value, onChange, required, hasError, size = "
     }
   };
 
+  const handleBlur = (key: "d" | "mo") => {
+    const v = parts[key];
+    if (v.length === 1 && v !== "0") {
+      const padded = pad(v, 2);
+      const next = { ...parts, [key]: padded };
+      setParts(next);
+      emit(next);
+    }
+  };
+
   const handleKeyDown = (key: "d" | "mo" | "y", e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace" && (e.target as HTMLInputElement).value === "") {
       if (key === "mo") dRef.current?.focus();
