@@ -16,11 +16,13 @@ import { format } from "date-fns";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const LandingPagesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 200);
   const [filter, setFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"upgrade" | "limit">("upgrade");
@@ -48,7 +50,7 @@ const LandingPagesPage = () => {
   };
 
   const filtered = (pages as any[]).filter((p: any) => {
-    const matchesSearch = !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.slug.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = !debouncedSearch || p.title.toLowerCase().includes(debouncedSearch.toLowerCase()) || p.slug.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesFilter = filter === "all" || p.status === filter;
     return matchesSearch && matchesFilter;
   });

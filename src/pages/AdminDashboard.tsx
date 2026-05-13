@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Users, Layers, Video, BarChart3, IndianRupee, Shield } from "lucide-react";
 import { MemberGatewayDashboardCard } from "@/components/admin/MemberGatewayDashboardCard";
 import { ViewsAnalyticsCard } from "@/components/admin/ViewsAnalyticsCard";
+import { formatCompact, formatINR, formatInt } from "@/lib/format";
 
 const AdminDashboard = () => {
   const { data: profiles = [] } = useQuery({
@@ -51,13 +52,13 @@ const AdminDashboard = () => {
   const totalLeads = funnels.reduce((a, f) => a + ((f as any).total_leads || 0), 0);
 
   const kpis = [
-    { icon: Users, label: "Total Users", value: String(profiles.length) },
-    { icon: Layers, label: "Total Funnels", value: String(funnels.length) },
-    { icon: Video, label: "Total Videos", value: String(videos.length) },
-    { icon: BarChart3, label: "Total Views", value: totalViews.toLocaleString("en-IN") },
-    { icon: Users, label: "Total Leads", value: totalLeads.toLocaleString("en-IN") },
-    { icon: IndianRupee, label: "Revenue", value: `₹${mrr.toLocaleString("en-IN")}` },
-    { icon: Shield, label: "KYC Pending", value: String(kycPending.length) },
+    { icon: Users, label: "Total Users", value: formatInt(profiles.length) },
+    { icon: Layers, label: "Total Funnels", value: formatInt(funnels.length) },
+    { icon: Video, label: "Total Videos", value: formatInt(videos.length) },
+    { icon: BarChart3, label: "Total Views", value: formatCompact(totalViews) },
+    { icon: Users, label: "Total Leads", value: formatCompact(totalLeads) },
+    { icon: IndianRupee, label: "Revenue", value: formatINR(mrr) },
+    { icon: Shield, label: "KYC Pending", value: formatInt(kycPending.length) },
   ];
 
   return (

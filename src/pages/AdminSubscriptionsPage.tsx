@@ -14,6 +14,7 @@ import { EnterpriseCardSettings } from "@/components/admin/EnterpriseCardSetting
 import { TrialSettingsStrip } from "@/components/admin/TrialSettingsStrip";
 import { AdminOverrideAuditTable } from "@/components/admin/AdminOverrideAuditTable";
 import { adminWrite } from "@/lib/adminWrite";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const ViewTiersManager = lazy(() => import("@/components/admin/ViewTiersManager").then((m) => ({ default: m.ViewTiersManager })));
 const RefundsTab = lazy(() => import("@/components/admin/RefundsTab").then((m) => ({ default: m.RefundsTab })));
@@ -186,6 +187,7 @@ const FEATURE_GROUPS: { group: string; items: { field: string; label: string; ic
 
 const AdminSubscriptionsPage = () => {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 200);
   const queryClient = useQueryClient();
 
   const { data: subscriptions = [] } = useQuery({
@@ -231,11 +233,12 @@ const AdminSubscriptionsPage = () => {
   const profileMap = Object.fromEntries(profiles.map((p) => [p.id, p]));
 
   const filtered = subscriptions.filter((s) => {
-    if (!search) return true;
+    if (!debouncedSearch) return true;
     const profile = profileMap[s.user_id];
-    return profile?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      profile?.email?.toLowerCase().includes(search.toLowerCase()) ||
-      s.plan_key.toLowerCase().includes(search.toLowerCase());
+    const q = debouncedSearch.toLowerCase();
+    return profile?.full_name?.toLowerCase().includes(q) ||
+      profile?.email?.toLowerCase().includes(q) ||
+      s.plan_key.toLowerCase().includes(q);
   });
 
   // Revenue: only count actually paid subs (active or cancelled but had a paid period),

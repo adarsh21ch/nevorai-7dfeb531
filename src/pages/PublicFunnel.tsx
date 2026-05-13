@@ -736,11 +736,6 @@ const PublicFunnel = () => {
   const { data: bundle, isLoading } = useQuery({
     queryKey: ["public-funnel-bundle", slug],
     queryFn: async () => {
-      console.info("[PublicFunnel] loading slug", {
-        slug,
-        path: typeof window !== "undefined" ? window.location.pathname : null,
-      });
-
       const requestUrl = `${supabaseProjectUrl}/functions/v1/get-funnel-data?slug=${encodeURIComponent(slug ?? "")}`;
       const response = await fetch(requestUrl, {
         method: "GET",
@@ -756,14 +751,6 @@ const PublicFunnel = () => {
       } catch {
         payload = null;
       }
-
-      console.info("[PublicFunnel] get-funnel-data response", {
-        slug,
-        requestUrl,
-        status: response.status,
-        ok: response.ok,
-        data: payload,
-      });
 
       if (!response.ok) {
         throw new Error(payload?.error || payload?.message || `Request failed (${response.status})`);

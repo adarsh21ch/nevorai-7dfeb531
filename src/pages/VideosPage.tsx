@@ -21,6 +21,7 @@ import { VideoRenameModal } from "@/components/VideoRenameModal";
 import { useNavigate } from "@/lib/router-compat";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const getDisplayTitle = (raw?: string | null): string => {
@@ -54,6 +55,7 @@ const VideosPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 200);
   const [view, setView] = useState<"grid" | "list">("list");
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -99,7 +101,7 @@ const VideosPage = () => {
     .filter((v) => statusFilter === "all" ? true
       : statusFilter === "processing" ? (v.status !== "ready" && v.status !== "failed")
       : v.status === statusFilter)
-    .filter((v) => !search || v.title.toLowerCase().includes(search.toLowerCase()));
+    .filter((v) => !debouncedSearch || v.title.toLowerCase().includes(debouncedSearch.toLowerCase()));
 
   const formatSize = (bytes: number | null) => {
     if (!bytes) return "—";

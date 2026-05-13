@@ -8,6 +8,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area, CartesianGrid, Legend,
 } from "recharts";
+import { formatCompact, formatInt } from "@/lib/format";
 
 const COLORS = ["hsl(var(--primary))", "#6366F1", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
 
@@ -80,12 +81,12 @@ const InsightsPage = () => {
   ]);
 
   const kpis = [
-    { icon: Eye, label: "Total Views", value: totalViews.toLocaleString("en-IN"), sub: "Funnels + Landing Pages" },
-    { icon: Users, label: "Unique Leads", value: String(uniqueLeads), sub: "From funnels" },
-    { icon: UserCheck, label: "Registrations", value: String(totalRegistrations), sub: "From landing pages" },
+    { icon: Eye, label: "Total Views", value: formatCompact(totalViews), sub: "Funnels + Landing Pages" },
+    { icon: Users, label: "Unique Leads", value: formatInt(uniqueLeads), sub: "From funnels" },
+    { icon: UserCheck, label: "Registrations", value: formatInt(totalRegistrations), sub: "From landing pages" },
     { icon: Target, label: "Funnel Conv.", value: `${funnelConvRate}%`, sub: "Leads / Views" },
     { icon: TrendingUp, label: "LP Conv.", value: `${lpConvRate}%`, sub: "Regs / Views" },
-    { icon: BarChart3, label: "Unique Contacts", value: String(allEmails.size), sub: "Across all sources" },
+    { icon: BarChart3, label: "Unique Contacts", value: formatInt(allEmails.size), sub: "Across all sources" },
   ];
 
   // Lead status breakdown

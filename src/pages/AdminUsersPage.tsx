@@ -8,6 +8,7 @@ import { Search, AlertTriangle, Pencil } from "lucide-react";
 import { planDisplay } from "@/config/planDisplay";
 import { UserEditDrawer } from "@/components/admin/UserEditDrawer";
 import { AdminOverrideMenu, AdminUserOverrideBadge } from "@/components/admin/AdminOverrideMenu";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const monthStartIST = (() => {
   const d = new Date();
@@ -36,6 +37,7 @@ const ViewsCell = ({ used, limit }: { used: number; limit: number }) => {
 
 const AdminUsersPage = () => {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 200);
   const [editing, setEditing] = useState<any | null>(null);
 
   const { data: profiles = [], isLoading } = useQuery({
@@ -82,7 +84,7 @@ const AdminUsersPage = () => {
   }, [viewRows]);
 
   const filtered = profiles.filter(
-    (p) => !search || p.full_name?.toLowerCase().includes(search.toLowerCase()) || p.email?.toLowerCase().includes(search.toLowerCase())
+    (p) => !debouncedSearch || p.full_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) || p.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   const limitFor = (p: any) => {

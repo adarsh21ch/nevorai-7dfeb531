@@ -183,7 +183,13 @@ const AdminVideosPage = () => {
                   ))
                 ) : videos.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">No videos yet</td>
+                    <td colSpan={5} className="p-10 text-center">
+                      <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                        <Video size={18} className="text-primary" />
+                      </div>
+                      <p className="text-sm font-semibold">No videos yet</p>
+                      <p className="text-xs text-muted-foreground">Upload your first video using the button above.</p>
+                    </td>
                   </tr>
                 ) : (
                   videos.map((v) => (
@@ -232,7 +238,13 @@ const AdminVideosPage = () => {
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <div key={i} className="glass-card h-24 p-3 animate-pulse" />)
           ) : videos.length === 0 ? (
-            <div className="glass-card p-8 text-center text-sm text-muted-foreground">No videos yet</div>
+            <div className="glass-card flex flex-col items-center p-8 text-center">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <Video size={18} className="text-primary" />
+              </div>
+              <p className="text-sm font-semibold">No videos yet</p>
+              <p className="text-xs text-muted-foreground">Upload your first video to get started.</p>
+            </div>
           ) : (
             videos.map((v) => (
               <div key={v.id} className="glass-card space-y-2.5 p-3">
