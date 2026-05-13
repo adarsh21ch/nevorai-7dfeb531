@@ -1,72 +1,106 @@
-## Batch 1 — Lead capture polish
+## Remaining polish — what I found in a second pass
 
-Goal: improve conversion + data quality on every public lead form by upgrading input semantics, preventing double-submits, surfacing inline errors, and adding a "WhatsApp same as phone" shortcut.
+These are real gaps I noticed scanning the project after the 4 batches we shipped. Grouped by impact so you can pick.
 
-### Scope (files to touch)
+---
 
-Public-facing lead forms only — no admin/builder, no auth, no styling overhaul:
+### A. Destructive actions still use `window.confirm` (8 places)
 
-- `src/pages/PublicLandingPage.tsx`
-- `src/pages/PublicFunnel.tsx`
-- `src/pages/PublicLivePage.tsx`
-- `src/components/funnel/PrivateLeadForm.tsx`
-- `src/components/funnel/MultiStepViewer.tsx`
+Browser `confirm()` is jarring, blocks the thread, and can't be styled. Replace with a small shadcn `AlertDialog` wrapper.
 
-A tiny shared helper `src/lib/leadInputs.ts` will hold reusable normalizers (so all 5 forms behave identically).
+Affected:
+- Funnels list — delete funnel
+- Live sessions — stop / cancel / delete
+- Admin Videos — delete video (2 spots)
+- Admin Refunds — approve refund (especially risky as a native confirm)
+- Testimonials builder — delete testimonial
+- Viewers analytics — revoke viewer access
+- Admin View Tiers — delete tier
 
-### What changes
+**Fix:** create one `<ConfirmDialog>` primitive, swap all 10 sites. Refund approval and viewer-revoke get an extra "type to confirm" step.
 
-1. **Phone inputs** (#1)
-   - `type="tel"`, `inputMode="numeric"`, `autoComplete="tel"`, `maxLength={14}`
-   - On change: strip non-digits; remove leading `+91`, `91` (when length >10), or leading `0`
-   - Validation still requires final 10 digits
+---
 
-2. **Email inputs** (#2)
-   - Add `inputMode="email"`, `autoCapitalize="none"`, `autoCorrect="off"`, `spellCheck={false}`, `autoComplete="email"`
-   - Trim on blur
+### B. Number inputs with no clamping / step / prefix
 
-3. **Name / City inputs** (#3)
-   - `autoCapitalize="words"`, `autoComplete="name"` / `"address-level2"`
-   - Trim on blur, collapse internal double spaces
+`type="number"` fields accept `e`, `-`, decimals, and don't display units. Examples:
+- Live session duration / max attendees / payment amount
+- Landing page min_age (1-120 — no live clamp)
+- Admin view tier prices (₹ prefix missing)
+- Override menu trial-days / view-limit
 
-4. **Submit buttons** (#5)
-   - Local `submitting` state, `disabled={submitting}`, swap label for inline `<Loader2 className="animate-spin" />` + "Submitting…"
-   - Remove the duplicate-prevention reliance on toast
+**Fix:** small `<NumberInput>` wrapper that strips non-digits, clamps to min/max on blur, and supports a unit prefix/suffix slot (`₹`, `days`, `views`).
 
-5. **Inline field errors** (#6)
-   - Add a `fieldErrors` state ({ phone?, email?, name?, ... }) per form
-   - Render small red text under each invalid field; clear on change
-   - On submit failure, scroll to the first errored field via `ref.scrollIntoView({ behavior: "smooth", block: "center" })`
-   - Keep toast only for network/server failures
+---
 
-6. **WhatsApp = phone shortcut** (#7)
-   - When the form shows both `phone` and `whatsapp` fields, render a small checkbox under the WhatsApp input: "Same as phone number"
-   - When checked: copy phone → whatsapp live, disable the WhatsApp input, show muted styling
-   - Default state: checked when whatsapp is empty and phone has 10 digits (gentle nudge); user can uncheck
+### C. Search inputs fire on every keystroke (no debounce)
 
-### Out of scope (explicitly not changing)
+Funnels, Videos, Landing Pages, Leads, Admin Users, Admin Subscriptions all filter immediately. Fine on small lists, but Admin Users / Subscriptions / Leads can grow.
 
-- Visual design, colors, spacing, fonts, container widths
-- Admin builders (FunnelEditor, LandingPageEditor, LiveSessionWizard)
-- Auth pages, KYC, payment, OTP, DOB (DOB already has padding from last turn)
-- Toast styling overhaul (Batch 4)
-- Backend, DB schema, RLS, server functions
-- Translation strings beyond the two new labels ("Same as phone number", "Submitting…")
+**Fix:** add `useDebouncedValue(search, 200)` hook, use the debounced value for filter logic. Input itself stays controlled and instant.
 
-### Technical notes
+---
 
-- Helper module `src/lib/leadInputs.ts` exports:
-  - `normalizePhone(raw: string): string` — digits only, strips +91/91/leading-0, caps at 10
-  - `validatePhone(v): string | null`, `validateEmail(v): string | null`, `validateRequired(v, label): string | null`
-  - `trimSmart(v): string` — trim + collapse spaces
-- Reused across all 5 forms so behavior is identical.
-- No new dependencies. No router or route changes.
-- Build verification after edits.
+### D. Number formatting helper exists but isn't used yet
 
-### Acceptance check
+I shipped `formatINR` / `formatCompact` / `formatInt` in Batch 4 but didn't wire them in. Worth a sweep:
+- Dashboard KPI strip (lead counts, view counts → `1.2K`)
+- Billing / Pricing pages (₹ prices → `₹1,299`)
+- Insights charts axis labels
+- Admin subscriptions revenue cells
+- Plan usage widget
 
-- Typing `+919876543210` or `09876543210` in any phone field results in `9876543210` and passes validation.
-- Mobile keyboards: phone shows numeric pad, email shows email pad, no auto-capitalization on email.
-- Tapping Submit twice fires the request once; button is disabled during the in-flight request.
-- Submitting an invalid form shows red text under the offending field (no toast for validation), and the page scrolls to it.
-- "Same as phone number" checkbox mirrors phone into whatsapp live and prevents edits while checked.
+Pure presentation change, no logic risk.
+
+---
+
+### E. Empty states are text-only
+
+Most empty states are a single grey sentence ("No leads yet"). Lower-effort wins:
+- Add an icon + a primary CTA button to: Insights (no funnels / no leads), Funnel Detail (no leads → "Copy share link"), Admin Videos table empty rows, VideoPickerModal.
+- LeadsPage already has good empty states with CTAs — use it as the template.
+
+---
+
+### F. Public lead-form trust polish (carry-over from original audit)
+
+We did the input-mode + inline-error polish in Batch 1. Two trust items still pending:
+- **Privacy microcopy** under the submit button on all 5 public forms: "We'll never share your details. Unsubscribe anytime."
+- **Verified-creator badge** when KYC is approved — already supported on backend (`kyc_status === 'approved'`), just not surfaced on PublicLandingPage / PublicFunnel header. ~20 lines per page.
+
+---
+
+### G. Stray `console.log` in production paths (8 calls)
+
+Low priority — but they leak into the user's browser console. Worth a one-pass cleanup, keeping `console.error` for genuine error logging.
+
+---
+
+### H. Mobile keyboard polish on Admin
+
+Admin tables have a few inputs (price, limits) without `inputMode="decimal"` / `"numeric"`. Same fix as B covers it.
+
+---
+
+## Suggested order (max ROI)
+
+1. **A** — `ConfirmDialog` primitive + 10 swaps. Biggest perceived-quality jump, ~30 min.
+2. **D** — wire the existing format helpers across KPI / billing / pricing surfaces.
+3. **F** — verified badge on public pages + privacy microcopy on lead forms.
+4. **B + H** — `NumberInput` wrapper, swap all admin/live numeric fields.
+5. **C** — debounce search on the 6 admin/list pages.
+6. **E** — richer empty states with CTAs.
+7. **G** — console cleanup pass.
+
+---
+
+## Out of scope for this round
+
+- Visual redesign / new color tokens
+- New backend tables, RLS policies, edge functions
+- Payment / KYC business logic changes
+- i18n / translation infra
+
+---
+
+Tell me which letters (A–H) to ship and in what order, or just say "all in order" and I'll work through the list.
