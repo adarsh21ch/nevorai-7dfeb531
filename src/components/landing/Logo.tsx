@@ -17,10 +17,10 @@ export const Logo = ({ size = "default", showByline = false }: LogoProps) => {
     <div className="flex items-center gap-2">
       <img src={logoImg} alt="nFlow by Nevorai" className={`${s.img} object-contain`} />
       <div className="flex flex-col" style={{ lineHeight: 1 }}>
-        <div className={`flex items-baseline ${s.text}`} style={{ lineHeight: 1 }}>
-          <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontWeight: 800, letterSpacing: "-0.03em" }}>
-            <span style={{ color: "hsl(var(--primary))" }}>n</span>
-            <span style={{ color: "hsl(var(--foreground))" }}>Flow</span>
+        <div className={`flex items-baseline ${s.text}`} style={{ lineHeight: 1, color: "hsl(var(--foreground))" }}>
+          <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", letterSpacing: "-0.03em" }}>
+            <span style={{ fontWeight: 400 }}>n</span>
+            <span style={{ fontWeight: 800 }}>Flow</span>
           </span>
         </div>
         {showByline && (

@@ -23,16 +23,15 @@ export const NFlowLogo = ({
 
   const s = sizeMap[size];
 
-  const nColor = variant === "white" ? "text-white" : "text-primary";
-  const flowColor =
+  const textColor =
     variant === "white" || variant === "dark" ? "text-white" : "text-foreground";
   const subColor = variant === "white" ? "text-white/70" : "text-muted-foreground";
 
   return (
     <div className={cn("flex flex-col leading-none", className)}>
-      <div className={cn("font-heading font-extrabold tracking-tight", s.name)}>
-        <span className={nColor}>n</span>
-        <span className={flowColor}>Flow</span>
+      <div className={cn("font-heading tracking-tight", textColor, s.name)}>
+        <span className="font-normal">n</span>
+        <span className="font-extrabold">Flow</span>
       </div>
       <span className={cn("font-medium tracking-wide mt-0.5", s.by, subColor)}>
         by Nevorai
