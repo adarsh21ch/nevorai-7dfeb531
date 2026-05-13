@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,18 @@ import { LandingPageCodeGate } from "@/components/funnel/LandingPageCodeGate";
 import { DateOfBirthInput } from "@/components/funnel/DateOfBirthInput";
 import { PostSubmitVideoPlayer } from "@/components/landing/PostSubmitVideoPlayer";
 import { BrandingWatermark } from "@/components/BrandingWatermark";
+import {
+  normalizePhone,
+  trimSmart,
+  validatePhone,
+  validateEmail,
+  validateRequired,
+  phoneInputProps,
+  emailInputProps,
+  nameInputProps,
+  cityInputProps,
+  scrollToFirstError,
+} from "@/lib/leadInputs";
 
 const PublicLandingPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -27,6 +39,8 @@ const PublicLandingPage = () => {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [honeypot, setHoneypot] = useState("");
   const [pageUnlocked, setPageUnlocked] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
+  const fieldRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     if (!slug) return;
@@ -66,10 +80,40 @@ const PublicLandingPage = () => {
     load();
   }, [slug]);
 
+  const validateLeadFields = (): Record<string, string | null> => {
+    const e: Record<string, string | null> = {};
+    const fields = (page ? [
+      { key: "name", enabled: page.field_name_enabled, required: page.field_name_required },
+      { key: "phone", enabled: page.field_phone_enabled, required: page.field_phone_required },
+      { key: "email", enabled: page.field_email_enabled, required: page.field_email_required },
+      { key: "city", enabled: page.field_city_enabled, required: page.field_city_required },
+      { key: "state", enabled: page.field_state_enabled, required: page.field_state_required },
+      { key: "occupation", enabled: page.field_occupation_enabled, required: page.field_occupation_required },
+    ] : []).filter((f) => f.enabled);
+    for (const f of fields) {
+      const v = formData[f.key] || "";
+      if (f.key === "phone") {
+        if (f.required || v) e[f.key] = validatePhone(v);
+      } else if (f.key === "email") {
+        if (f.required || v) e[f.key] = validateEmail(v);
+      } else if (f.required) {
+        e[f.key] = validateRequired(v, f.key.charAt(0).toUpperCase() + f.key.slice(1));
+      }
+    }
+    return e;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!page || submitting) return;
     if (honeypot) { setSubmitted(true); return; }
+
+    const fe = validateLeadFields();
+    setFieldErrors(fe);
+    if (Object.values(fe).some(Boolean)) {
+      scrollToFirstError(fe, fieldRefs.current);
+      return;
+    }
 
     const minAgeEnabled = !!(page as any).min_age_enabled;
     const minAge = Number((page as any).min_age) || 0;
@@ -367,20 +411,52 @@ const PublicLandingPage = () => {
                           required={f.required}
                         />
                       ) : (
-                        <Input
-                          type={(f as any).type || "text"}
-                          placeholder={(f as any).prefix ? `${(f as any).prefix} ` : ""}
-                          value={formData[f.key] || ""}
-                          onChange={(e) => setFormData((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                          required={f.required}
-                        />
+                        (() => {
+                          const k = f.key;
+                          const isPhone = k === "phone";
+                          const isEmail = k === "email";
+                          const isName = k === "name";
+                          const isCity = k === "city";
+                          const isAge = k === "age";
+                          const extra = isPhone ? phoneInputProps
+                            : isEmail ? emailInputProps
+                            : isName ? nameInputProps
+                            : isCity ? cityInputProps
+                            : isAge ? { type: "number" as const, inputMode: "numeric" as const, min: 1, max: 120 }
+                            : {};
+                          const err = fieldErrors[k];
+                          const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                            const v = isPhone ? normalizePhone(e.target.value) : e.target.value;
+                            setFormData((prev) => ({ ...prev, [k]: v }));
+                            if (err) setFieldErrors((p) => ({ ...p, [k]: null }));
+                          };
+                          const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+                            if (isName || isCity) setFormData((prev) => ({ ...prev, [k]: trimSmart(e.target.value) }));
+                            else if (isEmail) setFormData((prev) => ({ ...prev, [k]: e.target.value.trim() }));
+                          };
+                          return (
+                            <>
+                              <Input
+                                ref={(el) => { fieldRefs.current[k] = el; }}
+                                {...(extra as any)}
+                                type={(extra as any).type || (f as any).type || "text"}
+                                placeholder={(f as any).prefix ? `${(f as any).prefix} ` : ""}
+                                value={formData[k] || ""}
+                                onChange={onChange}
+                                onBlur={onBlur}
+                                aria-invalid={!!err}
+                                className={err ? "border-destructive" : ""}
+                              />
+                              {err && <p className="text-xs text-destructive mt-1">{err}</p>}
+                            </>
+                          );
+                        })()
                       )}
                     </div>
                   ))}
 
                   <Button type="submit" className="w-full" disabled={submitting} style={{ backgroundColor: page.theme_color }}>
-                    {submitting ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-                    {page.form_button_text} →
+                    {submitting ? <><Loader2 className="animate-spin mr-2" size={16} /> Submitting…</> : <>{page.form_button_text} →</>}
                   </Button>
                 </form>
 

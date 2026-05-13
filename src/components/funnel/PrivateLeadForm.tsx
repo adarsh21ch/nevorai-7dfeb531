@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,19 @@ import { Loader2, Check, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import logoImg from "@/assets/nevorai-flow-logo.png";
-import { sanitizeText, normalizePhone, isValidPhone } from "@/lib/sanitize";
+import { sanitizeText } from "@/lib/sanitize";
+import {
+  normalizePhone,
+  trimSmart,
+  validatePhone,
+  validateEmail,
+  validateRequired,
+  phoneInputProps,
+  emailInputProps,
+  nameInputProps,
+  cityInputProps,
+  scrollToFirstError,
+} from "@/lib/leadInputs";
 
 interface PrivateLeadFormProps {
   funnelId: string;
@@ -15,6 +27,8 @@ interface PrivateLeadFormProps {
   onSuccess: () => void;
   isDark: boolean;
 }
+
+type FieldErrors = Partial<Record<"name" | "phone" | "email" | "city" | "state" | "whatsapp", string | null>>;
 
 export const PrivateLeadForm = ({
   funnelId,
@@ -30,38 +44,79 @@ export const PrivateLeadForm = ({
   const formMountedAt = useState(() => Date.now())[0];
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [waSameAsPhone, setWaSameAsPhone] = useState(true);
+
+  const refs = {
+    name: useRef<HTMLInputElement>(null),
+    phone: useRef<HTMLInputElement>(null),
+    email: useRef<HTMLInputElement>(null),
+    city: useRef<HTMLInputElement>(null),
+    state: useRef<HTMLInputElement>(null),
+    whatsapp: useRef<HTMLInputElement>(null),
+  };
+
+  // Mirror phone -> whatsapp when checkbox is on
+  useEffect(() => {
+    if (requiredFields.whatsapp && waSameAsPhone) {
+      setForm((f) => (f.whatsapp === f.phone ? f : { ...f, whatsapp: f.phone }));
+    }
+  }, [form.phone, waSameAsPhone, requiredFields.whatsapp]);
+
+  const setField = <K extends keyof typeof form>(k: K, v: string) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    if (errors[k as keyof FieldErrors]) setErrors((e) => ({ ...e, [k]: null }));
+  };
+
+  const validate = (): FieldErrors => {
+    const e: FieldErrors = {};
+    e.name = validateRequired(form.name, "Name");
+    e.phone = validatePhone(form.phone);
+    if (requiredFields.email) e.email = validateEmail(form.email);
+    if (requiredFields.city) e.city = validateRequired(form.city, "City");
+    if (requiredFields.state) e.state = validateRequired(form.state, "State");
+    if (requiredFields.whatsapp && !waSameAsPhone) e.whatsapp = validatePhone(form.whatsapp);
+    return e;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
 
     if (website.trim() !== "") {
-      console.warn("[PrivateLeadForm] honeypot triggered");
       setShowSuccess(true);
       setTimeout(() => onSuccess(), 1500);
       return;
     }
     if (Date.now() - formMountedAt < 2000) {
-      console.warn("[PrivateLeadForm] submit-too-fast trap");
       setShowSuccess(true);
       setTimeout(() => onSuccess(), 1500);
       return;
     }
 
-    if (!form.name.trim() || !form.phone.trim()) {
-      toast.error("Name and phone are required");
-      return;
-    }
-    if (!isValidPhone(form.phone)) {
-      toast.error("Please enter a valid phone number");
+    const fe = validate();
+    setErrors(fe);
+    const order: (keyof FieldErrors)[] = ["name", "phone", "email", "city", "state", "whatsapp"];
+    if (order.some((k) => fe[k])) {
+      scrollToFirstError(fe as Record<string, string | null>, {
+        name: refs.name.current,
+        phone: refs.phone.current,
+        email: refs.email.current,
+        city: refs.city.current,
+        state: refs.state.current,
+        whatsapp: refs.whatsapp.current,
+      }, order as string[]);
       return;
     }
 
-    const cleanName = sanitizeText(form.name);
-    const cleanCity = sanitizeText(form.city);
-    const cleanState = sanitizeText(form.state);
+    const cleanName = sanitizeText(trimSmart(form.name));
+    const cleanCity = sanitizeText(trimSmart(form.city));
+    const cleanState = sanitizeText(trimSmart(form.state));
     const cleanPhone = normalizePhone(form.phone);
-    const cleanWhatsapp = normalizePhone(form.whatsapp);
-    const cleanEmail = form.email ? sanitizeText(form.email) : null;
+    const cleanWhatsapp = requiredFields.whatsapp
+      ? (waSameAsPhone ? cleanPhone : normalizePhone(form.whatsapp))
+      : "";
+    const cleanEmail = form.email ? sanitizeText(form.email.trim()) : null;
 
     setLoading(true);
     try {
@@ -101,6 +156,7 @@ export const PrivateLeadForm = ({
   const text = isDark ? "#ffffff" : "#0f172a";
   const textMuted = isDark ? "#94a3b8" : "#64748b";
   const inputBg = isDark ? "#09090b" : "#f1f5f9";
+  const errColor = "#ef4444";
 
   if (showSuccess) {
     return (
@@ -126,6 +182,11 @@ export const PrivateLeadForm = ({
     );
   }
 
+  const fieldErr = (k: keyof FieldErrors) =>
+    errors[k] ? (
+      <p className="mt-1 text-xs" style={{ color: errColor }}>{errors[k]}</p>
+    ) : null;
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: bg }}>
       <div className="w-full max-w-md">
@@ -143,7 +204,7 @@ export const PrivateLeadForm = ({
             <p className="text-sm" style={{ color: textMuted }}>Enter your details to get started</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
             <input
               type="text"
               name="website"
@@ -157,13 +218,17 @@ export const PrivateLeadForm = ({
             <div>
               <Label className="text-xs font-medium" style={{ color: textMuted }}>Full Name *</Label>
               <Input
+                ref={refs.name}
+                {...nameInputProps}
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => setField("name", e.target.value)}
+                onBlur={(e) => setField("name", trimSmart(e.target.value))}
                 placeholder="Your full name"
-                required
                 className="mt-1 h-11"
-                style={{ background: inputBg, borderColor: border, color: text }}
+                style={{ background: inputBg, borderColor: errors.name ? errColor : border, color: text }}
+                aria-invalid={!!errors.name}
               />
+              {fieldErr("name")}
             </div>
 
             <div>
@@ -171,27 +236,34 @@ export const PrivateLeadForm = ({
               <div className="flex gap-2 mt-1">
                 <div className="flex items-center px-3 rounded-md text-sm shrink-0 h-11" style={{ background: inputBg, border: `1px solid ${border}`, color: textMuted }}>+91</div>
                 <Input
+                  ref={refs.phone}
+                  {...phoneInputProps}
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  onChange={(e) => setField("phone", normalizePhone(e.target.value))}
                   placeholder="9876543210"
-                  required
                   className="h-11"
-                  style={{ background: inputBg, borderColor: border, color: text }}
+                  style={{ background: inputBg, borderColor: errors.phone ? errColor : border, color: text }}
+                  aria-invalid={!!errors.phone}
                 />
               </div>
+              {fieldErr("phone")}
             </div>
 
             {requiredFields.email && (
               <div>
                 <Label className="text-xs font-medium" style={{ color: textMuted }}>Email Address</Label>
                 <Input
-                  type="email"
+                  ref={refs.email}
+                  {...emailInputProps}
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={(e) => setField("email", e.target.value)}
+                  onBlur={(e) => setField("email", e.target.value.trim())}
                   placeholder="your@email.com"
                   className="mt-1 h-11"
-                  style={{ background: inputBg, borderColor: border, color: text }}
+                  style={{ background: inputBg, borderColor: errors.email ? errColor : border, color: text }}
+                  aria-invalid={!!errors.email}
                 />
+                {fieldErr("email")}
               </div>
             )}
 
@@ -199,12 +271,17 @@ export const PrivateLeadForm = ({
               <div>
                 <Label className="text-xs font-medium" style={{ color: textMuted }}>City</Label>
                 <Input
+                  ref={refs.city}
+                  {...cityInputProps}
                   value={form.city}
-                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  onChange={(e) => setField("city", e.target.value)}
+                  onBlur={(e) => setField("city", trimSmart(e.target.value))}
                   placeholder="Your city"
                   className="mt-1 h-11"
-                  style={{ background: inputBg, borderColor: border, color: text }}
+                  style={{ background: inputBg, borderColor: errors.city ? errColor : border, color: text }}
+                  aria-invalid={!!errors.city}
                 />
+                {fieldErr("city")}
               </div>
             )}
 
@@ -212,12 +289,18 @@ export const PrivateLeadForm = ({
               <div>
                 <Label className="text-xs font-medium" style={{ color: textMuted }}>State</Label>
                 <Input
+                  ref={refs.state}
+                  {...cityInputProps}
+                  autoComplete="address-level1"
                   value={form.state}
-                  onChange={(e) => setForm({ ...form, state: e.target.value })}
+                  onChange={(e) => setField("state", e.target.value)}
+                  onBlur={(e) => setField("state", trimSmart(e.target.value))}
                   placeholder="Your state"
                   className="mt-1 h-11"
-                  style={{ background: inputBg, borderColor: border, color: text }}
+                  style={{ background: inputBg, borderColor: errors.state ? errColor : border, color: text }}
+                  aria-invalid={!!errors.state}
                 />
+                {fieldErr("state")}
               </div>
             )}
 
@@ -225,12 +308,26 @@ export const PrivateLeadForm = ({
               <div>
                 <Label className="text-xs font-medium" style={{ color: textMuted }}>WhatsApp Number</Label>
                 <Input
-                  value={form.whatsapp}
-                  onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+                  ref={refs.whatsapp}
+                  {...phoneInputProps}
+                  value={waSameAsPhone ? form.phone : form.whatsapp}
+                  onChange={(e) => setField("whatsapp", normalizePhone(e.target.value))}
                   placeholder="WhatsApp number"
+                  disabled={waSameAsPhone}
                   className="mt-1 h-11"
-                  style={{ background: inputBg, borderColor: border, color: text }}
+                  style={{ background: inputBg, borderColor: errors.whatsapp ? errColor : border, color: text, opacity: waSameAsPhone ? 0.7 : 1 }}
+                  aria-invalid={!!errors.whatsapp}
                 />
+                <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={waSameAsPhone}
+                    onChange={(e) => setWaSameAsPhone(e.target.checked)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span className="text-xs" style={{ color: textMuted }}>Same as phone number</span>
+                </label>
+                {fieldErr("whatsapp")}
               </div>
             )}
 
@@ -239,7 +336,7 @@ export const PrivateLeadForm = ({
               className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl mt-2"
               disabled={loading}
             >
-              {loading ? <><Loader2 size={16} className="animate-spin mr-2" /> Unlocking access...</> : "Continue to Program →"}
+              {loading ? <><Loader2 size={16} className="animate-spin mr-2" /> Submitting…</> : "Continue to Program →"}
             </Button>
           </form>
         </div>

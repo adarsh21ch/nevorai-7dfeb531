@@ -12,6 +12,18 @@ import {
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { googleCalendarUrl, buildICS, downloadICS } from "@/lib/liveSession";
+import {
+  normalizePhone,
+  trimSmart,
+  validatePhone,
+  validateEmail,
+  validateRequired,
+  phoneInputProps,
+  emailInputProps,
+  nameInputProps,
+  cityInputProps,
+  scrollToFirstError,
+} from "@/lib/leadInputs";
 
 type ViewerState = "waiting" | "live" | "ended" | "replay";
 
@@ -70,6 +82,8 @@ const PublicLivePage = () => {
   const [registered, setRegistered] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", city: "" });
+  const [formErrors, setFormErrors] = useState<Record<string, string | null>>({});
+  const formRefs = useRef<Record<string, HTMLElement | null>>({});
   const [countdown, setCountdown] = useState(0);
   const [muted, setMuted] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -234,13 +248,25 @@ const PublicLivePage = () => {
 
   const handleRegister = async () => {
     if (!stateData) return;
+    if (submitting) return;
+    const session = stateData.session as any;
+    const fe: Record<string, string | null> = {};
+    if (session?.show_name !== false) fe.name = validateRequired(form.name, "Name");
+    if (session?.show_phone !== false) fe.phone = validatePhone(form.phone);
+    if (session?.show_email !== false) fe.email = (form.email ? validateEmail(form.email) : null);
+    if (session?.show_city) fe.city = validateRequired(form.city, "City");
+    setFormErrors(fe);
+    if (Object.values(fe).some(Boolean)) {
+      scrollToFirstError(fe, formRefs.current, ["name", "phone", "email", "city"]);
+      return;
+    }
     setSubmitting(true);
     const { error } = await supabase.from("live_registrations").insert({
       session_id: stateData.session.id,
-      name: form.name || null,
-      phone: form.phone || null,
-      email: form.email || null,
-      city: form.city || null,
+      name: trimSmart(form.name) || null,
+      phone: form.phone ? normalizePhone(form.phone) : null,
+      email: form.email ? form.email.trim() : null,
+      city: trimSmart(form.city) || null,
       status: "registered",
       payment_status: stateData.session.access_type === "paid" ? "pending" : "none",
     });
@@ -423,7 +449,7 @@ const PublicLivePage = () => {
             </div>
           )}
           {!isEnded && needsRegistration && !registered && (
-            <RegistrationForm session={session} form={form} setForm={setForm} onSubmit={handleRegister} submitting={submitting} />
+            <RegistrationForm session={session} form={form} setForm={setForm} onSubmit={handleRegister} submitting={submitting} errors={formErrors} setErrors={setFormErrors} fieldRefs={formRefs} />
           )}
           {(isLive || (registered && !isEnded)) && stateData.meeting_url && (
             <Button variant="hero" size="lg" className="w-full" onClick={() => window.open(stateData.meeting_url!, "_blank")}>
@@ -470,7 +496,7 @@ const PublicLivePage = () => {
         {stateData.state === "waiting" && (
           <>
             {needsRegistration && !registered ? (
-              <RegistrationForm session={session} form={form} setForm={setForm} onSubmit={handleRegister} submitting={submitting} />
+              <RegistrationForm session={session} form={form} setForm={setForm} onSubmit={handleRegister} submitting={submitting} errors={formErrors} setErrors={setFormErrors} fieldRefs={formRefs} />
             ) : (
               <div className="glass-card p-6 sm:p-8 text-center space-y-5">
                 {/* "Just ended" banner — shown only when a previous slot ended recently and there's a next one */}
@@ -907,37 +933,68 @@ const LiveDot = ({ label = "Live Now" }: { label?: string }) => (
 );
 
 const RegistrationForm = ({
-  session, form, setForm, onSubmit, submitting,
+  session, form, setForm, onSubmit, submitting, errors, setErrors, fieldRefs,
 }: {
   session: any;
   form: { name: string; phone: string; email: string; city: string };
   setForm: (f: any) => void;
   onSubmit: () => void;
   submitting: boolean;
-}) => (
-  <div className="glass-card p-6 space-y-4">
-    <div className="text-center">
-      <h3 className="font-heading font-semibold text-lg">Register to Join</h3>
-      <p className="text-xs text-muted-foreground mt-1">Save your spot — we'll let you in when it starts.</p>
+  errors: Record<string, string | null>;
+  setErrors: React.Dispatch<React.SetStateAction<Record<string, string | null>>>;
+  fieldRefs: React.MutableRefObject<Record<string, HTMLElement | null>>;
+}) => {
+  const setField = (k: keyof typeof form, v: string) => {
+    setForm({ ...form, [k]: v });
+    if (errors[k]) setErrors((p) => ({ ...p, [k]: null }));
+  };
+  const errEl = (k: string) =>
+    errors[k] ? <p className="text-xs text-destructive mt-1">{errors[k]}</p> : null;
+  const errCls = (k: string) => (errors[k] ? "border-destructive" : "");
+  return (
+    <div className="glass-card p-6 space-y-4">
+      <div className="text-center">
+        <h3 className="font-heading font-semibold text-lg">Register to Join</h3>
+        <p className="text-xs text-muted-foreground mt-1">Save your spot — we'll let you in when it starts.</p>
+      </div>
+      <div className="space-y-3">
+        {session.show_name !== false && (
+          <div>
+            <Label className="text-xs">Name</Label>
+            <Input ref={(el) => { fieldRefs.current.name = el; }} {...nameInputProps} value={form.name} onChange={(e) => setField("name", e.target.value)} onBlur={(e) => setField("name", trimSmart(e.target.value))} aria-invalid={!!errors.name} className={`mt-1 bg-muted border-border ${errCls("name")}`} />
+            {errEl("name")}
+          </div>
+        )}
+        {session.show_phone !== false && (
+          <div>
+            <Label className="text-xs">Phone</Label>
+            <div className="flex gap-2 mt-1">
+              <div className="flex items-center px-3 rounded-md text-sm shrink-0 bg-muted border border-border text-muted-foreground">+91</div>
+              <Input ref={(el) => { fieldRefs.current.phone = el; }} {...phoneInputProps} value={form.phone} onChange={(e) => setField("phone", normalizePhone(e.target.value))} aria-invalid={!!errors.phone} className={`bg-muted border-border ${errCls("phone")}`} placeholder="9876543210" />
+            </div>
+            {errEl("phone")}
+          </div>
+        )}
+        {session.show_email !== false && (
+          <div>
+            <Label className="text-xs">Email</Label>
+            <Input ref={(el) => { fieldRefs.current.email = el; }} {...emailInputProps} value={form.email} onChange={(e) => setField("email", e.target.value)} onBlur={(e) => setField("email", e.target.value.trim())} aria-invalid={!!errors.email} className={`mt-1 bg-muted border-border ${errCls("email")}`} />
+            {errEl("email")}
+          </div>
+        )}
+        {session.show_city && (
+          <div>
+            <Label className="text-xs">City</Label>
+            <Input ref={(el) => { fieldRefs.current.city = el; }} {...cityInputProps} value={form.city} onChange={(e) => setField("city", e.target.value)} onBlur={(e) => setField("city", trimSmart(e.target.value))} aria-invalid={!!errors.city} className={`mt-1 bg-muted border-border ${errCls("city")}`} />
+            {errEl("city")}
+          </div>
+        )}
+      </div>
+      <Button variant="hero" className="w-full" onClick={onSubmit} disabled={submitting}>
+        {submitting ? <><Loader2 size={16} className="animate-spin mr-2 inline" /> Submitting…</> : "Register & Continue"}
+      </Button>
     </div>
-    <div className="space-y-3">
-      {session.show_name !== false && (
-        <div><Label className="text-xs">Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1 bg-muted border-border" /></div>
-      )}
-      {session.show_phone !== false && (
-        <div><Label className="text-xs">Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1 bg-muted border-border" placeholder="+91" /></div>
-      )}
-      {session.show_email !== false && (
-        <div><Label className="text-xs">Email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1 bg-muted border-border" /></div>
-      )}
-      {session.show_city && (
-        <div><Label className="text-xs">City</Label><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="mt-1 bg-muted border-border" /></div>
-      )}
-    </div>
-    <Button variant="hero" className="w-full" onClick={onSubmit} disabled={submitting}>
-      {submitting ? "Registering..." : "Register & Continue"}
-    </Button>
-  </div>
-);
+  );
+};
 
 export default PublicLivePage;

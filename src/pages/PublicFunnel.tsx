@@ -18,7 +18,19 @@ import { PrivateLeadForm } from "@/components/funnel/PrivateLeadForm";
 import { FunnelDailyLimitGate } from "@/components/funnel/FunnelDailyLimitGate";
 import { CreatorInactiveGate } from "@/components/funnel/CreatorInactiveGate";
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
-import { sanitizeText, normalizePhone } from "@/lib/sanitize";
+import { sanitizeText } from "@/lib/sanitize";
+import {
+  normalizePhone,
+  trimSmart,
+  validatePhone,
+  validateEmail,
+  validateRequired,
+  phoneInputProps,
+  emailInputProps,
+  nameInputProps,
+  cityInputProps,
+  scrollToFirstError,
+} from "@/lib/leadInputs";
 import { BrandingWatermark } from "@/components/BrandingWatermark";
 
 /* ─── Speed Popover ─── */
@@ -677,6 +689,8 @@ const PublicFunnel = () => {
   const [, setVideoDuration] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [leadForm, setLeadForm] = useState({ name: "", phone: "", email: "", city: "", custom_value: "", website: "" });
+  const [leadErrors, setLeadErrors] = useState<Record<string, string | null>>({});
+  const leadRefs = useRef<Record<string, HTMLElement | null>>({});
   const [paymentProof, setPaymentProof] = useState({ upi_transaction_id: "", amount: 0 });
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
@@ -966,36 +980,82 @@ const PublicFunnel = () => {
     toast.success("Link copied! Share it with your friends.");
   };
 
+  const validateLead = (): Record<string, string | null> => {
+    const e: Record<string, string | null> = {};
+    if (formConfig?.show_name && (formConfig.name_required || leadForm.name)) e.name = formConfig.name_required ? validateRequired(leadForm.name, "Name") : null;
+    if (formConfig?.show_phone && (formConfig.phone_required || leadForm.phone)) e.phone = (formConfig.phone_required || leadForm.phone) ? validatePhone(leadForm.phone) : null;
+    if (formConfig?.show_email && (formConfig.email_required || leadForm.email)) e.email = (formConfig.email_required || leadForm.email) ? validateEmail(leadForm.email) : null;
+    if (formConfig?.show_city && formConfig.city_required) e.city = validateRequired(leadForm.city, "City");
+    if (formConfig?.show_custom && formConfig.custom_required) e.custom_value = validateRequired(leadForm.custom_value, formConfig.custom_field_label || "This field");
+    return e;
+  };
+
+  const handleLeadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitLead.isPending) return;
+    const fe = validateLead();
+    setLeadErrors(fe);
+    if (Object.values(fe).some(Boolean)) {
+      scrollToFirstError(fe, leadRefs.current, ["name", "phone", "email", "city", "custom_value"]);
+      return;
+    }
+    submitLead.mutate();
+  };
+
+  const setLeadField = (k: keyof typeof leadForm, v: string) => {
+    setLeadForm((p) => ({ ...p, [k]: v }));
+    if (leadErrors[k]) setLeadErrors((p) => ({ ...p, [k]: null }));
+  };
+
+  const fieldErrEl = (k: string) =>
+    leadErrors[k] ? <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors[k]}</p> : null;
+  const errBorder = (k: string) => (leadErrors[k] ? "#ef4444" : tc.inputBorder);
+
   const LeadFormCard = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-2xl p-6 ${className}`} style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
       <h3 className="text-lg font-heading font-bold mb-1" style={{ color: tc.text }}>{funnel.cta_text || "Register Now"}</h3>
       <p className="text-xs mb-5" style={{ color: tc.textMuted }}>Fill in your details to continue</p>
-      <form onSubmit={(e) => { e.preventDefault(); submitLead.mutate(); }} className="space-y-3">
+      <form onSubmit={handleLeadSubmit} className="space-y-3" noValidate>
         <input type="text" name="website" value={leadForm.website} onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })} style={{ position: "absolute", left: "-9999px" }} tabIndex={-1} autoComplete="off" />
         {formConfig?.show_name && (
-          <Input placeholder="Full Name" value={leadForm.name} onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })} required={formConfig.name_required || false} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="h-12 rounded-xl" />
+          <div>
+            <Input ref={(el) => { leadRefs.current.name = el; }} {...nameInputProps} placeholder="Full Name" value={leadForm.name} onChange={(e) => setLeadField("name", e.target.value)} onBlur={(e) => setLeadField("name", trimSmart(e.target.value))} aria-invalid={!!leadErrors.name} style={{ background: tc.inputBg, borderColor: errBorder("name"), color: tc.inputText }} className="h-12 rounded-xl" />
+            {fieldErrEl("name")}
+          </div>
         )}
         {formConfig?.show_phone && (
-          <div className="flex gap-2">
-            <div className="flex items-center px-3 rounded-xl text-sm shrink-0 h-12" style={{ background: tc.inputBg, border: `1px solid ${tc.inputBorder}`, color: tc.textDim }}>+91</div>
-            <Input placeholder="Phone number" value={leadForm.phone} onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })} required={formConfig.phone_required || false} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="h-12 rounded-xl" />
+          <div>
+            <div className="flex gap-2">
+              <div className="flex items-center px-3 rounded-xl text-sm shrink-0 h-12" style={{ background: tc.inputBg, border: `1px solid ${tc.inputBorder}`, color: tc.textDim }}>+91</div>
+              <Input ref={(el) => { leadRefs.current.phone = el; }} {...phoneInputProps} placeholder="9876543210" value={leadForm.phone} onChange={(e) => setLeadField("phone", normalizePhone(e.target.value))} aria-invalid={!!leadErrors.phone} style={{ background: tc.inputBg, borderColor: errBorder("phone"), color: tc.inputText }} className="h-12 rounded-xl" />
+            </div>
+            {fieldErrEl("phone")}
           </div>
         )}
         {formConfig?.show_email && (
-          <Input type="email" placeholder="Email" value={leadForm.email} onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })} required={formConfig.email_required || false} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="h-12 rounded-xl" />
+          <div>
+            <Input ref={(el) => { leadRefs.current.email = el; }} {...emailInputProps} placeholder="Email" value={leadForm.email} onChange={(e) => setLeadField("email", e.target.value)} onBlur={(e) => setLeadField("email", e.target.value.trim())} aria-invalid={!!leadErrors.email} style={{ background: tc.inputBg, borderColor: errBorder("email"), color: tc.inputText }} className="h-12 rounded-xl" />
+            {fieldErrEl("email")}
+          </div>
         )}
         {formConfig?.show_city && (
-          <Input placeholder="City" value={leadForm.city} onChange={(e) => setLeadForm({ ...leadForm, city: e.target.value })} required={formConfig.city_required || false} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="h-12 rounded-xl" />
+          <div>
+            <Input ref={(el) => { leadRefs.current.city = el; }} {...cityInputProps} placeholder="City" value={leadForm.city} onChange={(e) => setLeadField("city", e.target.value)} onBlur={(e) => setLeadField("city", trimSmart(e.target.value))} aria-invalid={!!leadErrors.city} style={{ background: tc.inputBg, borderColor: errBorder("city"), color: tc.inputText }} className="h-12 rounded-xl" />
+            {fieldErrEl("city")}
+          </div>
         )}
         {formConfig?.show_custom && (
-          <Input placeholder={formConfig.custom_field_label || "Additional Info"} value={leadForm.custom_value} onChange={(e) => setLeadForm({ ...leadForm, custom_value: e.target.value })} required={formConfig.custom_required || false} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="h-12 rounded-xl" />
+          <div>
+            <Input ref={(el) => { leadRefs.current.custom_value = el; }} placeholder={formConfig.custom_field_label || "Additional Info"} value={leadForm.custom_value} onChange={(e) => setLeadField("custom_value", e.target.value)} aria-invalid={!!leadErrors.custom_value} style={{ background: tc.inputBg, borderColor: errBorder("custom_value"), color: tc.inputText }} className="h-12 rounded-xl" />
+            {fieldErrEl("custom_value")}
+          </div>
         )}
         <Button
           type="submit"
           className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl"
           disabled={submitLead.isPending}
         >
-          {submitLead.isPending ? "Submitting..." : funnel.cta_text || "Get Started"} →
+          {submitLead.isPending ? <><Loader2 size={16} className="animate-spin mr-2 inline" /> Submitting…</> : <>{funnel.cta_text || "Get Started"} →</>}
         </Button>
       </form>
     </div>

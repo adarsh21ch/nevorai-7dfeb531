@@ -10,7 +10,20 @@ import {
 } from "lucide-react";
 
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
-import { sanitizeText, normalizePhone } from "@/lib/sanitize";
+import { sanitizeText } from "@/lib/sanitize";
+import {
+  normalizePhone,
+  trimSmart,
+  validatePhone,
+  validateEmail,
+  validateRequired,
+  phoneInputProps,
+  emailInputProps,
+  nameInputProps,
+  cityInputProps,
+  scrollToFirstError,
+} from "@/lib/leadInputs";
+
 import { StepCodeGate } from "@/components/funnel/StepCodeGate";
 
 interface FunnelStep {
@@ -111,6 +124,9 @@ export const MultiStepViewer = ({
   const [progressMap, setProgressMap] = useState<Record<string, StepProgress>>({});
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [leadForm, setLeadForm] = useState({ name: "", phone: "", email: "", city: "", custom_value: "", website: "" });
+  const [leadErrors, setLeadErrors] = useState<Record<string, string | null>>({});
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const leadRefs = useRef<Record<string, HTMLElement | null>>({});
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
   const [paymentProof, setPaymentProof] = useState({ upi_transaction_id: "", amount: 0 });
   const [loading, setLoading] = useState(true);
@@ -282,22 +298,50 @@ export const MultiStepViewer = ({
     toast.success("Step completed!");
   };
 
+  const validateLead = (): Record<string, string | null> => {
+    const e: Record<string, string | null> = {};
+    if (formConfig?.show_name && (formConfig.name_required || leadForm.name)) e.name = formConfig.name_required ? validateRequired(leadForm.name, "Name") : null;
+    if (formConfig?.show_phone && (formConfig.phone_required || leadForm.phone)) e.phone = validatePhone(leadForm.phone);
+    if (formConfig?.show_email && (formConfig.email_required || leadForm.email)) e.email = validateEmail(leadForm.email);
+    if (formConfig?.show_city && formConfig.city_required) e.city = validateRequired(leadForm.city, "City");
+    return e;
+  };
+
+  const setLeadField = (k: keyof typeof leadForm, v: string) => {
+    setLeadForm((p) => ({ ...p, [k]: v }));
+    if (leadErrors[k]) setLeadErrors((p) => ({ ...p, [k]: null }));
+  };
+
   const handleLeadSubmit = async (stepIndex: number) => {
     if (leadForm.website) return;
+    if (leadSubmitting) return;
+    const fe = validateLead();
+    setLeadErrors(fe);
+    if (Object.values(fe).some(Boolean)) {
+      scrollToFirstError(fe, leadRefs.current, ["name", "phone", "email", "city"]);
+      return;
+    }
+    setLeadSubmitting(true);
     const s = (v: string | null | undefined) => (v ? sanitizeText(v) : null);
-    await supabase.from("funnel_leads").insert({
-      funnel_id: funnel.id,
-      name: s(leadForm.name),
-      phone: leadForm.phone ? normalizePhone(leadForm.phone) : null,
-      email: s(leadForm.email),
-      city: s(leadForm.city),
-      custom_value: s(leadForm.custom_value),
-      device_type: /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop",
-      user_agent: navigator.userAgent,
-    });
-    setLeadSubmitted(true);
-    await completeStep(stepIndex);
-    toast.success("Details submitted!");
+    try {
+      await supabase.from("funnel_leads").insert({
+        funnel_id: funnel.id,
+        name: s(trimSmart(leadForm.name)),
+        phone: leadForm.phone ? normalizePhone(leadForm.phone) : null,
+        email: s(leadForm.email?.trim()),
+        city: s(trimSmart(leadForm.city)),
+        custom_value: s(leadForm.custom_value),
+        device_type: /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop",
+        user_agent: navigator.userAgent,
+      });
+      setLeadSubmitted(true);
+      await completeStep(stepIndex);
+      toast.success("Details submitted!");
+    } catch (err: any) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLeadSubmitting(false);
+    }
   };
 
   const handlePaymentSubmit = async (stepIndex: number) => {
@@ -587,18 +631,38 @@ export const MultiStepViewer = ({
                       ) : (
                         <>
                           <h3 className="text-lg font-heading font-bold mb-4" style={{ color: sc.text }}>Fill in your details</h3>
-                          <form onSubmit={(e) => { e.preventDefault(); handleLeadSubmit(activeStepIndex); }} className="space-y-3">
+                          <form onSubmit={(e) => { e.preventDefault(); handleLeadSubmit(activeStepIndex); }} className="space-y-3" noValidate>
                             <input type="text" name="website" value={leadForm.website} onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })} style={{ position: "absolute", left: "-9999px" }} tabIndex={-1} autoComplete="off" />
-                            {formConfig?.show_name && <Input placeholder="Full Name" value={leadForm.name} onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })} required={formConfig.name_required} style={{ background: sc.inputBg, borderColor: sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />}
-                            {formConfig?.show_phone && (
-                              <div className="flex gap-2">
-                                <div className="flex items-center px-3 rounded-xl text-sm shrink-0 h-12" style={{ background: sc.inputBg, border: `1px solid ${sc.cardBorder}`, color: sc.textMuted }}>+91</div>
-                                <Input placeholder="Phone number" value={leadForm.phone} onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })} required={formConfig.phone_required} style={{ background: sc.inputBg, borderColor: sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                            {formConfig?.show_name && (
+                              <div>
+                                <Input ref={(el) => { leadRefs.current.name = el; }} {...nameInputProps} placeholder="Full Name" value={leadForm.name} onChange={(e) => setLeadField("name", e.target.value)} onBlur={(e) => setLeadField("name", trimSmart(e.target.value))} aria-invalid={!!leadErrors.name} style={{ background: sc.inputBg, borderColor: leadErrors.name ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                                {leadErrors.name && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.name}</p>}
                               </div>
                             )}
-                            {formConfig?.show_email && <Input type="email" placeholder="Email" value={leadForm.email} onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })} required={formConfig.email_required} style={{ background: sc.inputBg, borderColor: sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />}
-                            {formConfig?.show_city && <Input placeholder="City" value={leadForm.city} onChange={(e) => setLeadForm({ ...leadForm, city: e.target.value })} required={formConfig.city_required} style={{ background: sc.inputBg, borderColor: sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />}
-                            <Button type="submit" className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">Submit →</Button>
+                            {formConfig?.show_phone && (
+                              <div>
+                                <div className="flex gap-2">
+                                  <div className="flex items-center px-3 rounded-xl text-sm shrink-0 h-12" style={{ background: sc.inputBg, border: `1px solid ${sc.cardBorder}`, color: sc.textMuted }}>+91</div>
+                                  <Input ref={(el) => { leadRefs.current.phone = el; }} {...phoneInputProps} placeholder="9876543210" value={leadForm.phone} onChange={(e) => setLeadField("phone", normalizePhone(e.target.value))} aria-invalid={!!leadErrors.phone} style={{ background: sc.inputBg, borderColor: leadErrors.phone ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                                </div>
+                                {leadErrors.phone && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.phone}</p>}
+                              </div>
+                            )}
+                            {formConfig?.show_email && (
+                              <div>
+                                <Input ref={(el) => { leadRefs.current.email = el; }} {...emailInputProps} placeholder="Email" value={leadForm.email} onChange={(e) => setLeadField("email", e.target.value)} onBlur={(e) => setLeadField("email", e.target.value.trim())} aria-invalid={!!leadErrors.email} style={{ background: sc.inputBg, borderColor: leadErrors.email ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                                {leadErrors.email && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.email}</p>}
+                              </div>
+                            )}
+                            {formConfig?.show_city && (
+                              <div>
+                                <Input ref={(el) => { leadRefs.current.city = el; }} {...cityInputProps} placeholder="City" value={leadForm.city} onChange={(e) => setLeadField("city", e.target.value)} onBlur={(e) => setLeadField("city", trimSmart(e.target.value))} aria-invalid={!!leadErrors.city} style={{ background: sc.inputBg, borderColor: leadErrors.city ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                                {leadErrors.city && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.city}</p>}
+                              </div>
+                            )}
+                            <Button type="submit" disabled={leadSubmitting} className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
+                              {leadSubmitting ? <><Loader2 size={16} className="animate-spin mr-2 inline" /> Submitting…</> : <>Submit →</>}
+                            </Button>
                           </form>
                         </>
                       )}
