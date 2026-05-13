@@ -40,7 +40,7 @@ export const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-white/[0.06] bg-hero-bg/85 supports-[backdrop-filter]:bg-hero-bg/70">
       <div className="container-app flex items-center justify-between h-16">
         <Link to="/">
-          <Logo showByline />
+          <Logo variant="full" />
         </Link>
 
         <div className="hidden md:flex items-center gap-6">
