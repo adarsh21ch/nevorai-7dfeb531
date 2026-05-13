@@ -8,8 +8,8 @@ import {
 
 const faqs = [
   {
-    q: "What is nnFlow by Nevorai?",
-    a: "nnFlow by Nevorai is a video-based follow-up system that helps you control how prospects watch, understand, and respond to your message.",
+    q: "What is nFlow by Nevorai?",
+    a: "nFlow by Nevorai is a video-based follow-up system that helps you control how prospects watch, understand, and respond to your message.",
   },
   {
     q: "Do I need technical skills?",
@@ -20,7 +20,7 @@ const faqs = [
     a: "Yes. You can explore shared funnels and public content for free.",
   },
   {
-    q: "Who is nnFlow by Nevorai for?",
+    q: "Who is nFlow by Nevorai for?",
     a: "Built for entrepreneurs, creators, and teams who want better follow-up and higher conversion.",
   },
   {

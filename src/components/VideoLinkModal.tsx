@@ -33,7 +33,7 @@ export const VideoLinkModal = ({ open, onClose, onSuccess }: Props) => {
     if (!user) return;
     const videoId = extractVideoId(link.trim());
     if (!videoId) {
-      toast.error("Invalid video link. Use a nnFlow by Nevorai video URL.");
+      toast.error("Invalid video link. Use a nFlow by Nevorai video URL.");
       return;
     }
 
@@ -97,7 +97,7 @@ export const VideoLinkModal = ({ open, onClose, onSuccess }: Props) => {
           <DialogTitle className="font-heading">Add Video by Link</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Paste a nnFlow by Nevorai video link to add it to your gallery.</p>
+          <p className="text-sm text-muted-foreground">Paste a nFlow by Nevorai video link to add it to your gallery.</p>
           <div>
             <Label>Video Link</Label>
             <Input

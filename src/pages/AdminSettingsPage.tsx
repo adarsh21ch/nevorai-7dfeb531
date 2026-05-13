@@ -224,7 +224,7 @@ const AdminSettingsPage = () => {
 <html><head><meta charset="utf-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a1a;padding:40px 20px;">
   <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e5e5;">
-    <h1 style="color:#22c55e;font-size:20px;margin:0 0 12px;">nnFlow by Nevorai — Test Email</h1>
+    <h1 style="color:#22c55e;font-size:20px;margin:0 0 12px;">nFlow by Nevorai — Test Email</h1>
     <p style="font-size:15px;color:#444;line-height:1.6;margin:0 0 12px;">
       If you can read this, your Gmail connection is fully working end-to-end.
     </p>
@@ -243,9 +243,9 @@ const AdminSettingsPage = () => {
           },
           body: JSON.stringify({
             to: targetEmail,
-            subject: "nnFlow by Nevorai — Gmail test email",
+            subject: "nFlow by Nevorai — Gmail test email",
             html,
-            sender_name: "nnFlow by Nevorai",
+            sender_name: "nFlow by Nevorai",
           }),
         }
       );

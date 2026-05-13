@@ -32,8 +32,8 @@ export const CopyNflowLinkButton = ({ videoId, className = "" }: Props) => {
         size="icon"
         onClick={handleCopy}
         className="h-9 w-9"
-        title="Copy nnFlow by Nevorai video link"
-        aria-label="Copy nnFlow by Nevorai video link"
+        title="Copy nFlow by Nevorai video link"
+        aria-label="Copy nFlow by Nevorai video link"
       >
         {copied ? <Check size={16} className="text-primary" /> : <Link2 size={16} />}
       </Button>
@@ -52,7 +52,7 @@ export const CopyNflowLinkButton = ({ videoId, className = "" }: Props) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent side="top" align="end" className="w-64 text-xs leading-relaxed">
-          Copy this link to use this video in your own funnel. Open nnFlow by Nevorai → Videos → <span className="font-medium">Add by nnFlow by Nevorai Link</span>, then paste it.
+          Copy this link to use this video in your own funnel. Open nFlow by Nevorai → Videos → <span className="font-medium">Add by nFlow by Nevorai Link</span>, then paste it.
         </PopoverContent>
       </Popover>
     </div>

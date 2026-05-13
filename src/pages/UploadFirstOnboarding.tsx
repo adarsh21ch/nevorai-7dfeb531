@@ -31,7 +31,7 @@ const UploadFirstOnboarding = () => {
     <DashboardLayout>
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-8 py-6 sm:py-10">
         <div className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
-          <Sparkles size={12} /> Welcome to nnFlow by Nevorai
+          <Sparkles size={12} /> Welcome to nFlow by Nevorai
         </div>
 
         <div className="text-center">

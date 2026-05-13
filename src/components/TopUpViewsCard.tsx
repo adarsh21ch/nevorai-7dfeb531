@@ -65,7 +65,7 @@ export function TopUpViewsCard({ onPurchased }: { onPurchased?: () => void }) {
         key: data.key_id,
         amount: data.amount,
         currency: data.currency,
-        name: "nnFlow by Nevorai",
+        name: "nFlow by Nevorai",
         description: `${data.total_views} extra views`,
         order_id: data.order_id,
         handler: async (response: any) => {

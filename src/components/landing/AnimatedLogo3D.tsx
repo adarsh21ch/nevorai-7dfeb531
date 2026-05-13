@@ -1,7 +1,7 @@
 import logoImg from "@/assets/nevorai-mark.png";
 
 /**
- * Hero centerpiece: floating 3D nnFlow by Nevorai mark with pulsing glow + 6 orbiting dots.
+ * Hero centerpiece: floating 3D nFlow by Nevorai mark with pulsing glow + 6 orbiting dots.
  */
 export const AnimatedLogo3D = () => {
   return (
@@ -23,7 +23,7 @@ export const AnimatedLogo3D = () => {
       >
         <img
           src={logoImg}
-          alt="nnFlow by Nevorai"
+          alt="nFlow by Nevorai"
           className="w-[120px] h-[120px] object-contain"
           style={{ filter: "drop-shadow(0 0 28px rgba(0,200,150,0.55))" }}
         />

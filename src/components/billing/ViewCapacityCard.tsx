@@ -115,7 +115,7 @@ export function ViewCapacityCard() {
         key: data.key_id,
         amount: data.amount,
         currency: data.currency,
-        name: "nnFlow by Nevorai",
+        name: "nFlow by Nevorai",
         description: `Upgrade to ${tier.daily_views}/day (prorated)`,
         order_id: data.order_id,
         handler: async (response: any) => {

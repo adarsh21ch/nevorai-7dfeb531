@@ -165,7 +165,7 @@ const PublicVideoPage = () => {
           </p>
         )}
 
-        {/* Copy nnFlow by Nevorai Link — viewer-facing reuse button (compact) */}
+        {/* Copy nFlow by Nevorai Link — viewer-facing reuse button (compact) */}
         {video.allow_copy_link !== false && (
           <div className="mt-4 flex justify-end">
             <CopyNflowLinkButton videoId={video.id} />
@@ -173,7 +173,7 @@ const PublicVideoPage = () => {
         )}
 
         <div className="mt-8 text-center">
-          <p className="text-xs text-muted-foreground"><span className="gradient-text font-heading font-semibold">nnFlow by Nevorai</span> by Nevorai</p>
+          <p className="text-xs text-muted-foreground"><span className="gradient-text font-heading font-semibold">nFlow by Nevorai</span> by Nevorai</p>
         </div>
       </div>
 

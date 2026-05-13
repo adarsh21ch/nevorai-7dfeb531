@@ -25,7 +25,7 @@ const FREE_VARIANT = "outline" as const;
 
 /**
  * Build the Free-plan feature list entirely from the admin `plan_config` row.
- * Always shows: marketplace + public content + nnFlow by Nevorai video link (constant
+ * Always shows: marketplace + public content + nFlow by Nevorai video link (constant
  * platform capabilities). Everything else is driven by DB so admin edits to
  * max_funnels / max_videos / daily_view_limit / feature_* immediately reflect
  * on the public pricing card.
@@ -46,7 +46,7 @@ const buildFreeFeatures = (config: any): { text: string; included: boolean; tool
   }
 
   // Always-on platform capabilities for free users
-  items.push({ text: "Add videos via nnFlow by Nevorai Video Link", included: true });
+  items.push({ text: "Add videos via nFlow by Nevorai Video Link", included: true });
 
   // Daily view limit
   const dv = formatDailyViews(config?.daily_view_limit);
@@ -226,7 +226,7 @@ export const PricingSection = () => {
         key: data.key_id,
         amount: data.amount,
         currency: data.currency,
-        name: "nnFlow by Nevorai",
+        name: "nFlow by Nevorai",
         description: data.is_plan_upgrade
           ? `Upgrade to ${planName} — pay ₹${payableToday} today for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} left (renews at ₹${data.target_price}/mo)`
           : `${planName} Plan — monthly`,
@@ -388,7 +388,7 @@ export const PricingSection = () => {
       return {
         number: (map.enterprise_whatsapp_number || "").replace(/\D/g, ""),
         message: map.enterprise_whatsapp_message
-          || "Hi! I'm interested in the Enterprise plan for nnFlow by Nevorai. I want to build a dedicated app for my network team. Can you share more details?",
+          || "Hi! I'm interested in the Enterprise plan for nFlow by Nevorai. I want to build a dedicated app for my network team. Can you share more details?",
       };
     },
     staleTime: 120_000,

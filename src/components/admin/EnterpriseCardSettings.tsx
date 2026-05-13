@@ -402,7 +402,7 @@ const EnterpriseWhatsAppSettings = () => {
           value={prefilledMessage}
           onChange={(e) => setPrefilledMessage(e.target.value)}
           rows={4}
-          placeholder="Hi! I'm interested in the Enterprise plan for nnFlow by Nevorai..."
+          placeholder="Hi! I'm interested in the Enterprise plan for nFlow by Nevorai..."
           disabled={!loaded}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
         />

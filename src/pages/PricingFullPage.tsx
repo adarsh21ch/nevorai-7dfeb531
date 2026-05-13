@@ -255,7 +255,7 @@ const PricingFullPage = () => {
         key: data.key_id,
         amount: data.amount,
         currency: data.currency,
-        name: "nnFlow by Nevorai",
+        name: "nFlow by Nevorai",
         description: data.is_plan_upgrade
           ? `Upgrade to ${planName.charAt(0).toUpperCase() + planName.slice(1)} — pay ₹${payableToday} today for ${data.days_remaining} day${data.days_remaining === 1 ? "" : "s"} left (renews at ₹${data.target_price}${renewalLabel})`
           : `${planName.charAt(0).toUpperCase() + planName.slice(1)} Plan — ${billing}`,
@@ -375,7 +375,7 @@ const PricingFullPage = () => {
     if (freeConfig?.max_videos === -1) freeIncluded.push("Unlimited video uploads");
     else if ((freeConfig?.max_videos ?? 0) > 0) freeIncluded.push(`Upload up to ${freeConfig.max_videos} video${freeConfig.max_videos === 1 ? "" : "s"}`);
   }
-  freeIncluded.push("Add videos via nnFlow by Nevorai Video Link");
+  freeIncluded.push("Add videos via nFlow by Nevorai Video Link");
   if (freeConfig?.daily_view_limit === -1) freeIncluded.push("Unlimited daily views");
   else if ((freeConfig?.daily_view_limit ?? 0) > 0) freeIncluded.push(`${freeConfig.daily_view_limit} views/day total`);
   freeIncluded.push("Access public content");
@@ -676,7 +676,7 @@ const PricingFullPage = () => {
             </div>
             <p className="text-sm text-muted-foreground">
               Need help choosing a plan?{" "}
-              <button className="text-primary underline" onClick={() => openSupport("Hi, I need help choosing a nnFlow by Nevorai plan.")}>
+              <button className="text-primary underline" onClick={() => openSupport("Hi, I need help choosing a nFlow by Nevorai plan.")}>
                 Chat with us on WhatsApp
               </button>
             </p>

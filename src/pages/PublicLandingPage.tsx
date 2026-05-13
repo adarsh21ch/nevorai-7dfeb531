@@ -394,7 +394,7 @@ const PublicLandingPage = () => {
       </main>
 
       <footer className="text-center py-6 text-xs text-muted-foreground border-t border-border">
-        nnFlow by Nevorai
+        nFlow by Nevorai
       </footer>
       <BrandingWatermark ownerId={page?.owner_id} />
     </div>

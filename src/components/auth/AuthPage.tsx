@@ -219,7 +219,7 @@ export default function AuthPage() {
           <p className="text-sm mt-3" style={{ color: "var(--color-hero-muted)" }}>
             {stage === "email" && "Welcome — let's get you in."}
             {stage === "login" && "Welcome back! Enter your password."}
-            {stage === "signup" && "Create your nnFlow by Nevorai account."}
+            {stage === "signup" && "Create your nFlow by Nevorai account."}
             {stage === "nevorai-otp" && (nevoraiInfo?.isPro ? "You're a Nevorai Pro member — verify to unlock free." : "You're part of the Nevorai family.")}
             {stage === "set-password" && "One last thing — set a password for next time."}
           </p>

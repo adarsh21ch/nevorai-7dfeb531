@@ -22,7 +22,7 @@ const youtubeRoute: Step[] = [
 
 const nflowRoute: Step[] = [
   { icon: "📱", label: "Gets link" },
-  { icon: "🎯", label: "Opens nnFlow by Nevorai" },
+  { icon: "🎯", label: "Opens nFlow by Nevorai" },
   { icon: "🔒", label: "Can't skip", good: true },
   { icon: "📋", label: "Fills name + phone", good: true },
   { icon: "📱", label: "WhatsApp sent auto", good: true },
@@ -52,7 +52,7 @@ const journeyStyles = `
   box-shadow: 0 0 10px rgba(239,68,68,0.9);
   animation-duration: 4s;
 }
-.nnFlow by Nevorai-route-line::after {
+.nFlow by Nevorai-route-line::after {
   background: #00C896;
   box-shadow: 0 0 10px rgba(0,200,150,0.9);
   animation-duration: 2.5s;
@@ -86,19 +86,19 @@ const journeyStyles = `
   100% { box-shadow: 0 0 0 0 rgba(0,200,150,0); }
 }
 .youtube-end-node { animation: failure-pulse 2s ease-out infinite; }
-.nnFlow by Nevorai-end-node { animation: success-pulse 2s ease-out infinite; }
+.nFlow by Nevorai-end-node { animation: success-pulse 2s ease-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .route-line::after, .youtube-end-node, .nnFlow by Nevorai-end-node {
+  .route-line::after, .youtube-end-node, .nFlow by Nevorai-end-node {
     animation: none !important;
   }
 }
 `;
 
 export const ProspectJourney = () => {
-  const [activeRoute, setActiveRoute] = useState<"youtube" | "nnFlow by Nevorai">("youtube");
+  const [activeRoute, setActiveRoute] = useState<"youtube" | "nFlow by Nevorai">("youtube");
 
-  const renderDesktopRoute = (route: Step[], variant: "youtube" | "nnFlow by Nevorai") => {
+  const renderDesktopRoute = (route: Step[], variant: "youtube" | "nFlow by Nevorai") => {
     const isYT = variant === "youtube";
     const nodeBase =
       "w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 transition-all";
@@ -113,7 +113,7 @@ export const ProspectJourney = () => {
           const endClass = step.isEnd
             ? isYT
               ? "youtube-end-node !w-14 !h-14 !bg-red-500/25 !text-red-400 font-bold !text-2xl"
-              : "nnFlow by Nevorai-end-node !w-14 !h-14 !text-emerald-500 font-bold !text-2xl"
+              : "nFlow by Nevorai-end-node !w-14 !h-14 !text-emerald-500 font-bold !text-2xl"
             : "";
           const nodeClass = isYT
             ? `${nodeBase} ${
@@ -151,7 +151,7 @@ export const ProspectJourney = () => {
               </motion.div>
               {i < route.length - 1 && (
                 <div
-                  className={`route-line ${isYT ? "youtube-route-line" : "nnFlow by Nevorai-route-line"} flex-1 h-[3px] bg-gradient-to-r ${lineGradient} mx-1 mt-6 min-w-[24px]`}
+                  className={`route-line ${isYT ? "youtube-route-line" : "nFlow by Nevorai-route-line"} flex-1 h-[3px] bg-gradient-to-r ${lineGradient} mx-1 mt-6 min-w-[24px]`}
                 >
                   <div
                     className={`absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-l-[8px] ${arrowColor}`}
@@ -183,7 +183,7 @@ export const ProspectJourney = () => {
             <span className="text-gradient-brand">Two Very Different Routes.</span>
           </h2>
           <p className="text-slate-600 max-w-xl mx-auto">
-            See exactly where the YouTube route goes wrong — and how nnFlow by Nevorai keeps them on track.
+            See exactly where the YouTube route goes wrong — and how nFlow by Nevorai keeps them on track.
           </p>
         </motion.div>
 
@@ -213,10 +213,10 @@ export const ProspectJourney = () => {
             viewport={{ once: true }}
           >
             <div className="flex items-center gap-3 mb-6">
-              <span className="font-bold text-lg text-gradient-brand">✅ nnFlow by Nevorai Route</span>
+              <span className="font-bold text-lg text-gradient-brand">✅ nFlow by Nevorai Route</span>
               <span className="text-sm text-emerald-700/80">— 16–18% conversion</span>
             </div>
-            {renderDesktopRoute(nflowRoute, "nnFlow by Nevorai")}
+            {renderDesktopRoute(nflowRoute, "nFlow by Nevorai")}
           </motion.div>
         </div>
 
@@ -234,14 +234,14 @@ export const ProspectJourney = () => {
               ❌ YouTube
             </button>
             <button
-              onClick={() => setActiveRoute("nnFlow by Nevorai")}
+              onClick={() => setActiveRoute("nFlow by Nevorai")}
               className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all min-h-11 ${
                 !isYT
                   ? "bg-emerald-500/15 border border-emerald-500/50 text-emerald-600"
                   : "bg-white border border-gray-200 text-gray-500"
               }`}
             >
-              ✅ nnFlow by Nevorai
+              ✅ nFlow by Nevorai
             </button>
           </div>
 
@@ -259,7 +259,7 @@ export const ProspectJourney = () => {
                     className={`w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 ${
                       isYT
                         ? `bg-red-500/10 border-2 border-red-500/50 ${step.isEnd ? "youtube-end-node" : ""}`
-                        : `bg-emerald-500/10 border-2 border-emerald-500/50 ${step.isEnd ? "nnFlow by Nevorai-end-node" : ""}`
+                        : `bg-emerald-500/10 border-2 border-emerald-500/50 ${step.isEnd ? "nFlow by Nevorai-end-node" : ""}`
                     }`}
                   >
                     {step.icon}

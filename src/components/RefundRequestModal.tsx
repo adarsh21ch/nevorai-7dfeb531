@@ -38,7 +38,7 @@ export const RefundRequestModal = ({ open, onClose, onSuccess }: RefundRequestMo
         <DialogHeader>
           <DialogTitle className="text-lg font-heading font-bold">Request a Refund</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground pt-2 space-y-2">
-            <span className="block">We're sorry nnFlow by Nevorai didn't work out for you.</span>
+            <span className="block">We're sorry nFlow by Nevorai didn't work out for you.</span>
             <span className="block">
               Your refund request will be sent to our team. We'll process it within 24 hours via the original payment method.
             </span>
