@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const FunnelsPage = () => {
   useDocumentTitle("Funnels");
@@ -20,6 +21,7 @@ const FunnelsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 200);
   const [filter, setFilter] = useState<"all" | "published" | "draft">("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"upgrade" | "limit">("upgrade");
@@ -54,7 +56,7 @@ const FunnelsPage = () => {
   const filtered = funnels.filter((f: any) => {
     if (filter === "published" && !f.is_published) return false;
     if (filter === "draft" && f.is_published) return false;
-    if (search && !f.title.toLowerCase().includes(search.toLowerCase())) return false;
+    if (debouncedSearch && !f.title.toLowerCase().includes(debouncedSearch.toLowerCase())) return false;
     return true;
   });
 

@@ -21,6 +21,7 @@ import { VideoRenameModal } from "@/components/VideoRenameModal";
 import { useNavigate } from "@/lib/router-compat";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const getDisplayTitle = (raw?: string | null): string => {
