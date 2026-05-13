@@ -248,13 +248,25 @@ const PublicLivePage = () => {
 
   const handleRegister = async () => {
     if (!stateData) return;
+    if (submitting) return;
+    const session = stateData.session as any;
+    const fe: Record<string, string | null> = {};
+    if (session?.show_name !== false) fe.name = validateRequired(form.name, "Name");
+    if (session?.show_phone !== false) fe.phone = validatePhone(form.phone);
+    if (session?.show_email !== false) fe.email = (form.email ? validateEmail(form.email) : null);
+    if (session?.show_city) fe.city = validateRequired(form.city, "City");
+    setFormErrors(fe);
+    if (Object.values(fe).some(Boolean)) {
+      scrollToFirstError(fe, formRefs.current, ["name", "phone", "email", "city"]);
+      return;
+    }
     setSubmitting(true);
     const { error } = await supabase.from("live_registrations").insert({
       session_id: stateData.session.id,
-      name: form.name || null,
-      phone: form.phone || null,
-      email: form.email || null,
-      city: form.city || null,
+      name: trimSmart(form.name) || null,
+      phone: form.phone ? normalizePhone(form.phone) : null,
+      email: form.email ? form.email.trim() : null,
+      city: trimSmart(form.city) || null,
       status: "registered",
       payment_status: stateData.session.access_type === "paid" ? "pending" : "none",
     });
