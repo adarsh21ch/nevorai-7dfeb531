@@ -164,9 +164,22 @@ const FunnelDetail = () => {
             </div>
 
             {filteredLeads.length === 0 ? (
-              <div className="glass-card p-12 text-center">
-                <Users size={40} className="text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No leads yet. Share your funnel link to start capturing leads!</p>
+              <div className="glass-card p-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Users size={22} className="text-primary" />
+                </div>
+                <p className="text-sm font-semibold">No leads yet</p>
+                <p className="mt-1 text-xs text-muted-foreground">Share your funnel link to start capturing leads.</p>
+                <Button
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/f/${funnel.slug}`);
+                    toast.success("Share link copied!");
+                  }}
+                >
+                  Copy share link
+                </Button>
               </div>
             ) : (
               <div className="glass-card overflow-hidden">
