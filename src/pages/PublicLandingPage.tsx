@@ -39,6 +39,8 @@ const PublicLandingPage = () => {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [honeypot, setHoneypot] = useState("");
   const [pageUnlocked, setPageUnlocked] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
+  const fieldRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useEffect(() => {
     if (!slug) return;
