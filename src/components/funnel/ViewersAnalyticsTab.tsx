@@ -9,6 +9,7 @@ import {
   AlertTriangle, Trash2, RotateCcw, ChevronLeft, ChevronRight,
   Activity,
 } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface ViewersAnalyticsTabProps {
   funnelId: string;
@@ -21,6 +22,7 @@ const PAGE_SIZE = 20;
 
 export const ViewersAnalyticsTab = ({ funnelId, funnelSlug, hasAccessCode }: ViewersAnalyticsTabProps) => {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [sortBy, setSortBy] = useState<"submitted_at" | "status">("submitted_at");
@@ -273,8 +275,8 @@ export const ViewersAnalyticsTab = ({ funnelId, funnelSlug, hasAccessCode }: Vie
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => {
-                            if (confirm("Revoke this viewer's access? This will delete their data.")) {
+                          onClick={async () => {
+                            if (await confirm({ title: "Revoke this viewer's access?", description: "This will permanently delete their data and lookups.", confirmLabel: "Revoke access", destructive: true, typeToConfirm: "REVOKE" })) {
                               revokeMutation.mutate(v.id);
                             }
                           }}
