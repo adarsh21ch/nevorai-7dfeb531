@@ -103,7 +103,7 @@ export const ConversionCalculator = () => {
               <div className="absolute -top-3 right-4 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white bg-gradient-brand">
                 Most Results
               </div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-brand-emerald">✅ nFlow by Nevorai</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-brand-emerald">✅ Nevorai Flow</div>
               <div className="mt-3 text-xs text-hero-muted">Conversion rate</div>
               <div className="text-sm text-white">16–18%</div>
               <div className="mt-3 text-xs text-hero-muted">Results per month</div>
@@ -115,7 +115,7 @@ export const ConversionCalculator = () => {
             <div className="flex items-center justify-center gap-2 text-white flex-wrap">
               <Rocket size={18} className="text-brand-emerald" />
               <span>
-                With nFlow by Nevorai you get <span className="text-gradient-brand font-extrabold text-xl">+{extra}</span>{" "}
+                With Nevorai Flow you get <span className="text-gradient-brand font-extrabold text-xl">+{extra}</span>{" "}
                 extra results per month
               </span>
             </div>

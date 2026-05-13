@@ -124,7 +124,7 @@ const EnterpriseInquiryPage = () => {
             </h1>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base">
               For team leaders with 1,000+ active members. We build a separate
-              white-label app with your branding, plus all nFlow by Nevorai features and
+              white-label app with your branding, plus all Nevorai Flow features and
               custom additions for your network.
             </p>
           </motion.div>

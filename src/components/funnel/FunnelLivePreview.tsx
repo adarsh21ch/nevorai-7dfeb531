@@ -72,7 +72,7 @@ export const FunnelLivePreview = ({ funnel, selectedVideo, flowSteps, leadForm, 
       </div>
       <div className="m-3 rounded-lg border border-border bg-background overflow-hidden">
         <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-muted/30">
-          <span className="text-[9px] font-heading font-bold text-muted-foreground tracking-wide">nFlow by Nevorai</span>
+          <span className="text-[9px] font-heading font-bold text-muted-foreground tracking-wide">Nevorai Flow</span>
           <div className="flex items-center gap-1 text-muted-foreground">
             <Share2 size={8} /><span className="text-[8px]">Share</span>
           </div>

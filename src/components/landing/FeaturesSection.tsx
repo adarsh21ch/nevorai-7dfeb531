@@ -75,7 +75,7 @@ const WhatsAppDemo = () => (
     <div className="flex items-center gap-2 mb-3">
       <div className="wa-avatar">N</div>
       <div>
-        <div style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>nFlow by Nevorai Auto</div>
+        <div style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>Nevorai Flow Auto</div>
         <div style={{ fontSize: 10, color: "#25D366" }}>● online</div>
       </div>
     </div>

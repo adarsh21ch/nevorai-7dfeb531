@@ -181,7 +181,7 @@ const VideosPage = () => {
             onClick={() => setLinkModalOpen(true)}
             className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
           >
-            <Link2 size={12} /> Add by nFlow by Nevorai Link
+            <Link2 size={12} /> Add by Nevorai Flow Link
           </button>
         </div>
 

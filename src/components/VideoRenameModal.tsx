@@ -79,17 +79,17 @@ export const VideoRenameModal = ({ open, onClose, videoId, currentTitle, onSucce
             />
           </div>
 
-          {/* Allow viewers to reuse this video via nFlow by Nevorai Link */}
+          {/* Allow viewers to reuse this video via Nevorai Flow Link */}
           <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/40 border border-border">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <Copy size={13} className="text-primary shrink-0" />
                 <Label className="text-sm font-medium cursor-pointer" htmlFor="rename-allow-copy">
-                  Allow reuse via nFlow by Nevorai Link
+                  Allow reuse via Nevorai Flow Link
                 </Label>
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Viewers see a "Copy nFlow by Nevorai Link" button to add this video to their own gallery.
+                Viewers see a "Copy Nevorai Flow Link" button to add this video to their own gallery.
               </p>
             </div>
             <Switch

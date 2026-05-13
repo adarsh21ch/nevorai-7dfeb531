@@ -262,7 +262,7 @@ const BillingPage = () => {
             <p className="text-xs text-muted-foreground">Your last payment didn't go through. Please retry or contact support.</p>
             <div className="flex gap-2">
               <Link to="/upgrade"><Button size="sm">Retry Payment</Button></Link>
-              <Button size="sm" variant="outline" onClick={() => openSupport("Hi, my payment failed on nFlow by Nevorai. Can you help?")}>
+              <Button size="sm" variant="outline" onClick={() => openSupport("Hi, my payment failed on Nevorai Flow. Can you help?")}>
                 <MessageCircle size={13} className="mr-1.5" /> Get Help
               </Button>
             </div>
@@ -289,7 +289,7 @@ const BillingPage = () => {
           help with billing?{" "}
           <button
             className="text-primary underline underline-offset-2"
-            onClick={() => openSupport("Hi, I have a billing question about my nFlow by Nevorai account.")}
+            onClick={() => openSupport("Hi, I have a billing question about my Nevorai Flow account.")}
           >
             Contact support
           </button>

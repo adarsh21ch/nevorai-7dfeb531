@@ -40,10 +40,10 @@ export const NevoraiMemberWelcome = () => {
           <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
             <Sparkles className="text-primary" size={26} />
           </div>
-          <DialogTitle className="text-center text-xl">🎉 Welcome to nFlow by Nevorai!</DialogTitle>
+          <DialogTitle className="text-center text-xl">🎉 Welcome to Nevorai Flow!</DialogTitle>
           <DialogDescription className="text-center space-y-2 pt-2">
             <span className="block">
-              Because you're a Nevorai Pro member, you have free access to the nFlow by Nevorai Individual plan.
+              Because you're a Nevorai Pro member, you have free access to the Nevorai Flow Individual plan.
             </span>
             <span className="block text-left mt-3 space-y-1 text-sm">
               ✓ Create up to 10 video funnels<br />

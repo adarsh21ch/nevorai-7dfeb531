@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-type TabKey = "youtube" | "nFlow by Nevorai";
+type TabKey = "youtube" | "Nevorai Flow";
 
 type Step = {
   count: number;
@@ -20,7 +20,7 @@ const youtubeSteps: Step[] = [
 ];
 
 const nflowSteps: Step[] = [
-  { count: 100, label: "Prospects open your nFlow by Nevorai link", sublabel: "Clean player loads instantly — no distractions anywhere", barWidth: 100 },
+  { count: 100, label: "Prospects open your Nevorai Flow link", sublabel: "Clean player loads instantly — no distractions anywhere", barWidth: 100 },
   { count: 96, label: "Watch in a fully distraction-free environment", sublabel: "No recommendations. No comments. No autoplay. Just your video.", barWidth: 96 },
   { count: 91, label: "Watch your full message — skip is disabled", sublabel: "They hear every word of your pitch, not just the first 30 seconds", barWidth: 91 },
   { count: 71, label: "Enter their name + phone when prompted", sublabel: "Lead captured automatically — goes straight to your dashboard", barWidth: 71 },
@@ -114,11 +114,11 @@ export const LeakyFunnel = () => {
 
   useEffect(() => {
     if (activeTab !== "youtube") return;
-    const t = setTimeout(() => setActiveTab("nFlow by Nevorai"), 6000);
+    const t = setTimeout(() => setActiveTab("Nevorai Flow"), 6000);
     return () => clearTimeout(t);
   }, [activeTab]);
 
-  const isDark = activeTab === "nFlow by Nevorai";
+  const isDark = activeTab === "Nevorai Flow";
 
   return (
     <section
@@ -165,18 +165,18 @@ export const LeakyFunnel = () => {
               }`}
             >
               <span className="text-lg">📺</span>
-              Without nFlow by Nevorai
+              Without Nevorai Flow
             </button>
             <button
-              onClick={() => setActiveTab("nFlow by Nevorai")}
+              onClick={() => setActiveTab("Nevorai Flow")}
               className={`flex items-center gap-2.5 px-5 md:px-6 py-3 rounded-xl text-sm md:text-base font-semibold transition-all duration-300 min-h-11 ${
-                activeTab === "nFlow by Nevorai"
+                activeTab === "Nevorai Flow"
                   ? "text-white shadow-lg bg-gradient-brand"
                   : isDark ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"
               }`}
             >
               <span className="text-lg">🎯</span>
-              With nFlow by Nevorai
+              With Nevorai Flow
             </button>
           </div>
         </div>
@@ -230,16 +230,16 @@ export const LeakyFunnel = () => {
                   Not because your content is bad. Because YouTube works against you.
                 </p>
                 <button
-                  onClick={() => setActiveTab("nFlow by Nevorai")}
+                  onClick={() => setActiveTab("Nevorai Flow")}
                   className="mt-6 inline-flex items-center gap-2 bg-red-500 text-white text-sm md:text-base font-semibold px-6 py-3 rounded-xl hover:bg-red-600 transition-colors min-h-11"
                 >
-                  See what nFlow by Nevorai does differently →
+                  See what Nevorai Flow does differently →
                 </button>
               </div>
             </motion.div>
           ) : (
             <motion.div
-              key="nFlow by Nevorai"
+              key="Nevorai Flow"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
@@ -247,12 +247,12 @@ export const LeakyFunnel = () => {
             >
               <div className="text-center mb-12 max-w-3xl mx-auto">
                 <div className="inline-block text-xs font-semibold tracking-wider uppercase text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full mb-4">
-                  The nFlow by Nevorai Difference
+                  The Nevorai Flow Difference
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight">
                   What Happens When You
                   <br />
-                  Send an <span className="text-gradient-brand">nFlow by Nevorai Link</span> Instead
+                  Send an <span className="text-gradient-brand">Nevorai Flow Link</span> Instead
                 </h2>
                 <p className="mt-4 text-base md:text-lg text-gray-400">
                   Same prospect. Same video. Completely different outcome.
@@ -267,7 +267,7 @@ export const LeakyFunnel = () => {
 
               <p className="text-gray-500 text-xs mt-6 text-center max-w-sm mx-auto">
                 Not every captured lead joins immediately — and that's normal.
-                nFlow by Nevorai keeps following up automatically until they're ready.
+                Nevorai Flow keeps following up automatically until they're ready.
               </p>
 
               <div className="mt-10 max-w-4xl mx-auto">
@@ -279,7 +279,7 @@ export const LeakyFunnel = () => {
                   </div>
                   <div className="text-center">
                     <p className="text-3xl md:text-4xl font-black text-gradient-brand">18</p>
-                    <p className="text-gray-500 text-xs mt-1">nFlow by Nevorai conversions</p>
+                    <p className="text-gray-500 text-xs mt-1">Nevorai Flow conversions</p>
                     <p className="text-emerald-500 text-xs">71 leads captured</p>
                   </div>
                   <div className="text-center">

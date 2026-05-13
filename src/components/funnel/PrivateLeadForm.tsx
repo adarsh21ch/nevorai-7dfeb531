@@ -130,7 +130,7 @@ export const PrivateLeadForm = ({
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: bg }}>
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2 mb-6">
-          <img src={logoImg} alt="nFlow by Nevorai" className="h-6 w-6" />
+          <img src={logoImg} alt="Nevorai Flow" className="h-6 w-6" />
           <div className="flex items-baseline text-[14px]" style={{ lineHeight: 1 }}>
             <span className="font-heading" style={{ color: text, fontStyle: "italic", fontWeight: 300 }}>n</span>
             <span className="font-heading font-extrabold" style={{ color: text }}>Flow</span>

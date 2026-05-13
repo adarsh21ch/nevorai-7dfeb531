@@ -32,7 +32,7 @@ export const tutorialCategoryLabels: Record<TutorialCategory, string> = {
 export const tutorials: Tutorial[] = [
   {
     id: "welcome",
-    title: "Welcome to nFlow by Nevorai",
+    title: "Welcome to Nevorai Flow",
     description:
       "A 60-second tour of what Flow does and how to get your first lead in under 5 minutes.",
     videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",

@@ -12,7 +12,7 @@ const RefundPolicyPage = () => {
             <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">Refund Policy</h1>
             <p className="text-sm text-muted-foreground mb-6">Last updated: May 2026</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              We offer a 7-day money-back guarantee on all paid plans. If nFlow by Nevorai doesn't work for you,
+              We offer a 7-day money-back guarantee on all paid plans. If Nevorai Flow doesn't work for you,
               we'll refund you — no difficult questions.
             </p>
           </motion.div>
@@ -21,11 +21,11 @@ const RefundPolicyPage = () => {
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">1. Our Guarantee</h2>
               <p className="mb-3">
-                We believe in nFlow by Nevorai. If you subscribe to any paid plan and are not satisfied within
+                We believe in Nevorai Flow. If you subscribe to any paid plan and are not satisfied within
                 <strong className="text-foreground"> 7 days of your payment date</strong>, you can request a full refund.
               </p>
               <p>
-                This is in addition to our free trial — so you have tried nFlow by Nevorai for free before paying, and
+                This is in addition to our free trial — so you have tried Nevorai Flow for free before paying, and
                 you still have 7 days after paying to change your mind. That is our commitment to you.
               </p>
             </section>

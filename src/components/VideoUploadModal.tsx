@@ -263,7 +263,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
                 <div className="px-3 pb-3 text-sm text-muted-foreground space-y-2">
                   <p className="font-medium text-foreground">💡 Pro Tip — For Best Playback Quality:</p>
                   <p>
-                    Videos downloaded from YouTube play the smoothest on nFlow by Nevorai. If your video lags or buffers, try this:
+                    Videos downloaded from YouTube play the smoothest on Nevorai Flow. If your video lags or buffers, try this:
                   </p>
                   <ol className="list-decimal list-inside space-y-1 pl-1">
                     <li>Upload your video to YouTube (can be Unlisted)</li>
@@ -369,7 +369,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
             />
           </div>
 
-          {/* Allow viewers to reuse this video via nFlow by Nevorai Link */}
+          {/* Allow viewers to reuse this video via Nevorai Flow Link */}
           <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/40 border border-border">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -379,7 +379,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
                 </Label>
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Public viewers see a "Copy nFlow by Nevorai Link" button so they can add this video to their own gallery. Daily view limits still apply.
+                Public viewers see a "Copy Nevorai Flow Link" button so they can add this video to their own gallery. Daily view limits still apply.
               </p>
             </div>
             <Switch

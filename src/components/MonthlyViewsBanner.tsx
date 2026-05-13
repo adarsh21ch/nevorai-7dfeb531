@@ -4,7 +4,7 @@ import { useMonthlyViews } from "@/hooks/useMonthlyViews";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 
-const DISMISS_KEY_PREFIX = "nFlow by Nevorai-monthly-views-warn-dismissed-";
+const DISMISS_KEY_PREFIX = "Nevorai Flow-monthly-views-warn-dismissed-";
 
 export const MonthlyViewsBanner = () => {
   const views = useMonthlyViews();

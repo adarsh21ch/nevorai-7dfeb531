@@ -30,7 +30,7 @@ const Onboarding = () => {
         onboarding_data: { company: data.company, team_size: data.teamSize, source: data.source },
       }).eq("id", user.id);
       await refreshProfile();
-      toast.success("Welcome to nFlow by Nevorai!");
+      toast.success("Welcome to Nevorai Flow!");
       navigate("/dashboard");
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ const Onboarding = () => {
 
           {step === 3 && (
             <div className="space-y-4">
-              <Label className="text-base font-heading font-semibold">How did you hear about nFlow by Nevorai?</Label>
+              <Label className="text-base font-heading font-semibold">How did you hear about Nevorai Flow?</Label>
               <div className="grid grid-cols-2 gap-3">
                 {sources.map((s) => (
                   <button key={s} onClick={() => setData({ ...data, source: s })}

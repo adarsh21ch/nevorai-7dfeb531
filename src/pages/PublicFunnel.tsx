@@ -450,7 +450,7 @@ const CustomVideoPlayer = ({
           className="absolute right-3 text-[11px] text-white/75 font-medium pointer-events-none select-none z-10 tracking-wide"
           style={{ bottom: 56, textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
         >
-          nFlow by Nevorai
+          Nevorai Flow
         </div>
       )}
 
@@ -830,7 +830,7 @@ const PublicFunnel = () => {
 
   useEffect(() => {
     if (!funnel) return;
-    document.title = `${funnel.title} | nFlow by Nevorai`;
+    document.title = `${funnel.title} | Nevorai Flow`;
     const setMeta = (name: string, content: string, prop = false) => {
       const attr = prop ? "property" : "name";
       let el = document.querySelector(`meta[${attr}="${name}"]`);
@@ -843,7 +843,7 @@ const PublicFunnel = () => {
     setMeta("og:type", "website", true);
     setMeta("og:url", window.location.href, true);
     if (funnel.thumbnail_url) setMeta("og:image", funnel.thumbnail_url, true);
-    setMeta("og:site_name", "nFlow by Nevorai", true);
+    setMeta("og:site_name", "Nevorai Flow", true);
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", funnel.title);
     setMeta("twitter:description", funnel.description || funnel.title);
@@ -1023,7 +1023,7 @@ const PublicFunnel = () => {
         }}
       >
         <div className="flex items-center gap-2">
-          <img src={logoImg} alt="nFlow by Nevorai" className="h-6 w-6" />
+          <img src={logoImg} alt="Nevorai Flow" className="h-6 w-6" />
           <div className="flex items-baseline text-[16px]" style={{ lineHeight: 1 }}>
             <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontStyle: "italic", fontWeight: 300, color: tc.text, letterSpacing: "-0.02em" }}>n</span>
             <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontWeight: 800, color: tc.text, letterSpacing: "-0.03em" }}>Flow</span>
@@ -1313,7 +1313,7 @@ const PublicFunnel = () => {
         <div className="flex-1" />
 
         <div className="mt-16 pt-6 pb-8 text-center" style={{ borderTop: `1px solid ${tc.footerBorder}` }}>
-          <p className="text-[11px] tracking-wide" style={{ color: tc.footerText }}>© {new Date().getFullYear()} nFlow by Nevorai · All rights reserved</p>
+          <p className="text-[11px] tracking-wide" style={{ color: tc.footerText }}>© {new Date().getFullYear()} Nevorai Flow · All rights reserved</p>
         </div>
       </div>
       )}

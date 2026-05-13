@@ -75,7 +75,7 @@ export const HeroSection = () => {
             transition={{ duration: 0.6, delay: 1.0 }}
           >
             Most people share a YouTube link and <span className="text-white">hope</span> for the best.
-            nFlow by Nevorai <span className="text-brand-emerald">controls</span> what your prospect sees,
+            Nevorai Flow <span className="text-brand-emerald">controls</span> what your prospect sees,
             keeps them focused, captures their details, and follows up — <span className="text-white">automatically</span>.
           </motion.p>
 

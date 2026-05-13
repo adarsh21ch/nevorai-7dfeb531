@@ -9,7 +9,7 @@ interface BrandingWatermarkProps {
 }
 
 /**
- * Small "Powered by nFlow by Nevorai" badge shown on public pages owned by Free-tier users.
+ * Small "Powered by Nevorai Flow" badge shown on public pages owned by Free-tier users.
  * Hidden automatically when the owner is on a paid plan that disables branding.
  */
 export const BrandingWatermark = ({
@@ -38,14 +38,14 @@ export const BrandingWatermark = ({
   return (
     <div className={wrapper}>
       <a
-        href="https://nFlow by Nevorai.app/?ref=watermark"
+        href="https://Nevorai Flow.app/?ref=watermark"
         target="_blank"
         rel="noopener noreferrer"
         className={`${base} ${palette}`}
-        aria-label="Powered by nFlow by Nevorai"
+        aria-label="Powered by Nevorai Flow"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Powered by <span className="font-semibold">nFlow by Nevorai</span>
+        Powered by <span className="font-semibold">Nevorai Flow</span>
       </a>
     </div>
   );

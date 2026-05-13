@@ -101,7 +101,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { key: "multilevel_funnel_enabled", label: "Multi-Step Funnels", type: "boolean", category: "Features", dbField: "multilevel_funnel_enabled" },
   { key: "feature_team_analytics", label: "Team Dashboard", type: "boolean", category: "Features", dbField: "feature_team_analytics" },
   { key: "feature_custom_branding", label: "Custom Branding", type: "boolean", category: "Features", dbField: "feature_custom_branding" },
-  { key: "feature_show_branding", label: "Show nFlow by Nevorai Watermark", type: "boolean", category: "Features", hint: "If on, public funnel/landing/video pages show 'Made with nFlow by Nevorai' badge", dbField: "feature_show_branding" },
+  { key: "feature_show_branding", label: "Show Nevorai Flow Watermark", type: "boolean", category: "Features", hint: "If on, public funnel/landing/video pages show 'Made with Nevorai Flow' badge", dbField: "feature_show_branding" },
   { key: "feature_priority_support", label: "Priority Support", type: "boolean", category: "Features", dbField: "feature_priority_support" },
 
   // ─── PRICING ───────────────────────────────────────────────
