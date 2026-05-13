@@ -10,6 +10,7 @@ import { Trash2, GripVertical, Star, Loader2, MessageSquare, Video, FileText } f
 import { toast } from "sonner";
 import { TestimonialPhotoUpload } from "@/components/funnel/TestimonialPhotoUpload";
 import { TestimonialVideoUpload } from "@/components/funnel/TestimonialVideoUpload";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface TestimonialsBuilderStepProps {
   landingPageId: string | undefined;
