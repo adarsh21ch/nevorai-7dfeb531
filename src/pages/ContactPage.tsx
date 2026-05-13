@@ -23,7 +23,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div data-theme="dark" className="min-h-screen bg-hero-bg text-white">
       <Navbar />
       <section className="pt-32 pb-16">
         <div className="container-app max-w-2xl">

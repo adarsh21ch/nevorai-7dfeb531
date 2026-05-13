@@ -105,7 +105,7 @@ const EnterpriseInquiryPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div data-theme="dark" className="min-h-screen flex flex-col bg-hero-bg text-white">
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container-app max-w-5xl">
