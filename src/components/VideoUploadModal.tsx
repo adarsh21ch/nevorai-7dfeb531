@@ -145,9 +145,20 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
 
       // Persist the "allow copy link" preference + description on the new video asset
       if (result?.videoId) {
+        // Best-effort thumbnail capture from the first frame (silent fail).
+        let thumbnailUrl: string | null = null;
+        try {
+          thumbnailUrl = await captureFirstFrameDataUrl(file);
+        } catch {
+          thumbnailUrl = null;
+        }
         await supabase
           .from("video_assets")
-          .update({ allow_copy_link: allowCopyLink, description: cleanDescription || null })
+          .update({
+            allow_copy_link: allowCopyLink,
+            description: cleanDescription || null,
+            ...(thumbnailUrl ? { thumbnail_url: thumbnailUrl } : {}),
+          })
           .eq("id", result.videoId);
       }
 
