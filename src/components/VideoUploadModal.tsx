@@ -176,6 +176,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
       }
 
       toast.success("Video uploaded successfully!");
+      queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
       onSuccess();
       // Show the Done/Share step instead of immediately closing.
       setDoneVideoId(result?.videoId || null);
