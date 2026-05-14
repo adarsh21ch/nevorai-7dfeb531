@@ -75,12 +75,8 @@ export const VideoPickerModal = ({ open, onClose, onSelect }: Props) => {
                 onClick={() => onSelect(v.id, v.title, v.public_url, v.thumbnail_url)}
                 className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
               >
-                <div className="w-16 h-10 bg-muted rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
-                  {v.thumbnail_url ? (
-                    <img src={v.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <Video size={16} className="text-muted-foreground" />
-                  )}
+                <div className="w-16 flex-shrink-0">
+                  <VideoThumbnail thumbnailUrl={v.thumbnail_url} videoUrl={v.public_url} title={v.title} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{v.title}</p>
