@@ -38,14 +38,14 @@ export const BrandingWatermark = ({
   return (
     <div className={wrapper}>
       <a
-        href="https://Nevorai.app/?ref=watermark"
+        href="https://nevorai.com/?ref=watermark"
         target="_blank"
         rel="noopener noreferrer"
         className={`${base} ${palette}`}
-        aria-label="Powered by Nevorai"
+        aria-label="Built with Nevorai"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Powered by <span className="font-semibold">Nevorai</span>
+        Built with <span className="font-semibold">Nevorai · nevorai.com</span>
       </a>
     </div>
   );
