@@ -97,7 +97,7 @@ const Onboarding = () => {
         .eq("id", user.id);
       await refreshProfile();
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      if (showToast) toast.success("Welcome to nFlow!");
+      if (showToast) toast.success("Welcome to Nevorai!");
       navigate("/dashboard");
     } finally {
       setCompleting(false);
@@ -132,7 +132,7 @@ const Onboarding = () => {
   const phone = (profile as any)?.phone || (profile as any)?.whatsapp_number || "";
   const waUrl = publicUrl
     ? `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(
-        `🎬 My nFlow video — open it on your phone:\n${publicUrl}`,
+        `🎬 My Nevorai video — open it on your phone:\n${publicUrl}`,
       )}`
     : "";
 
@@ -177,7 +177,7 @@ const Onboarding = () => {
                 <Sparkles size={12} /> Welcome
               </div>
               <h1 className="text-2xl sm:text-3xl font-heading font-bold leading-tight">
-                Welcome to nFlow.
+                Welcome to Nevorai.
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                 In <span className="text-foreground font-semibold">60 seconds</span>, you'll see the magic.
@@ -267,7 +267,7 @@ const Onboarding = () => {
             <div className="space-y-5">
               <div className="text-center space-y-1">
                 <h2 className="text-xl sm:text-2xl font-heading font-bold">
-                  {finished ? "🎉 That's nFlow." : watching ? "👀 Watching now: You" : "Waiting for you to open it…"}
+                  {finished ? "🎉 That's Nevorai." : watching ? "👀 Watching now: You" : "Waiting for you to open it…"}
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   {finished

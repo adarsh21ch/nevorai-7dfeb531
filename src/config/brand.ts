@@ -1,7 +1,7 @@
 export const brand = {
   name: "Nevorai",
-  nameShort: "nFlow",
-  nameAccent: "nFlow",
+  nameShort: "Nevorai",
+  nameAccent: "Nevorai",
   fullBrand: "Nevorai",
   parent: "Nevorai",
   tagline: "See who's watching.",

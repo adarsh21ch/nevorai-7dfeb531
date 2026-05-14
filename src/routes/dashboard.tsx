@@ -143,7 +143,7 @@ function DashboardPage() {
                   Nevorai
                 </p>
                 <h1 className="mt-1 text-2xl font-heading font-bold">{greet}, {firstName} 👋</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Here's what's happening on nFlow today.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Here's what's happening on Nevorai today.</p>
               </div>
               <div className="flex gap-2">
                 <Link to="/funnels/create"><Button variant="hero" size="sm"><Plus size={14} /> Create Funnel</Button></Link>
