@@ -1,11 +1,8 @@
-import { Crown, AlertTriangle, ArrowRight, Infinity as InfinityIcon } from "lucide-react";
+import { Crown, AlertTriangle, ArrowRight } from "lucide-react";
 import { useNavigate } from "@/lib/router-compat";
-import { useQuery } from "@tanstack/react-query";
 import { useMonthlyViews } from "@/hooks/useMonthlyViews";
 import { useDailyViews } from "@/hooks/useDailyViews";
 import { usePlan } from "@/hooks/usePlan";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { planDisplay } from "@/config/planDisplay";
 import { format } from "date-fns";
 
@@ -16,22 +13,9 @@ export const DashboardKpiStrip = () => {
   const monthly = useMonthlyViews();
   const daily = useDailyViews();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const display = planDisplay(plan.tier);
   const expiresIn = plan.daysLeft ?? null;
   const showRenew = expiresIn !== null && expiresIn <= 7 && expiresIn > 0 && plan.isPaid;
-
-  const { data: unlimitedProfile } = useQuery({
-    queryKey: ["profile-unlimited", user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const { data } = await (supabase as any).from("profiles").select("is_unlimited").eq("id", user.id).maybeSingle();
-      return data as { is_unlimited: boolean } | null;
-    },
-    enabled: !!user,
-    staleTime: 60_000,
-  });
-  const isUnlimited = !!unlimitedProfile?.is_unlimited;
 
   const monthPct = monthly.isUnlimited ? 100 : monthly.pct;
   const dayPct = daily.isUnlimited ? 100 : daily.percent;
@@ -39,29 +23,6 @@ export const DashboardKpiStrip = () => {
   const resetDateFmt = (() => {
     try { return format(new Date(monthly.resetAt), "d MMM"); } catch { return "next month"; }
   })();
-
-  if (isUnlimited) {
-    return (
-      <div
-        className="flex items-center gap-4 rounded-2xl border border-purple-400/25 px-5 py-4 bg-gradient-to-br from-purple-500/10 to-violet-500/5"
-      >
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/15 text-purple-300">
-          <InfinityIcon size={28} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-base font-bold text-purple-300">Unlimited Access</span>
-            <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-200">Granted</span>
-          </div>
-          <p className="text-xs text-purple-200/70">No view limits · No restrictions</p>
-        </div>
-        <div className="hidden sm:flex flex-col items-end text-right">
-          <span className="text-xs text-muted-foreground">This month</span>
-          <span className="text-sm font-semibold">{fmt(monthly.used)} views</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
