@@ -31,3 +31,4 @@ export const Logo = ({ size = "default", showByline = false, variant = "short" }
       </div>
     </div>
   );
+};
