@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "@/lib/router-compat";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,27 @@ const PublicVideoPage = () => {
     staleTime: 10 * 60 * 1000,
   });
 
+  // Best-effort view ping — increments view_count once per browser session so
+  // the owner's onboarding "magic moment" sees them open it on their phone.
+  useEffect(() => {
+    if (!id) return;
+    const flag = `nflow:viewed:${id}`;
+    if (typeof window === "undefined" || sessionStorage.getItem(flag)) return;
+    sessionStorage.setItem(flag, "1");
+    (async () => {
+      try {
+        const { data } = await (supabase as any)
+          .from("video_assets")
+          .select("view_count")
+          .eq("id", id)
+          .maybeSingle();
+        const next = (data?.view_count ?? 0) + 1;
+        await (supabase as any).from("video_assets").update({ view_count: next }).eq("id", id);
+      } catch {
+        /* silent */
+      }
+    })();
+  }, [id]);
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

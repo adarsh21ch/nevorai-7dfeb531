@@ -24,7 +24,8 @@ import { StorageLimitModal } from "@/components/StorageLimitModal";
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (videoId?: string) => void;
+  skipStorageCheck?: boolean;
 }
 
 const ALLOWED_EXTENSIONS = [".mp4", ".mov", ".webm"];
@@ -58,7 +59,7 @@ const FORMAT_WARNING_MSG =
 const FORMAT_REJECT_MSG =
   "This format may not play correctly. For best results, upload a video downloaded from YouTube, or convert your video to MP4 using cloudconvert.com";
 
-export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
+export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = false }: Props) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -112,7 +113,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
     }
 
     // Storage quota gate — block before any upload starts.
-    if (!storage.isLoading && storage.wouldExceed(f.size)) {
+    if (!skipStorageCheck && !storage.isLoading && storage.wouldExceed(f.size)) {
       setStorageLimitOpen(true);
       if (fileRef.current) fileRef.current.value = "";
       return;
@@ -177,7 +178,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
 
       toast.success("Video uploaded successfully!");
       queryClient.invalidateQueries({ queryKey: ["storage-usage"] });
-      onSuccess();
+      onSuccess(result?.videoId);
       // Show the Done/Share step instead of immediately closing.
       setDoneVideoId(result?.videoId || null);
       setUploading(false);

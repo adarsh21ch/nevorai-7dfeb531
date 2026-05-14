@@ -43,6 +43,12 @@ const Dashboard = () => {
   const daily = useDailyViews();
   const { hasVideos, latestVideo, isLoading: videosLoading } = useHasVideos();
 
+  // First-run "magic moment" onboarding: send brand-new users through the
+  // 4-step self-share flow before they ever see the dashboard.
+  if (user && profile && profile.onboarding_completed === false) {
+    return <Navigate to="/onboarding" />;
+  }
+
   // Upload-first onboarding: brand-new users with zero videos go straight to upload.
   if (user && !videosLoading && !hasVideos) {
     return <Navigate to="/onboarding-upload" />;
