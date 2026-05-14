@@ -15,8 +15,8 @@ import { UpgradeModal } from "@/components/UpgradeModal";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
-const FunnelsPage = () => {
-  useDocumentTitle("Funnels");
+const FunnelsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
+  useDocumentTitle(embedded ? "Tools" : "Funnels");
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
