@@ -22,8 +22,8 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!loading && !isLoading && user && !isAdmin) {
       toast({
-        title: "Access removed",
-        description: "Your administrator access is no longer active.",
+        title: "Page not found",
+        description: "The page you're looking for doesn't exist.",
         variant: "destructive",
       });
     }
