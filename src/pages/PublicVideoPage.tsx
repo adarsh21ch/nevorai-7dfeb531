@@ -80,27 +80,9 @@ const PublicVideoPage = () => {
     })();
   }, [id]);
 
-  // Per-video meta tags
-  useEffect(() => {
-    if (!video || typeof document === "undefined") return;
-    document.title = `${video.title} — Nevorai`;
-    const setMeta = (name: string, content: string, prop = false) => {
-      const attr = prop ? "property" : "name";
-      let el = document.querySelector(`meta[${attr}="${name}"]`);
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attr, name);
-        document.head.appendChild(el);
-      }
-      el.setAttribute("content", content);
-    };
-    setMeta("description", video.description || video.title);
-    setMeta("og:title", video.title, true);
-    setMeta("og:description", video.description || video.title, true);
-    setMeta("og:url", window.location.href, true);
-    if (video.thumbnail_url) setMeta("og:image", video.thumbnail_url, true);
-    setMeta("og:site_name", "Nevorai", true);
-  }, [video]);
+  // Meta tags are handled server-side by the route's head() (see src/routes/v.$id.tsx)
+  // so social crawlers (WhatsApp, Telegram, iMessage, Twitter) get them in the
+  // initial HTML response without running JavaScript.
 
   const handleCopyLink = () => {
     try {
