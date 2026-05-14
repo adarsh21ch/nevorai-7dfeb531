@@ -73,6 +73,8 @@ export const VideoUploadModal = ({ open, onClose, onSuccess }: Props) => {
   const [tipOpen, setTipOpen] = useState(false);
   const [allowCopyLink, setAllowCopyLink] = useState(true);
   const [doneVideoId, setDoneVideoId] = useState<string | null>(null);
+  const [storageLimitOpen, setStorageLimitOpen] = useState(false);
+  const storage = useStorageUsage();
 
   const reset = () => {
     setFile(null);
