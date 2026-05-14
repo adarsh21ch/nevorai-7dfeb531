@@ -194,7 +194,7 @@ const PublicVideoPage = () => {
         )}
 
         <div className="mt-8 text-center">
-          <p className="text-xs text-muted-foreground"><span className="gradient-text font-heading font-semibold">Nevorai</span> by Nevorai</p>
+          <p className="text-xs text-muted-foreground"><span className="gradient-text font-heading font-semibold">Nevorai</span></p>
         </div>
       </div>
 

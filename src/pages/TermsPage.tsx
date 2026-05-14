@@ -21,7 +21,7 @@ const TermsPage = () => {
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">1. About Nevorai</h2>
               <p>
-                Nevorai is a distraction-free video funnel platform built by Nevorai for creators, coaches, and
+                Nevorai is a distraction-free video funnel platform built by the Nevorai team for creators, coaches, and
                 educators. These terms govern your use of the Nevorai application and all related services.
               </p>
             </section>

@@ -223,7 +223,7 @@ const ProfilePage = () => {
 
         {/* FOOTER */}
         <p className="pt-2 pb-6 text-center text-[11px] text-muted-foreground">
-          Nevorai by Nevorai · v1.0 · Made with <span aria-hidden>❤️</span> in India
+          Nevorai · v1.0 · Made with <span aria-hidden>❤️</span> in India
         </p>
 
         {/* Upgrade CTA pinned at bottom for non-pro */}

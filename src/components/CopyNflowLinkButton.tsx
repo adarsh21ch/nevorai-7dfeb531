@@ -52,7 +52,7 @@ export const CopyNflowLinkButton = ({ videoId, className = "" }: Props) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent side="top" align="end" className="w-64 text-xs leading-relaxed">
-          Copy this link to use this video in your own funnel. Open Nevorai → Videos → <span className="font-medium">Add by Nevorai Link</span>, then paste it.
+          Copy this link to use this video in your own funnel. Open Nevorai → Videos → <span className="font-medium">Add via Nevorai Link</span>, then paste it.
         </PopoverContent>
       </Popover>
     </div>
