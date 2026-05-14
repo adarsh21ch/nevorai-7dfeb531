@@ -165,6 +165,8 @@ function DashboardPage() {
           <p className="mt-1 text-sm text-muted-foreground">{remainingToday} remaining today · {daily.isUnlimited ? "Unlimited plan" : `Daily limit ${fmt(daily.limit)}`}</p>
         </Link>
 
+        <WatchingNowStrip />
+
         <DashboardKpiStrip />
 
         {/* Secondary KPIs */}
