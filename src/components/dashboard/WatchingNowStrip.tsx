@@ -56,15 +56,7 @@ export const WatchingNowStrip = () => {
     },
   });
 
-  const copyShareLink = async () => {
-    const link = `${window.location.origin}/dashboard`;
-    try {
-      await navigator.clipboard.writeText(link);
-      toast.success("Link copied to clipboard");
-    } catch {
-      toast.error("Couldn't copy link");
-    }
-  };
+  const navigate = useNavigate();
 
   return (
     <section className="rounded-2xl border border-border bg-card/50 p-4 sm:p-5">
@@ -77,20 +69,21 @@ export const WatchingNowStrip = () => {
           <h2 className="text-sm font-heading font-semibold">Watching right now</h2>
         </div>
         <Link to="/insights" className="flex items-center gap-1 text-xs text-primary hover:underline">
-          See all in Insights <ArrowRight size={12} />
+          See all in Activity <ArrowRight size={12} />
         </Link>
       </div>
 
       {liveViewers.length === 0 ? (
-        <div className="flex flex-col items-start gap-3 rounded-xl bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <Radio size={18} className="mt-0.5 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Share your nFlow link to start seeing viewers in real-time.
-            </p>
+        <div className="rounded-xl bg-muted/30 p-5 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <Eye size={18} className="text-muted-foreground" />
           </div>
-          <Button size="sm" variant="outline" onClick={copyShareLink}>
-            <Copy size={14} /> Copy link
+          <p className="text-sm font-medium">No one watching right now</p>
+          <p className="mx-auto mt-1 max-w-xs text-xs text-muted-foreground">
+            Share your link to start seeing real-time viewers.
+          </p>
+          <Button size="sm" variant="outline" className="mt-3" onClick={() => navigate("/videos")}>
+            Open My Videos <ArrowRight size={14} />
           </Button>
         </div>
       ) : (
