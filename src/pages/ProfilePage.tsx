@@ -9,17 +9,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  User, Crown, ArrowRight, Lock, Check, CreditCard, FileCheck,
+  Crown, ArrowRight, CreditCard, FileCheck, IndianRupee,
   Bell, Settings, Download, ChevronRight, ChevronDown, Pencil,
-  Sun, Moon, HelpCircle, LogOut, FileText, Radio,
+  Sun, Moon, HelpCircle, LogOut, Shield, Infinity as InfinityIcon,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { Switch } from "@/components/ui/switch";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import { Progress } from "@/components/ui/progress";
 import { Link } from "@/lib/router-compat";
 import { usePlan } from "@/hooks/usePlan";
-import { format } from "date-fns";
+import { useAdmin } from "@/hooks/useAdmin";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { sanitizeFields, normalizePhone } from "@/lib/sanitize";
 import { StorageUsageCard } from "@/components/StorageUsageCard";
@@ -29,7 +28,8 @@ const ProfilePage = () => {
   const { user, profile, refreshProfile, signOut } = useAuth();
   const { plan } = usePlan();
   const { theme, toggleTheme } = useTheme();
-  const { isFree, config, counts, tier, canUseMultilevel } = usePlanLimits();
+  const { isAdmin } = useAdmin();
+  const trial = useTrialStatus();
   const [loading, setLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({
@@ -49,7 +49,6 @@ const ProfilePage = () => {
 
   const handleSave = async () => {
     if (!user) return;
-    // Strip any HTML/JS injection from text fields before persisting.
     const cleanForm = sanitizeFields(form, [
       "full_name", "city", "bio", "company", "instagram_url",
     ]);
@@ -63,120 +62,97 @@ const ProfilePage = () => {
     toast.success("Profile updated!");
   };
 
-  const usageBar = (label: string, current: number, max: number) => {
-    const pct = max === -1 ? 0 : Math.min((current / max) * 100, 100);
-    const isHigh = max !== -1 && pct >= 90;
-    return (
-      <div className="space-y-1">
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground">{label}</span>
-          <span className={`font-medium ${isHigh ? "text-destructive" : ""}`}>
-            {current} / {max === -1 ? "∞" : max} used
-          </span>
-        </div>
-        {max !== -1 && (
-          <Progress value={pct} className={`h-2 ${isHigh ? "[&>div]:bg-destructive" : "[&>div]:bg-primary"}`} />
-        )}
-      </div>
-    );
-  };
-
-  const tierBadge = isFree
-    ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold uppercase tracking-wider">Free</span>
-    : tier === "basic"
-    ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-400/30 font-semibold uppercase tracking-wider">Basic</span>
-    : <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/10 text-success font-semibold uppercase tracking-wider">Pro</span>;
-
   const initials = (profile?.full_name || "U")
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+    .split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+
+  const tier = plan.tier;
+  const isPro = tier === "pro";
+  const isBasic = tier === "basic";
+  const isTrial = tier === "trial" || (trial.subscriptionStatus === "trial" && !trial.isTrialExpired);
+  const planLabel = isPro
+    ? "Pro Plan"
+    : isBasic
+    ? "Basic Plan"
+    : isTrial
+    ? `Trial · ${trial.trialDaysRemaining ?? 0} days left`
+    : "Free Plan";
+
+  const accountItems = [
+    { icon: FileCheck, label: "Get Verified", path: "/kyc", desc: "KYC for payouts" },
+    { icon: CreditCard, label: "Billing", path: "/billing", desc: "Subscription & invoices" },
+    ...(!isPro ? [{ icon: Crown, label: "Upgrade to Pro", path: "/pricing", desc: "Unlock everything" }] : []),
+    { icon: IndianRupee, label: "Payments", path: "/payments", desc: "Customer payments & history" },
+  ];
+
+  const preferenceItems = [
+    { icon: Bell, label: "Notifications", path: "/notifications", desc: "Alerts & updates" },
+    { icon: Settings, label: "Settings", path: "/settings", desc: "App preferences" },
+  ];
+
+  const supportItems = [
+    { icon: HelpCircle, label: "Help & Support", path: "/help", desc: "Tutorials, FAQs and contact support" },
+    { icon: Download, label: "Install App", path: "/install", desc: "Add to home screen" },
+  ];
+
+  const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+    <p className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{children}</p>
+  );
+
+  const Row = ({ icon: Icon, label, path, desc, danger }: any) => (
+    <Link to={path}
+      className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-muted/50 transition-colors group">
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${danger ? "bg-destructive/10" : "bg-primary/10"}`}>
+        <Icon size={14} className={danger ? "text-destructive" : "text-primary"} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-medium ${danger ? "text-destructive" : ""}`}>{label}</p>
+        <p className="text-[10px] text-muted-foreground">{desc}</p>
+      </div>
+      <ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+    </Link>
+  );
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl space-y-5">
-        {/* Hero badge card — name, email, plan, avatar */}
+      <div className="max-w-3xl space-y-5">
+        {/* PROFILE HEADER */}
         <div className="premium-card p-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center shrink-0">
-              <span className="text-lg font-heading font-bold text-primary">{initials}</span>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center shrink-0">
+              <span className="text-xl font-heading font-bold text-primary">{initials}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="font-heading font-bold text-lg truncate">{profile?.full_name || "User"}</h2>
-                {tierBadge}
-              </div>
+              <h2 className="font-heading font-bold text-lg truncate">{profile?.full_name || "User"}</h2>
               <p className="text-sm text-muted-foreground truncate">{profile?.email}</p>
-              {profile?.city && <p className="text-xs text-muted-foreground mt-0.5">{profile.city}{profile.company ? ` · ${profile.company}` : ""}</p>}
+              <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5">
+                <Crown size={11} className="text-primary" />
+                <span className="text-[11px] font-semibold text-primary">{planLabel}</span>
+                {isPro && <InfinityIcon size={12} className="text-primary" />}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Plan & Usage */}
-        <div className="premium-card p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="stat-icon">
-                <Crown size={16} className="text-primary" />
-              </div>
-              <div>
-                <h3 className="font-heading font-semibold text-sm">{tier === "basic" ? "Basic" : tier === "trial" ? "Free Trial" : tier.charAt(0).toUpperCase() + tier.slice(1)} Plan</h3>
-                {!isFree && plan.billingType && (
-                  <p className="text-[11px] text-muted-foreground capitalize">
-                    {plan.billingType} · {plan.expiresAt ? `Renews ${format(new Date(plan.expiresAt), "d MMM yyyy")}` : "Active"}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              {(isFree || plan.isExpired || plan.isExpiringSoon || tier === "basic") && (
-                <Link to="/pricing">
-                  <Button size="sm" variant="hero" className="h-8 text-xs gap-1">
-                    {plan.isExpired ? "Renew" : isFree ? "Upgrade" : "Upgrade"} <ArrowRight size={12} />
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
+        {/* ACCOUNT */}
+        <div className="premium-card p-2 space-y-0.5">
+          <SectionLabel>Account</SectionLabel>
 
-          {!isFree && (
-            <div className="space-y-2.5 pt-3 border-t border-border">
-              {usageBar("Funnels", counts.funnels, config.max_funnels)}
-              {usageBar("Landing Pages", counts.landing_pages, config.max_landing_pages)}
-              {usageBar("Live Sessions", counts.live_sessions, config.max_live_sessions)}
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Multi-level Funnels</span>
-                {canUseMultilevel ? (
-                  <span className="flex items-center gap-1 text-success"><Check size={12} /> Enabled</span>
-                ) : (
-                  <span className="flex items-center gap-1 text-muted-foreground"><Lock size={12} /> Locked</span>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Storage usage */}
-        <StorageUsageCard />
-
-        {/* Edit Profile — Collapsible */}
-        <Collapsible open={editOpen} onOpenChange={setEditOpen}>
-          <div className="premium-card overflow-hidden">
+          {/* Edit Profile — collapsible */}
+          <Collapsible open={editOpen} onOpenChange={setEditOpen}>
             <CollapsibleTrigger asChild>
-              <button className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="stat-icon">
-                    <Pencil size={14} className="text-primary" />
-                  </div>
-                  <span className="text-sm font-heading font-semibold">Edit Profile</span>
+              <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-muted/50 transition-colors text-left">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Pencil size={14} className="text-primary" />
                 </div>
-                <ChevronDown size={16} className={`text-muted-foreground transition-transform ${editOpen ? "rotate-180" : ""}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">Edit Profile</p>
+                  <p className="text-[10px] text-muted-foreground">Name, phone, bio and socials</p>
+                </div>
+                <ChevronDown size={14} className={`text-muted-foreground transition-transform ${editOpen ? "rotate-180" : ""}`} />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="px-5 pb-5 space-y-4 border-t border-border pt-4">
+              <div className="px-4 pb-4 pt-2 space-y-4 border-t border-border mt-2">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div><Label className="text-xs">Full Name</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="mt-1 bg-muted border-border" /></div>
                   <div><Label className="text-xs">Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1 bg-muted border-border" /></div>
@@ -189,13 +165,18 @@ const ProfilePage = () => {
                 <Button variant="hero" size="sm" onClick={handleSave} disabled={loading}>{loading ? "Saving..." : "Save Profile"}</Button>
               </div>
             </CollapsibleContent>
-          </div>
-        </Collapsible>
+          </Collapsible>
 
-        {/* Appearance */}
-        <div className="premium-card p-4">
-          <p className="px-1 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Appearance</p>
-          <div className="flex items-center justify-between rounded-lg px-2 py-2">
+          {accountItems.map((item) => <Row key={item.path} {...item} />)}
+        </div>
+
+        {/* Storage Usage */}
+        <StorageUsageCard />
+
+        {/* PREFERENCES */}
+        <div className="premium-card p-2 space-y-0.5">
+          <SectionLabel>Preferences</SectionLabel>
+          <div className="flex items-center justify-between rounded-lg px-4 py-2.5">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 {theme === "dark" ? <Moon size={14} className="text-primary" /> : <Sun size={14} className="text-primary" />}
@@ -207,33 +188,25 @@ const ProfilePage = () => {
             </div>
             <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} aria-label="Toggle dark mode" />
           </div>
+          {preferenceItems.map((item) => <Row key={item.path} {...item} />)}
         </div>
 
-        {/* Account Quick Links */}
+        {/* SUPPORT */}
         <div className="premium-card p-2 space-y-0.5">
-          <p className="px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Account</p>
-          {[
-            { icon: FileText, label: "Landing Pages", path: "/landing-pages", desc: "Create pages for your videos" },
-            { icon: Radio, label: "Live Sessions", path: "/live", desc: "Go live with your prospects" },
-            { icon: CreditCard, label: "Billing", path: "/billing", desc: "Subscription & payments" },
-            { icon: FileCheck, label: "Get Verified", path: "/kyc", desc: "KYC for payouts" },
-            { icon: Bell, label: "Notifications", path: "/notifications", desc: "Alerts & updates" },
-            { icon: HelpCircle, label: "Help & Support", path: "/help", desc: "Tutorials, FAQs and contact support" },
-            { icon: Settings, label: "Settings", path: "/settings", desc: "App preferences" },
-            { icon: Download, label: "Install App", path: "/install", desc: "Add to home screen" },
-          ].map((item) => (
-            <Link key={item.path} to={item.path}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-muted/50 transition-colors group">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <item.icon size={14} className="text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{item.label}</p>
-                <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-              </div>
-              <ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
-            </Link>
-          ))}
+          <SectionLabel>Support</SectionLabel>
+          {supportItems.map((item) => <Row key={item.path} {...item} />)}
+        </div>
+
+        {/* ADMIN — only for admins */}
+        {isAdmin && (
+          <div className="premium-card p-2 space-y-0.5">
+            <SectionLabel>Admin</SectionLabel>
+            <Row icon={Shield} label="Admin Panel" path="/admin" desc="Manage users, plans, and system settings" />
+          </div>
+        )}
+
+        {/* LOGOUT */}
+        <div className="premium-card p-2">
           <button
             onClick={async () => { await signOut(); }}
             className="flex w-full items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-destructive/10 transition-colors text-left"
@@ -247,6 +220,22 @@ const ProfilePage = () => {
             </div>
           </button>
         </div>
+
+        {/* FOOTER */}
+        <p className="pt-2 pb-6 text-center text-[11px] text-muted-foreground">
+          [APP_NAME] by Nevorai · v1.0 · Made with <span aria-hidden>❤️</span> in India
+        </p>
+
+        {/* Upgrade CTA pinned at bottom for non-pro */}
+        {!isPro && (
+          <div className="fixed bottom-20 right-4 z-40 md:hidden">
+            <Link to="/pricing">
+              <Button variant="hero" size="sm" className="shadow-lg">
+                Upgrade <ArrowRight size={14} />
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
