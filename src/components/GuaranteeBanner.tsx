@@ -12,7 +12,7 @@ export const GuaranteeBanner = () => {
             7-Day Money-Back Guarantee
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Try Nevorai Flow completely risk-free. If you're not happy within 7 days of your first
+            Try nFlow by Nevorai completely risk-free. If you're not happy within 7 days of your first
             payment — we'll refund every rupee. No questions asked.
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">

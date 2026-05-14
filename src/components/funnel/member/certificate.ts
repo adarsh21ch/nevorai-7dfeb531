@@ -128,7 +128,7 @@ export async function downloadCertificate(opts: {
   // Footer brand
   ctx.fillStyle = "#64748b";
   ctx.font = "16px sans-serif";
-  ctx.fillText("Issued via Nevorai Flow", W / 2, H - 90);
+  ctx.fillText("Issued via nFlow by Nevorai", W / 2, H - 90);
 
   // Trigger download
   const blob: Blob = await new Promise((resolve) =>

@@ -12,7 +12,7 @@ const PrivacyPage = () => {
             <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">Privacy Policy</h1>
             <p className="text-sm text-muted-foreground mb-6">Last updated: May 2026</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Nevorai Flow respects your privacy. This policy explains what data we collect, how we use it,
+              nFlow by Nevorai respects your privacy. This policy explains what data we collect, how we use it,
               and how we protect it. We comply with the Information Technology Act, 2000 and its amendments
               applicable in India.
             </p>
@@ -22,9 +22,9 @@ const PrivacyPage = () => {
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">1. Who We Are</h2>
               <p className="mb-3">
-                Nevorai Flow is a product of Nevorai. We build a distraction-free video funnel platform for creators,
-                coaches, and educators. When we say "Nevorai Flow", "we", "us", or "our" in this policy, we mean
-                Nevorai and the Nevorai Flow application.
+                nFlow by Nevorai is a product of Nevorai. We build a distraction-free video funnel platform for creators,
+                coaches, and educators. When we say "nFlow by Nevorai", "we", "us", or "our" in this policy, we mean
+                Nevorai and the nFlow by Nevorai application.
               </p>
               <p>
                 For any privacy-related concerns, contact us at{" "}
@@ -37,7 +37,7 @@ const PrivacyPage = () => {
               <ul className="list-disc pl-5 space-y-2">
                 <li><strong className="text-foreground">Account data:</strong> Name, email, phone number (when provided), and password (stored encrypted).</li>
                 <li><strong className="text-foreground">Lead data:</strong> Names, emails, phone numbers, and details your viewers submit through your funnels and landing pages.</li>
-                <li><strong className="text-foreground">Funnel content:</strong> Videos, thumbnails, copy, and any media you upload to Nevorai Flow.</li>
+                <li><strong className="text-foreground">Funnel content:</strong> Videos, thumbnails, copy, and any media you upload to nFlow by Nevorai.</li>
                 <li><strong className="text-foreground">Engagement data:</strong> Video views, watch progress, session timestamps, and viewer interactions.</li>
                 <li><strong className="text-foreground">Usage data:</strong> Pages visited, features used, session duration, device type, and browser.</li>
                 <li><strong className="text-foreground">Payment data:</strong> Plan type and payment status. We do NOT store card numbers — payments are processed by Razorpay.</li>
@@ -50,7 +50,7 @@ const PrivacyPage = () => {
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">3. How We Use Your Data</h2>
               <p className="mb-3">We use your data to:</p>
               <ul className="list-disc pl-5 space-y-2 mb-3">
-                <li>Provide and improve the Nevorai Flow service.</li>
+                <li>Provide and improve the nFlow by Nevorai service.</li>
                 <li>Send you account-related emails (verification, payment receipts, plan updates).</li>
                 <li>Show you funnel analytics, lead activity, and viewer engagement inside the app.</li>
                 <li>Enforce plan limits (monthly views, funnels, videos) and manage your subscription.</li>
@@ -137,7 +137,7 @@ const PrivacyPage = () => {
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">10. Children's Privacy</h2>
               <p>
-                Nevorai Flow is not intended for users under the age of 18. We do not knowingly collect data from minors.
+                nFlow by Nevorai is not intended for users under the age of 18. We do not knowingly collect data from minors.
                 If you believe a minor has created an account, contact us and we will delete it immediately.
               </p>
             </section>
@@ -146,7 +146,7 @@ const PrivacyPage = () => {
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">11. Changes to This Policy</h2>
               <p>
                 We may update this policy from time to time. We will notify you via email or an in-app notice
-                if we make significant changes. Continued use of Nevorai Flow after changes means you accept the
+                if we make significant changes. Continued use of nFlow by Nevorai after changes means you accept the
                 updated policy.
               </p>
             </section>

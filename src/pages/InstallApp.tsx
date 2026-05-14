@@ -41,7 +41,7 @@ const InstallApp = () => {
             <Check size={32} className="text-primary" />
           </div>
           <h1 className="text-xl font-bold">You're using the app!</h1>
-           <p className="text-sm text-muted-foreground">Nevorai Flow is already installed on your device.</p>
+           <p className="text-sm text-muted-foreground">nFlow by Nevorai is already installed on your device.</p>
           <Link to="/dashboard"><Button className="w-full">Go to Dashboard</Button></Link>
         </Card>
       </div>
@@ -58,9 +58,9 @@ const InstallApp = () => {
       <main className="flex-1 px-4 py-8 max-w-lg mx-auto w-full space-y-6">
         <div className="text-center space-y-2">
           <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto shadow-lg">
-            <img src="/icons/icon-512x512.png" alt="Nevorai Flow" className="w-full h-full" />
+            <img src="/icons/icon-512x512.png" alt="nFlow by Nevorai" className="w-full h-full" />
           </div>
-          <h1 className="text-2xl font-bold mt-4">Install Nevorai Flow</h1>
+          <h1 className="text-2xl font-bold mt-4">Install nFlow by Nevorai</h1>
           <div className="page-header-accent" />
           <p className="text-muted-foreground text-sm">Get the app on your phone for the best experience — instant access, full screen, no browser bars.</p>
         </div>
@@ -69,7 +69,7 @@ const InstallApp = () => {
           <Card className="p-6 text-center space-y-3 border-primary/20">
             <Check size={40} className="text-primary mx-auto" />
             <h2 className="font-semibold">App Installed! 🎉</h2>
-            <p className="text-sm text-muted-foreground">You can now find Nevorai Flow on your home screen.</p>
+            <p className="text-sm text-muted-foreground">You can now find nFlow by Nevorai on your home screen.</p>
           </Card>
         ) : deferredPrompt ? (
           <Button onClick={handleInstall} className="w-full" size="lg">

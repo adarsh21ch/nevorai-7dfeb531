@@ -64,7 +64,7 @@ export const WhyNevorai = () => {
             </div>
             <div className="rounded-xl bg-success/10 border border-success/20 px-4 py-3 text-center">
               <span className="font-heading font-bold text-sm md:text-base text-success">
-                ✅ Nevorai Flow
+                ✅ nFlow by Nevorai
               </span>
             </div>
           </div>
@@ -116,7 +116,7 @@ export const WhyNevorai = () => {
           <p className="text-lg md:text-xl font-heading font-semibold text-foreground">
             YouTube gives views.{" "}
             <span className="text-gradient-brand">
-              Nevorai Flow gives control + data + conversion.
+              nFlow by Nevorai gives control + data + conversion.
             </span>
           </p>
         </motion.div>

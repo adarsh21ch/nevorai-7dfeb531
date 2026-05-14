@@ -19,7 +19,7 @@ const AboutPage = () => {
               <span className="gradient-text">real business outcomes.</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Nevorai Flow helps digital entrepreneurs turn ordinary videos into structured funnels, track engagement, capture leads, and guide viewers step by step.
+              nFlow by Nevorai helps digital entrepreneurs turn ordinary videos into structured funnels, track engagement, capture leads, and guide viewers step by step.
             </p>
           </motion.div>
 
@@ -34,10 +34,10 @@ const AboutPage = () => {
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Lightbulb className="text-primary" size={20} />
                 </div>
-                <h2 className="text-xl font-heading font-semibold">What is Nevorai Flow?</h2>
+                <h2 className="text-xl font-heading font-semibold">What is nFlow by Nevorai?</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Nevorai Flow is a smart video funnel platform that helps creators and digital entrepreneurs turn random video sharing into structured journeys that generate leads, attention, and action. Instead of sending viewers to platforms full of distractions, you give them a focused, trackable experience.
+                nFlow by Nevorai is a smart video funnel platform that helps creators and digital entrepreneurs turn random video sharing into structured journeys that generate leads, attention, and action. Instead of sending viewers to platforms full of distractions, you give them a focused, trackable experience.
               </p>
             </motion.div>
 
@@ -54,7 +54,7 @@ const AboutPage = () => {
                 <h2 className="text-xl font-heading font-semibold">Why we built it</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Most people share videos on platforms where viewers get distracted, skip content, or disappear without taking action. There was no simple tool to turn a video into a structured experience with lead capture, progress tracking, and guided next steps. Nevorai Flow was built to solve exactly that.
+                Most people share videos on platforms where viewers get distracted, skip content, or disappear without taking action. There was no simple tool to turn a video into a structured experience with lead capture, progress tracking, and guided next steps. nFlow by Nevorai was built to solve exactly that.
               </p>
             </motion.div>
 
@@ -71,7 +71,7 @@ const AboutPage = () => {
                 <h2 className="text-xl font-heading font-semibold">Who it's for</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Nevorai Flow is designed for digital entrepreneurs, creators, coaches, educators, and audience-based businesses — anyone who uses video to grow their reach and wants more control over how their content is consumed and converted.
+                nFlow by Nevorai is designed for digital entrepreneurs, creators, coaches, educators, and audience-based businesses — anyone who uses video to grow their reach and wants more control over how their content is consumed and converted.
               </p>
             </motion.div>
 

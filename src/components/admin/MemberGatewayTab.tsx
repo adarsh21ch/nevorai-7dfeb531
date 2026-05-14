@@ -138,7 +138,7 @@ export const MemberGatewayTab = () => {
               Nevorai Pro Gateway
             </h3>
             <p className="text-xs text-muted-foreground mt-1">
-              When enabled, Nevorai calling app Pro users automatically get Individual plan access in Nevorai Flow.
+              When enabled, Nevorai calling app Pro users automatically get Individual plan access in nFlow by Nevorai.
             </p>
           </div>
           <Switch
@@ -279,7 +279,7 @@ export const MemberGatewayTab = () => {
               <pre className="bg-muted/40 rounded-lg p-3 text-[11px] whitespace-pre-wrap font-sans text-muted-foreground">
                 {settings.notification_template
                   .replace("{{name}}", "[Name]")
-                  .replace("{{login_url}}", "[Nevorai Flow login link]")}
+                  .replace("{{login_url}}", "[nFlow by Nevorai login link]")}
               </pre>
               <p className="text-[10px] text-muted-foreground">
                 Variables: <code>{"{{name}}"}</code>, <code>{"{{login_url}}"}</code>
@@ -295,7 +295,7 @@ export const MemberGatewayTab = () => {
           <div>
             <h3 className="text-sm font-heading font-semibold sm:text-base">Member Users</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              {members.length} Nevorai member{members.length === 1 ? "" : "s"} in Nevorai Flow
+              {members.length} Nevorai member{members.length === 1 ? "" : "s"} in nFlow by Nevorai
             </p>
           </div>
           <Button size="sm" variant="outline" className="text-xs h-8" onClick={runManualCheck}>

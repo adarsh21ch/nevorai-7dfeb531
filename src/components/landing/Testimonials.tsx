@@ -6,7 +6,7 @@ const items = [
     name: "Priya S.",
     role: "Network Marketing Leader, Pune",
     quote:
-      "I used to send YouTube links and follow up manually for days. With Nevorai Flow, my prospect watches the full video, their number is captured automatically, and I get a WhatsApp lead instantly. My conversion went from 6% to almost 20%.",
+      "I used to send YouTube links and follow up manually for days. With nFlow by Nevorai, my prospect watches the full video, their number is captured automatically, and I get a WhatsApp lead instantly. My conversion went from 6% to almost 20%.",
   },
   {
     name: "Rahul M.",
@@ -35,7 +35,7 @@ export const Testimonials = () => {
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-3">
             What Our <span className="text-gradient-brand">Users Say</span>
           </h2>
-          <p className="text-hero-muted">Network marketers and entrepreneurs using Nevorai Flow.</p>
+          <p className="text-hero-muted">Network marketers and entrepreneurs using nFlow by Nevorai.</p>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 items-stretch">

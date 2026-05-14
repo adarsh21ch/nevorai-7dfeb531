@@ -10,12 +10,12 @@ import {
 
 const faqs = [
   { q: "Is there a free plan?", a: "Yes! You can start with our free plan — 2 funnels, 5 videos, and basic lead capture. Upgrade anytime when you're ready for more." },
-  { q: "Who is Nevorai Flow for?", a: "Nevorai Flow is built for digital entrepreneurs, creators, coaches, educators, and anyone who uses video to grow their audience and business." },
+  { q: "Who is nFlow by Nevorai for?", a: "nFlow by Nevorai is built for digital entrepreneurs, creators, coaches, educators, and anyone who uses video to grow their audience and business." },
   { q: "Can I use my own videos?", a: "Absolutely. Upload your own videos and turn them into structured funnels with lead capture, progress tracking, and guided steps." },
   { q: "Can I collect leads from viewers?", a: "Yes. You can capture name, phone, email, city, and even custom fields — before, during, or after video playback." },
   { q: "Can I track how much of a video someone watched?", a: "Yes! Viewer progress tracking shows exactly who watched, how far they got, and where they dropped off — so you can follow up smarter." },
   { q: "Can I create step-by-step funnels?", a: "Yes. Turn a single video into a multi-step guided journey with unlock rules, progression, and structured viewer flow." },
-  { q: "Do I need technical skills to use it?", a: "Not at all. Nevorai Flow is designed for non-technical users. Upload, configure, share — it's that simple." },
+  { q: "Do I need technical skills to use it?", a: "Not at all. nFlow by Nevorai is designed for non-technical users. Upload, configure, share — it's that simple." },
   { q: "What if I need help?", a: "We offer priority WhatsApp support for paid plans. Free users can reach us via email. We're always here to help." },
 ];
 

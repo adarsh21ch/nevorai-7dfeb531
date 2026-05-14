@@ -12,17 +12,17 @@ const TermsPage = () => {
             <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">Terms of Service</h1>
             <p className="text-sm text-muted-foreground mb-6">Last updated: May 2026</p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              By creating an account or using Nevorai Flow, you agree to these Terms of Service. Please read them
-              carefully. If you do not agree, do not use Nevorai Flow.
+              By creating an account or using nFlow by Nevorai, you agree to these Terms of Service. Please read them
+              carefully. If you do not agree, do not use nFlow by Nevorai.
             </p>
           </motion.div>
 
           <div className="space-y-8 text-sm text-muted-foreground leading-relaxed">
             <section>
-              <h2 className="text-lg font-heading font-semibold text-foreground mb-3">1. About Nevorai Flow</h2>
+              <h2 className="text-lg font-heading font-semibold text-foreground mb-3">1. About nFlow by Nevorai</h2>
               <p>
-                Nevorai Flow is a distraction-free video funnel platform built by Nevorai for creators, coaches, and
-                educators. These terms govern your use of the Nevorai Flow application and all related services.
+                nFlow by Nevorai is a distraction-free video funnel platform built by Nevorai for creators, coaches, and
+                educators. These terms govern your use of the nFlow by Nevorai application and all related services.
               </p>
             </section>
 
@@ -44,7 +44,7 @@ const TermsPage = () => {
                 access to all features. No payment is required to start a trial.
               </p>
               <p>
-                After the trial ends, you must subscribe to a paid plan to continue using Nevorai Flow. Your data is
+                After the trial ends, you must subscribe to a paid plan to continue using nFlow by Nevorai. Your data is
                 retained for 30 days after trial expiry before being eligible for deletion.
               </p>
             </section>
@@ -62,7 +62,7 @@ const TermsPage = () => {
 
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">5. Acceptable Use</h2>
-              <p className="mb-3">You agree NOT to use Nevorai Flow to:</p>
+              <p className="mb-3">You agree NOT to use nFlow by Nevorai to:</p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>Spam, harass, or send unsolicited messages to leads or contacts.</li>
                 <li>Capture or store data of individuals without their consent.</li>
@@ -71,15 +71,15 @@ const TermsPage = () => {
                 <li>Attempt to reverse-engineer, hack, or disrupt the service.</li>
                 <li>Create fake accounts or misrepresent your identity.</li>
                 <li>Run pyramid schemes or any deceptive multi-level marketing activity.</li>
-                <li>Resell or white-label Nevorai Flow without written permission from Nevorai.</li>
+                <li>Resell or white-label nFlow by Nevorai without written permission from Nevorai.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">6. Your Content & Data</h2>
               <p>
-                You own your content — videos, funnels, landing pages, leads, and any media you upload to Nevorai Flow.
-                By using Nevorai Flow, you grant Nevorai a limited licence to store, process, transcode, and stream
+                You own your content — videos, funnels, landing pages, leads, and any media you upload to nFlow by Nevorai.
+                By using nFlow by Nevorai, you grant Nevorai a limited licence to store, process, transcode, and stream
                 this content solely to provide the service to you and your viewers. We do not use your content
                 for any other purpose.
               </p>
@@ -118,7 +118,7 @@ const TermsPage = () => {
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">10. Limitation of Liability</h2>
               <p className="mb-3">
-                Nevorai Flow is provided "as is". Nevorai is not liable for any indirect, incidental, or consequential
+                nFlow by Nevorai is provided "as is". Nevorai is not liable for any indirect, incidental, or consequential
                 damages arising from your use of the service, including but not limited to lost profits, lost
                 leads, or missed business opportunities.
               </p>

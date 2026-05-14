@@ -128,7 +128,7 @@ const Dashboard = () => {
             <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
             <div className="page-header-accent" />
             <p className="mt-2 text-sm text-muted-foreground">
-              Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Here's your Nevorai Flow overview.
+              Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Here's your nFlow by Nevorai overview.
             </p>
           </div>
           <div className="flex gap-2">

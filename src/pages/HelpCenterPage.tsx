@@ -12,7 +12,7 @@ import {
 } from "@/config/tutorials";
 
 export default function HelpCenterPage() {
-  useDocumentTitle("Help Center · Nevorai Flow");
+  useDocumentTitle("Help Center · nFlow by Nevorai");
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<Tutorial | null>(null);
 
@@ -40,7 +40,7 @@ export default function HelpCenterPage() {
           <BookOpen className="text-primary" /> Help Center
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Short videos that show you exactly how to use Nevorai Flow. Watch one and you're ready to go.
+          Short videos that show you exactly how to use nFlow by Nevorai. Watch one and you're ready to go.
         </p>
       </div>
 

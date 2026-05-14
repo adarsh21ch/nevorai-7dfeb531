@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Resolve whether the owner of a public asset (funnel / landing page / video)
- * is on a plan where the Nevorai Flow branding watermark must be shown.
+ * is on a plan where the nFlow by Nevorai branding watermark must be shown.
  *
  * Logic:
  * - Look up the owner's active subscription tier via user_subscriptions.

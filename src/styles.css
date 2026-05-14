@@ -324,3 +324,6 @@ img, video, iframe { max-width: 100%; }
 @media (min-width: 1024px) {
   .heading-display { font-size: 3.5rem; }   /* 56 */
 }
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

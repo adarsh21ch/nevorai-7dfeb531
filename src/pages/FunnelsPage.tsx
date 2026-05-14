@@ -15,8 +15,8 @@ import { UpgradeModal } from "@/components/UpgradeModal";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
-const FunnelsPage = () => {
-  useDocumentTitle("Funnels");
+const FunnelsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
+  useDocumentTitle(embedded ? "Tools" : "Funnels");
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -72,8 +72,8 @@ const FunnelsPage = () => {
     </span>
   ) : null;
 
-  return (
-    <DashboardLayout>
+  const content = (
+    <>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -194,8 +194,9 @@ const FunnelsPage = () => {
         tier={tier}
         reason="funnels"
       />
-    </DashboardLayout>
+    </>
   );
+  return embedded ? content : <DashboardLayout>{content}</DashboardLayout>;
 };
 
 export default FunnelsPage;

@@ -27,7 +27,7 @@ export const Footer = () => {
           <div>
             <Logo variant="full" size="sm" />
             <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-              Nevorai Flow helps you control follow-up through video — so prospects actually watch, understand, and convert.
+              nFlow by Nevorai helps you control follow-up through video — so prospects actually watch, understand, and convert.
             </p>
           </div>
           {Object.entries(links).map(([title, items]) => (

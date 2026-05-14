@@ -68,11 +68,11 @@ const defaultFormState = {
   field_custom_1_enabled: false, field_custom_1_label: "", field_custom_1_required: false,
   field_custom_2_enabled: false, field_custom_2_label: "", field_custom_2_required: false,
   send_confirmation_email: true,
-  sender_display_name: "Nevorai Flow",
+  sender_display_name: "nFlow by Nevorai",
   email_subject: "You're Registered! Get Ready for the Session",
   email_heading: "Welcome! You Are Successfully Registered",
   email_body: `Thank you for registering.\n\nYour registration has been successfully confirmed, and your spot is now secured.\n\nBe ready for the session at [7:00 PM].`,
-  email_footer_text: "Regards,\nTeam Nevorai Flow",
+  email_footer_text: "Regards,\nTeam nFlow by Nevorai",
   post_submit_video_asset_id: null as string | null,
   post_submit_video_title: "",
   post_submit_video_description: "",
@@ -551,21 +551,21 @@ const LandingPageEditor = () => {
                 <p className="text-xs text-muted-foreground mt-0.5">Choose who the email appears from</p>
                 <div className="mt-2 space-y-2">
                   <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    form.sender_display_name === "Nevorai Flow" ? "border-primary bg-primary/5" : "border-border bg-muted/50"
+                    form.sender_display_name === "nFlow by Nevorai" ? "border-primary bg-primary/5" : "border-border bg-muted/50"
                   }`}>
-                    <input type="radio" name="sender_display_name" checked={form.sender_display_name === "Nevorai Flow"} onChange={() => updateField("sender_display_name", "Nevorai Flow")} className="accent-primary" />
+                    <input type="radio" name="sender_display_name" checked={form.sender_display_name === "nFlow by Nevorai"} onChange={() => updateField("sender_display_name", "nFlow by Nevorai")} className="accent-primary" />
                     <div>
                       <p className="text-sm font-medium">Platform Name</p>
-                      <p className="text-xs text-muted-foreground">Nevorai Flow</p>
+                      <p className="text-xs text-muted-foreground">nFlow by Nevorai</p>
                     </div>
                   </label>
                   <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    form.sender_display_name !== "Nevorai Flow" ? "border-primary bg-primary/5" : "border-border bg-muted/50"
+                    form.sender_display_name !== "nFlow by Nevorai" ? "border-primary bg-primary/5" : "border-border bg-muted/50"
                   }`}>
-                    <input type="radio" name="sender_display_name" checked={form.sender_display_name !== "Nevorai Flow"} onChange={() => updateField("sender_display_name", form.sender_display_name !== "Nevorai Flow" ? form.sender_display_name : (profile?.full_name || ""))} className="accent-primary" />
+                    <input type="radio" name="sender_display_name" checked={form.sender_display_name !== "nFlow by Nevorai"} onChange={() => updateField("sender_display_name", form.sender_display_name !== "nFlow by Nevorai" ? form.sender_display_name : (profile?.full_name || ""))} className="accent-primary" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">Custom Name</p>
-                      {form.sender_display_name !== "Nevorai Flow" && (
+                      {form.sender_display_name !== "nFlow by Nevorai" && (
                         <Input value={form.sender_display_name || ""} onChange={(e) => updateField("sender_display_name", e.target.value || "")} placeholder="e.g. Adarsh from LaunchPad" className="mt-1 bg-background border-border text-sm h-8" onClick={(e) => e.stopPropagation()} />
                       )}
                     </div>

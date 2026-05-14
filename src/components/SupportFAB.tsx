@@ -73,7 +73,7 @@ export const SupportFAB = () => {
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold">Browse tutorials</div>
                     <p className="text-xs text-muted-foreground">
-                      Short videos showing exactly how to use Nevorai Flow.
+                      Short videos showing exactly how to use nFlow by Nevorai.
                     </p>
                   </div>
                 </Link>

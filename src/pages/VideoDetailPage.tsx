@@ -291,7 +291,7 @@ const VideoDetailPage = () => {
               />
               <SettingRow
                 title="Allow others to reuse this video"
-                desc="Public viewers see a 'Copy Nevorai Flow Link' button."
+                desc="Public viewers see a 'Copy nFlow by Nevorai Link' button."
                 checked={allowCopyLink}
                 onChange={setAllowCopyLink}
               />
@@ -321,6 +321,17 @@ const VideoDetailPage = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Who watched this — entry point into Insights */}
+        <div className="rounded-2xl border border-border bg-card/50 p-4 sm:p-5">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-sm font-heading font-semibold">Who watched this</h2>
+            <a href="/insights" className="text-xs text-primary hover:underline">See all →</a>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            See real-time viewers, watch percentage and lead capture for this video in Insights.
+          </p>
+        </div>
       </div>
     </DashboardLayout>
   );

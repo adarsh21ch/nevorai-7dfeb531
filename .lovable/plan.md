@@ -1,106 +1,66 @@
-## Remaining polish — what I found in a second pass
+# nFlow — Navigation Restructure + Brand + UX Polish
 
-These are real gaps I noticed scanning the project after the 4 batches we shipped. Grouped by impact so you can pick.
+Frontend-only. No Supabase / auth / Razorpay / edge function / R2-upload-logic changes. Every step keeps the existing TanStack Start route tree, just adds/edits files.
 
----
+## What already exists (no rework needed)
+- `NFlowLogo` component at `src/components/brand/NFlowLogo.tsx` (already used in many places).
+- `useDocumentTitle` hook → reuse instead of creating a duplicate `usePageTitle`.
+- `public/manifest.webmanifest` already present (just needs a small content tweak).
+- `ConfirmDialogProvider`, debounced search, `NumberInput`, `EmptyState`, format helpers — all in place from prior batches.
+- TanStack Start uses `head()` in `__root.tsx` (no `index.html`).
 
-### A. Destructive actions still use `window.confirm` (8 places)
+## Section 1 — Mobile bottom nav: 4 tabs
+- Edit `src/components/layout/DashboardLayout.tsx`: replace the 5-cell mobile `<nav>` (lines ~264–290) with a 4-cell grid: **Home `/dashboard`**, **My Videos `/videos`**, **Tools `/tools`**, **Profile `/profile`** using lucide `Home, Video, Wrench, User`.
+- Active state: exact match for `/dashboard`, `startsWith` for `/tools` (covers sub-tabs), `startsWith` for `/videos` and `/profile`.
+- Keep `safe-area-pb` and `min-h-[64px]` cells. Main content already has `pb-24` — keep.
 
-Browser `confirm()` is jarring, blocks the thread, and can't be styled. Replace with a small shadcn `AlertDialog` wrapper.
+## Section 2 — Tools page (combines Funnels + Landing Pages + Live)
+- Create `src/pages/ToolsPage.tsx`: horizontal pill sub-tabs (Funnels / Landing Pages / Live Sessions) backed by `?tab=` search param. Renders the matching list inside `DashboardLayout`.
+- Create route `src/routes/tools.tsx` registering `ToolsPage`.
+- Refactor list pages to support embedding without double-wrapping the layout:
+  - Add an optional `embedded?: boolean` prop to `FunnelsPage`, `LandingPagesPage`, `LivePage`.
+  - When `embedded` is true, render their content without the outer `<DashboardLayout>` wrapper (extract body into a shared inner block, or conditionally skip the wrapper).
+- Existing routes `/funnels`, `/landing-pages`, `/live` continue to render the non-embedded versions unchanged.
+- Add `.scrollbar-hide` utility to `src/styles.css` if missing.
 
-Affected:
-- Funnels list — delete funnel
-- Live sessions — stop / cancel / delete
-- Admin Videos — delete video (2 spots)
-- Admin Refunds — approve refund (especially risky as a native confirm)
-- Testimonials builder — delete testimonial
-- Viewers analytics — revoke viewer access
-- Admin View Tiers — delete tier
+## Section 3 — Home redesign (`src/routes/dashboard.tsx`)
+Restack the page top-to-bottom:
+1. **Greeting block** — small "nFlow by Nevorai" eyebrow + `Good morning/afternoon/evening/night, {firstName} 👋`.
+2. **Today's Views hero card** (keep existing but show % change vs yesterday using `useDailyViews` + a yesterday query helper).
+3. **Watching Right Now strip** — new component `src/components/dashboard/WatchingNowStrip.tsx`. Read-only query of `funnel_video_analytics` (or equivalent existing view) for sessions with `last_seen_at` within 60s, top 3, refetch every 15s. Empty state: "Share your nFlow link to start seeing viewers in real-time" with a Copy Link button. Footer link "See all in Insights →" → `/insights`.
+4. **Quick stats row (3 cells)** — Videos · Leads · Views Today (reuse stat tiles).
+5. **Recent activity (5 items)** — keep existing `DashboardContentRow` if it covers this; otherwise add a compact list.
 
-**Fix:** create one `<ConfirmDialog>` primitive, swap all 10 sites. Refund approval and viewer-revoke get an extra "type to confirm" step.
+Also: replace `/leads` bottom-nav target with `/insights` link in the hero card footer (nav itself no longer points to leads).
 
----
+## Section 4 — Insights progressive reveal
+- Keep `/insights` route + `InsightsPage` as-is.
+- Add a "Who watched this" card to `src/pages/VideoDetailPage.tsx`: top 3 viewers (name, watch %, last viewed) with "See all →" linking to `/insights?video={id}`.
+- In `InsightsPage`, when total viewers across all videos is zero, render an `EmptyState` ("When someone watches your nFlow link, they'll appear here…").
 
-### B. Number inputs with no clamping / step / prefix
+## Section 5 — Auto thumbnail from first video frame
+- Create `src/lib/videoThumbnail.ts` with `captureFirstFrame(file: File): Promise<Blob | null>` (off-DOM `<video>` + canvas, seek to `min(0.5, duration/2)`, JPEG @ 0.85).
+- In `src/components/VideoUploadModal.tsx`, after R2 upload succeeds and only if no manual thumbnail was chosen:
+  1. Call `captureFirstFrame(file)`.
+  2. Upload the blob via the existing R2 upload helper to `{videoKey}_thumb.jpg`.
+  3. Patch `video_assets.thumbnail_url` for the new row (single update, no schema changes).
+- Fallback for legacy videos: in video card components that render a thumbnail, when `thumbnail_url` is missing, use `<video preload="metadata" muted playsInline poster src={url + '#t=0.5'} />`.
 
-`type="number"` fields accept `e`, `-`, decimals, and don't display units. Examples:
-- Live session duration / max attendees / payment amount
-- Landing page min_age (1-120 — no live clamp)
-- Admin view tier prices (₹ prefix missing)
-- Override menu trial-days / view-limit
+## Section 6 — Brand + titles + PWA polish
+- **Spelling sweep** (only brand mentions, never CSS classes): replace `NFlow`→`nFlow`, `Nflow`→`nFlow`, `Nevorai Flow`→`nFlow by Nevorai`, `alt="Flow"`→`alt="nFlow"`, `title="Flow"`→`title="nFlow"`. Use ripgrep with word boundaries; manually review hits inside CSS/util names like `overflow`, `flex-flow`.
+- **Logo coverage** — ensure `NFlowLogo` is used in: mobile header, desktop sidebar, `AuthPage`, splash/loading, Profile footer (with version).
+- **Page titles** — standardize via existing `useDocumentTitle(title)` (already produces `"{title} — nFlow"`-style via the hook; verify suffix and fix if needed). Apply to: Dashboard("Home"), VideosPage("My Videos"), ToolsPage("Tools"), ProfilePage("Profile"), InsightsPage("Insights"), BillingPage("Billing"), AuthPage("Sign in"). Do **not** introduce a parallel `usePageTitle` hook.
+- **Root `head()`** in `src/routes/__root.tsx`: ensure title default = `nFlow by Nevorai`, description, theme-color `#0EA5E9`, og:site_name `nFlow`, link to `/manifest.webmanifest`, apple-touch-icon, viewport with `viewport-fit=cover`.
+- **manifest.webmanifest**: update `name` from `"Nevorai Flow"` → `"nFlow by Nevorai"`. Keep existing icon paths (`/icons/icon-…`).
+- **Share copy** — wherever a share message is built (search `WhatsAppShareButton`, `CopyNflowLinkButton`, `VideoShareModal`), use:
+  `Watch this video on nFlow — you can't skip it 😄\n\n${link}\n\nShared via nFlow by Nevorai`.
 
-**Fix:** small `<NumberInput>` wrapper that strips non-digits, clamps to min/max on blur, and supports a unit prefix/suffix slot (`₹`, `days`, `views`).
+## Out of scope (do not touch)
+Supabase schema/RLS, auth logic, Razorpay, edge functions, R2 upload internals, DB queries beyond the small thumbnail update, existing route paths (only `/tools` is added).
 
----
-
-### C. Search inputs fire on every keystroke (no debounce)
-
-Funnels, Videos, Landing Pages, Leads, Admin Users, Admin Subscriptions all filter immediately. Fine on small lists, but Admin Users / Subscriptions / Leads can grow.
-
-**Fix:** add `useDebouncedValue(search, 200)` hook, use the debounced value for filter logic. Input itself stays controlled and instant.
-
----
-
-### D. Number formatting helper exists but isn't used yet
-
-I shipped `formatINR` / `formatCompact` / `formatInt` in Batch 4 but didn't wire them in. Worth a sweep:
-- Dashboard KPI strip (lead counts, view counts → `1.2K`)
-- Billing / Pricing pages (₹ prices → `₹1,299`)
-- Insights charts axis labels
-- Admin subscriptions revenue cells
-- Plan usage widget
-
-Pure presentation change, no logic risk.
-
----
-
-### E. Empty states are text-only
-
-Most empty states are a single grey sentence ("No leads yet"). Lower-effort wins:
-- Add an icon + a primary CTA button to: Insights (no funnels / no leads), Funnel Detail (no leads → "Copy share link"), Admin Videos table empty rows, VideoPickerModal.
-- LeadsPage already has good empty states with CTAs — use it as the template.
-
----
-
-### F. Public lead-form trust polish (carry-over from original audit)
-
-We did the input-mode + inline-error polish in Batch 1. Two trust items still pending:
-- **Privacy microcopy** under the submit button on all 5 public forms: "We'll never share your details. Unsubscribe anytime."
-- **Verified-creator badge** when KYC is approved — already supported on backend (`kyc_status === 'approved'`), just not surfaced on PublicLandingPage / PublicFunnel header. ~20 lines per page.
-
----
-
-### G. Stray `console.log` in production paths (8 calls)
-
-Low priority — but they leak into the user's browser console. Worth a one-pass cleanup, keeping `console.error` for genuine error logging.
-
----
-
-### H. Mobile keyboard polish on Admin
-
-Admin tables have a few inputs (price, limits) without `inputMode="decimal"` / `"numeric"`. Same fix as B covers it.
-
----
-
-## Suggested order (max ROI)
-
-1. **A** — `ConfirmDialog` primitive + 10 swaps. Biggest perceived-quality jump, ~30 min.
-2. **D** — wire the existing format helpers across KPI / billing / pricing surfaces.
-3. **F** — verified badge on public pages + privacy microcopy on lead forms.
-4. **B + H** — `NumberInput` wrapper, swap all admin/live numeric fields.
-5. **C** — debounce search on the 6 admin/list pages.
-6. **E** — richer empty states with CTAs.
-7. **G** — console cleanup pass.
-
----
-
-## Out of scope for this round
-
-- Visual redesign / new color tokens
-- New backend tables, RLS policies, edge functions
-- Payment / KYC business logic changes
-- i18n / translation infra
-
----
-
-Tell me which letters (A–H) to ship and in what order, or just say "all in order" and I'll work through the list.
+## Verification
+- `npm run build` clean (TS strict).
+- Mobile nav shows 4 tabs; `/tools` switches sub-tabs via `?tab=`; `/funnels`, `/landing-pages`, `/live` still load standalone.
+- Home: greeting + live strip + Insights link present.
+- New video upload writes a thumbnail blob; legacy video cards fall back to poster.
+- No `NFlow` / `Nevorai Flow` / `Nflow` strings remain in user-visible copy.

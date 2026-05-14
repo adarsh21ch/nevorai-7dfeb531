@@ -602,7 +602,7 @@ const PublicLivePage = () => {
               </Button>
               <p className="text-[11px] text-muted-foreground">Audio will be enabled automatically</p>
               <p className="text-[10px] text-muted-foreground pt-2">
-                Powered by <span className="text-primary font-semibold">Nevorai Flow</span> by Nevorai
+                Powered by <span className="text-primary font-semibold">nFlow by Nevorai</span> by Nevorai
               </p>
             </div>
           );
@@ -916,7 +916,7 @@ const PublicLivePage = () => {
 
         {/* Footer */}
         <div className="text-center pt-4">
-          <p className="text-[10px] text-muted-foreground"><span className="text-primary font-semibold">Nevorai Flow</span> by Nevorai</p>
+          <p className="text-[10px] text-muted-foreground"><span className="text-primary font-semibold">nFlow by Nevorai</span> by Nevorai</p>
         </div>
       </div>
     </div>

@@ -32,7 +32,7 @@ const SettingsPage = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Nevorai Flow-data-${user?.id}.json`;
+      a.download = `nFlow by Nevorai-data-${user?.id}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("Your data has been downloaded.");
