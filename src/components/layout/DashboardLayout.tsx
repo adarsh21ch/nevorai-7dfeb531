@@ -42,7 +42,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const { signOut, user } = useAuth();
   const { isAdmin } = useAdmin();
   const [collapsed, setCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
   // theme toggle moved to Profile page
   const { isTrialExpired, trialDays } = useTrialStatus();
   const { plan } = usePlan();
@@ -98,32 +98,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             "flex items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground",
             collapsed ? "absolute -right-1 -top-1 h-4 w-4" : "ml-auto h-5 w-5"
           )}>
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
-        )}
-      </Link>
-    );
-  };
-
-  const renderMobileNavItem = (item: typeof navItems[0]) => {
-    const active = location.pathname.startsWith(item.path);
-    const isNotif = item.path === "/notifications";
-    return (
-      <Link
-        key={item.path}
-        to={item.path}
-        onClick={() => setMobileMenuOpen(false)}
-        onMouseEnter={() => preloadRoute(item.path)}
-        onFocus={() => preloadRoute(item.path)}
-        className={cn(
-          "relative flex min-h-[46px] items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
-          active ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
-        )}
-      >
-        <item.icon size={20} />
-        <span>{item.label}</span>
-        {isNotif && unreadCount > 0 && (
-          <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
