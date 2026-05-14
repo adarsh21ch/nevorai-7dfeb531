@@ -1,54 +1,59 @@
-# Storage Enforcement (Section 4 — minimal scope)
+## Goal
 
-Skipping pricing UI / admin / Razorpay / watermark / plan limit counts (already built or out of scope).
+When a Nevorai video link (`/v/:id`) is pasted into WhatsApp / Telegram / Instagram / iMessage / Twitter, show a rich preview with the video's thumbnail, title, description, and (where supported) an inline player — the way YouTube does.
 
-## Schema (read-only)
+## Root cause
 
-- `plan_config.max_storage_mb` — already exists. Hook reads this; no migrations.
-- `video_assets.file_size_bytes` — already exists. Hook sums this.
+`PublicVideoPage.tsx` writes OG tags from a `useEffect` (client-side, after mount). Social crawlers never run JS, so they only see the generic site-wide tags from `__root.tsx`. Fix = emit per-video meta in the **server-rendered HTML** via TanStack Start's route `loader` + `head()`.
 
-Storage limit is in **MB** (not GB) in the DB. The hook converts MB → GB for display while keeping bytes for arithmetic.
+## Changes
 
-## 1. New hook — `src/hooks/useStorageUsage.ts`
+### 1. `src/routes/v.$id.tsx` — add SSR loader + head()
 
-- `useQuery` (staleTime 30s) keyed `["storage-usage", userId, planName]`.
-- Query A: `select file_size_bytes from video_assets where owner_id = user.id` → sum.
-- Query B: read `max_storage_mb` from `plan_config` for the active plan name (resolved via existing `usePlan` → `plan.tier`/`planKey`; map "trial"/"pro"/"basic"/"free" to `plan_name`).
-- Returns:
-  ```
-  { usedBytes, usedGB, limitGB, limitBytes, percent, isOverLimit, planName, isLoading }
-  ```
-- Helper exported: `wouldExceed(fileSizeBytes)` → boolean.
+Currently this file is just `createFileRoute("/v/$id")({})` and the component lives in `v.$id.lazy.tsx`. We turn it into a data-fetching route:
 
-## 2. Upload blocking
+- `loader({ params })` → query `video_assets` for `id, title, description, thumbnail_url, public_url, duration_seconds, is_shared`. Use the public Supabase client (anon key, RLS-safe) so it works on the server with no auth header. If the row is missing or `is_shared = false`, return `null` and let the component show its 404 state.
+- `head({ loaderData })` → emit:
+  - `<title>{title} — Nevorai</title>`
+  - `description`, `og:title`, `og:description`, `og:url`, `og:type = "video.other"`, `og:site_name = "Nevorai"`
+  - `og:image`, `og:image:secure_url`, `og:image:width`, `og:image:height` (use `thumbnail_url`; fall back to omitting if null — no image is better than a broken one)
+  - `og:video`, `og:video:secure_url`, `og:video:type = "video/mp4"`, `og:video:width = 1280`, `og:video:height = 720` (using `public_url`)
+  - `twitter:card = "player"`, `twitter:title`, `twitter:description`, `twitter:image`, `twitter:player` (points to `/v/:id`), `twitter:player:width/height`, `twitter:player:stream`, `twitter:player:stream:content_type`
+- `links` → canonical to `https://nevorai.com/v/{id}` (leaf only, per project SSR rules).
+- `scripts` → JSON-LD `VideoObject` (helps Google video search show a thumbnail in results).
 
-New shared component `src/components/StorageLimitModal.tsx`:
-- Title "Storage limit reached"
-- Body "You've used X.X of Y.Y GB. Upgrade to keep uploading."
-- Buttons: **See Plans** → `navigate("/pricing")`, **Cancel**.
+Build absolute URLs from a fixed `https://nevorai.com` base — never `window.location` (undefined during SSR).
 
-Wire pre-upload check (using `useStorageUsage` + `wouldExceed(file.size)`) into:
-- `src/components/VideoUploadModal.tsx` (primary upload path — covers `VideosPage`, `MobileCreateAction`, `PublicVideoPage`)
-- `src/pages/UploadFirstOnboarding.tsx` (onboarding flow)
-- `src/routes/onboarding-upload.lazy.tsx` (if it does its own upload; otherwise delegates to modal — verify on edit)
+### 2. `src/pages/PublicVideoPage.tsx` — remove client-side meta block
 
-Block runs immediately on file selection, before any R2 / network call. R2 upload logic untouched.
+Delete the `useEffect` that mutates `document.title` and injects `<meta>` tags. The route file is now the single source of truth, and keeping both creates duplicate / conflicting tags. Component stays purely visual.
 
-## 3. Storage indicator
+### 3. `src/routes/v.$id.lazy.tsx` — unchanged
 
-New presentational component `src/components/StorageUsageCard.tsx` (full card with progress bar + upgrade CTA when free/over) and `StorageUsageInline.tsx` (compact "0.4 / 1.0 GB used" text).
+Still exports the lazy component. Lazy + non-lazy route file pair is the standard TanStack Start pattern: `head()` and `loader` run on the server in the non-lazy file; the heavy component code-splits via the lazy file.
 
-Mounts:
-- `src/pages/ProfilePage.tsx` — full card
-- `src/pages/BillingPage.tsx` — full card at top
-- `src/pages/VideosPage.tsx` — inline indicator in header
+## What this fixes per platform
 
-All consume `useStorageUsage` (single source of truth).
+| Platform | Before | After |
+|---|---|---|
+| WhatsApp | generic site card | thumbnail + title + description |
+| Telegram | generic card | thumbnail + inline play button |
+| Instagram DM | URL only | thumbnail + title |
+| iMessage | small URL chip | large rich preview with thumbnail |
+| Twitter/X | summary card | player card with inline video |
+| LinkedIn | generic | thumbnail + title + description |
+| Google search | no rich result | VideoObject rich snippet |
 
-## Out of scope (per user)
+## Caveats to call out
 
-Pricing UI, admin Pricing tab, plan_config schema changes, Razorpay, watermark, funnel/landing/live count gates.
+- **Cache busting**: WhatsApp, Facebook, and LinkedIn aggressively cache previews per URL. For URLs already shared before this fix, the old preview will stick until the cache expires (hours to days) or the URL is re-scraped via Facebook's Sharing Debugger / LinkedIn's Post Inspector. New shares will work immediately.
+- **Inline player support varies**: Only Twitter and Telegram render `og:video` as an actual inline player. WhatsApp and Instagram only ever show the thumbnail + title (this is a platform limitation, not ours — YouTube has the same behavior on WhatsApp).
+- **Thumbnail required for best result**: Videos without a `thumbnail_url` will get a text-only card. We already auto-extract a frame in `VideoThumbnail.tsx` for in-app previews; consider a follow-up to also persist that frame as `thumbnail_url` on upload so every video has one. Out of scope for this prompt.
+- **CORS / direct R2 URLs**: `og:video` should point to a publicly accessible MP4 (R2 public URL) — confirmed already the case for `public_url`.
 
-## Reporting
+## Files touched
 
-After implementation: list of created/modified files + confirmation that storage column = `plan_config.max_storage_mb` (set per-plan in admin panel; e.g. 1024 for free = 1 GB, 10240 for basic, 51200 for pro).
+- `src/routes/v.$id.tsx` — add loader + head + JSON-LD
+- `src/pages/PublicVideoPage.tsx` — remove client-side meta useEffect
+
+No backend, schema, RLS, or edge function changes.
