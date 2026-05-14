@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as UpgradeRouteImport } from './routes/upgrade'
+import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
@@ -74,6 +75,11 @@ const UpgradeRoute = UpgradeRouteImport.update({
   path: '/upgrade',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/upgrade.lazy').then((d) => d.Route))
+const ToolsRoute = ToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -386,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/refund-policy': typeof RefundPolicyRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/tools': typeof ToolsRoute
   '/upgrade': typeof UpgradeRoute
   '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
@@ -442,6 +449,7 @@ export interface FileRoutesByTo {
   '/refund-policy': typeof RefundPolicyRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/tools': typeof ToolsRoute
   '/upgrade': typeof UpgradeRoute
   '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
@@ -499,6 +507,7 @@ export interface FileRoutesById {
   '/refund-policy': typeof RefundPolicyRoute
   '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
+  '/tools': typeof ToolsRoute
   '/upgrade': typeof UpgradeRoute
   '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
@@ -557,6 +566,7 @@ export interface FileRouteTypes {
     | '/refund-policy'
     | '/settings'
     | '/terms'
+    | '/tools'
     | '/upgrade'
     | '/videos'
     | '/admin/kyc'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/refund-policy'
     | '/settings'
     | '/terms'
+    | '/tools'
     | '/upgrade'
     | '/videos'
     | '/admin/kyc'
@@ -669,6 +680,7 @@ export interface FileRouteTypes {
     | '/refund-policy'
     | '/settings'
     | '/terms'
+    | '/tools'
     | '/upgrade'
     | '/videos'
     | '/admin/kyc'
@@ -726,6 +738,7 @@ export interface RootRouteChildren {
   RefundPolicyRoute: typeof RefundPolicyRoute
   SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
+  ToolsRoute: typeof ToolsRoute
   UpgradeRoute: typeof UpgradeRoute
   VideosRoute: typeof VideosRouteWithChildren
   AdminKycRoute: typeof AdminKycRoute
@@ -764,6 +777,13 @@ declare module '@tanstack/react-router' {
       path: '/upgrade'
       fullPath: '/upgrade'
       preLoaderRoute: typeof UpgradeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools': {
+      id: '/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof ToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -1217,6 +1237,7 @@ const rootRouteChildren: RootRouteChildren = {
   RefundPolicyRoute: RefundPolicyRoute,
   SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
+  ToolsRoute: ToolsRoute,
   UpgradeRoute: UpgradeRoute,
   VideosRoute: VideosRouteWithChildren,
   AdminKycRoute: AdminKycRoute,
