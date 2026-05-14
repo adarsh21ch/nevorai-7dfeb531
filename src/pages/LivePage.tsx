@@ -193,7 +193,7 @@ const NextSlotLine = ({ session }: { session: any }) => {
   return <>Not scheduled</>;
 };
 
-const LivePage = () => {
+const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

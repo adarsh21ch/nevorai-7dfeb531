@@ -18,7 +18,7 @@ import { UpgradeModal } from "@/components/UpgradeModal";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
-const LandingPagesPage = () => {
+const LandingPagesPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
