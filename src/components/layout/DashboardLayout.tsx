@@ -3,7 +3,7 @@ import { Logo } from "@/components/landing/Logo";
 import {
   LayoutDashboard, Layers, Video, IndianRupee, BarChart2,
   User, Bell, LogOut, ChevronLeft, ChevronRight, Shield,
-  Radio, FileText, Menu, Crown, HelpCircle, Home, Wrench,
+  Radio, FileText, Menu, Crown, HelpCircle, Home, Wrench, Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -262,10 +262,11 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         {showTrialGate && <TrialExpiredGate trialDays={trialDays} />}
 
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md md:hidden safe-area-pb">
-          <div className="grid grid-cols-4 items-end">
+          <div className="grid grid-cols-5 items-end">
             {[
               { icon: Home, label: "Home", path: "/dashboard", match: "exact" as const },
               { icon: Video, label: "My Videos", path: "/videos", match: "prefix" as const },
+              { icon: Activity, label: "Activity", path: "/insights", match: "prefix" as const },
               { icon: Wrench, label: "Tools", path: "/tools", match: "prefix" as const },
               { icon: User, label: "Profile", path: "/profile", match: "prefix" as const },
             ].map((item) => {

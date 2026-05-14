@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@/lib/router-compat";
 import { DashboardLayout } from "./DashboardLayout";
+import { AdminRoute } from "@/components/auth/AdminRoute";
 import { LayoutDashboard, Video, Users, UserCheck, CreditCard, Cog, MessageSquare, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,8 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   return (
-    <DashboardLayout>
+    <AdminRoute>
+      <DashboardLayout>
       <div className="w-full min-w-0 overflow-hidden">
         {/* Scrollable tab bar — only this row scrolls horizontally */}
         <div className="-mx-3 sm:-mx-4 md:-mx-8 overflow-x-auto scrollbar-none border-b border-border">
@@ -52,6 +54,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           {children}
         </div>
       </div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </AdminRoute>
   );
 };

@@ -7,14 +7,11 @@ import { useNavigate } from "@/lib/router-compat";
 import FunnelsPage from "@/pages/FunnelsPage";
 import LandingPagesPage from "@/pages/LandingPagesPage";
 import LivePage from "@/pages/LivePage";
-import InsightsPage from "@/pages/InsightsPage";
-import { BarChart3 } from "lucide-react";
 
 const TOOL_TABS = [
   { key: "funnels", label: "Funnels", icon: GitBranch, Component: FunnelsPage },
   { key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage },
   { key: "live", label: "Live", icon: Radio, Component: LivePage },
-  { key: "insights", label: "Insights", icon: BarChart3, Component: InsightsPage },
 ] as const;
 
 const getInitialTab = (): string => {
