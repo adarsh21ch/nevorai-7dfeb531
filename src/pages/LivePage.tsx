@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -655,7 +656,7 @@ const LivePage = () => {
                       </div>
                       <div>
                         <Label className="text-sm font-medium">Duration (mins)</Label>
-                        <Input type="number" value={form.duration_minutes} onChange={(e) => upd("duration_minutes", parseInt(e.target.value) || 60)} className="mt-1 bg-muted border-border" min={5} />
+                        <NumberInput min={5} max={600} suffix="mins" value={form.duration_minutes} onValueChange={(n) => upd("duration_minutes", typeof n === "number" ? n : 60)} className="mt-1" />
                       </div>
                     </div>
                   )}
@@ -705,7 +706,7 @@ const LivePage = () => {
                       <div className="grid sm:grid-cols-2 gap-3">
                         <div>
                           <Label className="text-xs">Amount (₹)</Label>
-                          <Input type="number" value={form.payment_amount} onChange={(e) => upd("payment_amount", parseInt(e.target.value) || 0)} className="mt-1 bg-muted border-border" />
+                          <NumberInput min={0} prefix="₹" value={form.payment_amount} onValueChange={(n) => upd("payment_amount", typeof n === "number" ? n : 0)} className="mt-1" />
                         </div>
                         <div>
                           <Label className="text-xs">UPI ID</Label>
@@ -907,9 +908,9 @@ const LivePage = () => {
 
                   <div>
                     <Label className="text-sm font-medium">Max Attendees (optional)</Label>
-                    <Input type="number" value={form.max_attendees ?? ""}
-                      onChange={(e) => upd("max_attendees", e.target.value ? parseInt(e.target.value) : null)}
-                      placeholder="Unlimited" className="mt-1 bg-muted border-border" />
+                    <NumberInput min={1} max={100000} value={form.max_attendees ?? ""}
+                      onValueChange={(n) => upd("max_attendees", n === "" ? null : n)}
+                      placeholder="Unlimited" className="mt-1" />
                   </div>
                 </div>
               )}

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { adminWrite } from "@/lib/adminWrite";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -41,10 +42,10 @@ const EditableNumberCell = ({
   return (
     <div className="flex items-center gap-1">
       {prefix && <span className="text-muted-foreground text-xs">{prefix}</span>}
-      <Input
-        type="number"
-        value={v}
-        onChange={(e) => { setV(e.target.value); setDirty(true); }}
+      <NumberInput
+        min={0}
+        value={v === "" ? "" : Number(v)}
+        onValueChange={(n) => { setV(n === "" ? "" : String(n)); setDirty(true); }}
         onBlur={() => dirty && save()}
         onKeyDown={(e) => { if (e.key === "Enter") save(); }}
         className="h-7 w-20 text-xs px-2"
@@ -226,15 +227,15 @@ export const ViewTiersManager = ({ planName }: { planName: "basic" | "pro" }) =>
           <div className="grid grid-cols-3 gap-1.5">
             <div>
               <Label className="text-[10px]">Daily views</Label>
-              <Input type="number" value={newTier.daily_views} onChange={e => setNewTier(p => ({ ...p, daily_views: e.target.value }))} className="h-7 text-xs" placeholder="50" />
+              <NumberInput min={1} max={1000000} value={newTier.daily_views === "" ? "" : Number(newTier.daily_views)} onValueChange={(n) => setNewTier(p => ({ ...p, daily_views: n === "" ? "" : String(n) }))} className="h-7 text-xs" placeholder="50" />
             </div>
             <div>
               <Label className="text-[10px]">Monthly ₹</Label>
-              <Input type="number" value={newTier.monthly_price} onChange={e => setNewTier(p => ({ ...p, monthly_price: e.target.value }))} className="h-7 text-xs" placeholder="249" />
+              <NumberInput min={0} prefix="₹" value={newTier.monthly_price === "" ? "" : Number(newTier.monthly_price)} onValueChange={(n) => setNewTier(p => ({ ...p, monthly_price: n === "" ? "" : String(n) }))} className="h-7 text-xs" placeholder="249" />
             </div>
             <div>
               <Label className="text-[10px]">Yearly ₹</Label>
-              <Input type="number" value={newTier.yearly_price} onChange={e => setNewTier(p => ({ ...p, yearly_price: e.target.value }))} className="h-7 text-xs" placeholder="2490" />
+              <NumberInput min={0} prefix="₹" value={newTier.yearly_price === "" ? "" : Number(newTier.yearly_price)} onValueChange={(n) => setNewTier(p => ({ ...p, yearly_price: n === "" ? "" : String(n) }))} className="h-7 text-xs" placeholder="2490" />
             </div>
           </div>
           {newTier.daily_views && (

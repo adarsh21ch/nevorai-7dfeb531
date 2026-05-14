@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -231,11 +232,11 @@ const GrantPlanModal = ({ user, subscription, open, onClose }: { user: AnyUser; 
         <div className="space-y-1.5">
           <Label className="text-xs">Duration (days)</Label>
           <div className="flex flex-wrap items-center gap-2">
-            <Input
-              type="number" min={1} max={365}
+            <NumberInput
+              min={1} max={365} suffix="days"
               value={days}
-              onChange={(e) => setDays(Math.max(1, Number(e.target.value) || 1))}
-              className="w-24 h-9"
+              onValueChange={(n) => setDays(typeof n === "number" ? Math.max(1, n) : 1)}
+              className="w-32 h-9"
             />
             <div className="flex gap-1">
               {[7, 30, 90, 365].map((d) => (
@@ -329,7 +330,7 @@ const SetViewOverrideModal = ({ user, open, onClose }: { user: AnyUser; open: bo
         </p>
         <div className="space-y-1.5">
           <Label className="text-xs">Custom daily view limit (-1 = unlimited)</Label>
-          <Input type="number" min={-1} value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
+          <NumberInput min={-1} max={1000000} value={limit} onValueChange={(n) => setLimit(typeof n === "number" ? n : -1)} />
           <div className="flex flex-wrap gap-1 pt-1">
             {[-1, 50, 100, 200, 500, 1000].map((v) => (
               <button key={v} onClick={() => setLimit(v)}
