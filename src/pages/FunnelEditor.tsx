@@ -545,7 +545,7 @@ const FunnelEditor = () => {
       <p className="text-sm text-muted-foreground">What type of funnel do you want to build?</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
         <button
-          onClick={() => { update("funnel_mode", "single"); setModeChosen(true); setWizardStep(0); }}
+          onClick={() => { update("funnel_mode", "single"); setModeChosen(true); }}
           className="p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 text-left transition-all group"
         >
           <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
