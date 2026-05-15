@@ -686,6 +686,7 @@ const PublicLivePage = () => {
                   bumpControls();
                 }}
               />
+              <div style={{ position: "absolute", bottom: 10, right: 12, color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 500, letterSpacing: "0.3px", pointerEvents: "none", userSelect: "none", textShadow: "0 1px 3px rgba(0,0,0,0.5)", zIndex: 10 }}>nevorai.com</div>
 
               {/* Audio fallback banner */}
               {showAudioBanner && (
