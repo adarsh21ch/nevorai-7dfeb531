@@ -2,10 +2,9 @@
   "name": "Nevorai",
   "short_name": "Nevorai",
   "description": "Share business videos that get watched.",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait",
+  "display": "browser",
   "background_color": "#ffffff",
   "theme_color": "#0EA5E9",
   "icons": [
