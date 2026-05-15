@@ -19,7 +19,7 @@ import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 const FunnelDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"overview" | "leads" | "payments" | "progress" | "viewers">("overview");
   const [leadSearch, setLeadSearch] = useState("");
@@ -31,7 +31,7 @@ const FunnelDetail = () => {
       const { data } = await supabase.from("funnels").select("*").eq("id", id!).single();
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && !authLoading,
   });
 
   const { data: leads = [] } = useQuery({
@@ -40,7 +40,7 @@ const FunnelDetail = () => {
       const { data } = await supabase.from("funnel_leads").select("*").eq("funnel_id", id!).order("submitted_at", { ascending: false });
       return data || [];
     },
-    enabled: !!id,
+    enabled: !!id && !authLoading,
   });
 
   const { data: payments = [] } = useQuery({
@@ -49,7 +49,7 @@ const FunnelDetail = () => {
       const { data } = await supabase.from("funnel_payments").select("*").eq("funnel_id", id!).order("submitted_at", { ascending: false });
       return data || [];
     },
-    enabled: !!id,
+    enabled: !!id && !authLoading,
   });
 
   const updateLeadStatus = useMutation({
@@ -69,7 +69,7 @@ const FunnelDetail = () => {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["funnel-payments", id] }); toast.success("Payment updated"); },
   });
 
-  if (!funnel) return <DashboardLayout><div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div></DashboardLayout>;
+  if (authLoading || !funnel) return <DashboardLayout><div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div></DashboardLayout>;
 
   const filteredLeads = leads.filter((l: any) => {
     if (leadFilter !== "all" && l.status !== leadFilter) return false;
