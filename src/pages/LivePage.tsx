@@ -946,8 +946,14 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
           </div>
         )}
 
-        {isLoading ? (
+        {authLoading || isLoading ? (
           <div className="glass-card p-12 text-center"><p className="text-sm text-muted-foreground">Loading sessions...</p></div>
+        ) : error ? (
+          <div className="glass-card p-12 text-center">
+            <h3 className="font-heading font-semibold mb-2">Couldn’t load live sessions</h3>
+            <p className="text-sm text-muted-foreground mb-4">Please try again.</p>
+            <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+          </div>
         ) : sessions.length === 0 ? (
           <div className="glass-card p-12 text-center">
             <Radio size={40} className="text-muted-foreground mx-auto mb-4" />
