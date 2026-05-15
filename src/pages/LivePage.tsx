@@ -579,8 +579,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 </div>
               </div>
 
-              {step === 1 && (
-                <div className="space-y-3">
+              <section id="live-section-delivery" className="scroll-mt-20 space-y-3">
                   <div>
                     <h3 className="font-semibold mb-1">How will this session be delivered?</h3>
                     <p className="text-xs text-muted-foreground">Your funnel video plays automatically at scheduled times.</p>
