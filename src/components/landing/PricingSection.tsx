@@ -207,8 +207,11 @@ export const PricingSection = () => {
       const ok = await loadRazorpayScript();
       if (!ok) throw new Error("Failed to load payment gateway");
       // tier_id omitted on signup → server resolves the plan's base tier automatically.
+      // display_price is the price the user actually saw; server rejects mismatches.
+      const baseTier = getBaseTier(planName);
+      const displayPrice = baseTier?.monthly_price ?? null;
       const { data, error } = await supabase.functions.invoke("razorpay-portal", {
-        body: { action: "create_order", plan_key: planKey },
+        body: { action: "create_order", plan_key: planKey, display_price: displayPrice },
       });
       if (error || !data?.order_id) {
         const message = await getSupabaseFunctionErrorMessage(error, data?.error || "Failed to create order");

@@ -118,26 +118,28 @@ Deno.serve(async (req) => {
     );
 
     if (action === "create_order") {
-      const { plan_key, tier_id } = body;
+      const { plan_key, tier_id, display_price } = body;
       if (!plan_key || typeof plan_key !== "string") {
         return jsonResponse({ error: "plan_key required" }, 400);
       }
 
       // SECURITY: Always look up authoritative price server-side. Never trust client amount.
+      // admin_subscription_plans is metadata only (active flag, billing interval, cycle days).
+      // PRICING source of truth = plan_view_tiers (the table the admin panel edits and the UI displays).
       const { data: planData } = await serviceClient
         .from("admin_subscription_plans")
-        .select("plan_key, price_inr, is_active")
+        .select("plan_key, price_inr, is_active, billing_type, duration_days")
         .eq("plan_key", plan_key)
         .eq("is_active", true)
         .maybeSingle();
 
-      if (!planData || !planData.price_inr || planData.price_inr <= 0) {
+      if (!planData) {
         return jsonResponse({ error: "Invalid or inactive plan" }, 400);
       }
 
       const targetBillingInterval = getBillingInterval(plan_key, planData.billing_type);
       const targetCycleDays = getDefaultCycleDays(targetBillingInterval, Number(planData.duration_days || 0));
-      let authoritativeAmount = Number(planData.price_inr);
+      let authoritativeAmount = 0;
       let resolvedTierId: string | null = null;
       let resolvedDailyViews: number | null = null;
       const baseTier = plan_key.split("_")[0]; // basic_monthly -> basic
@@ -146,7 +148,7 @@ Deno.serve(async (req) => {
       if (tier_id && typeof tier_id === "string") {
         const { data: tierRow } = await serviceClient
           .from("plan_view_tiers")
-          .select("id, plan_name, daily_views, monthly_price, is_active")
+          .select("id, plan_name, daily_views, monthly_price, yearly_price, is_active")
           .eq("id", tier_id)
           .eq("is_active", true)
           .maybeSingle();
@@ -173,17 +175,34 @@ Deno.serve(async (req) => {
         // Auto-resolve the base tier for the plan when no tier_id was supplied.
         const { data: baseRow } = await serviceClient
           .from("plan_view_tiers")
-            .select("id, daily_views, monthly_price, yearly_price")
+          .select("id, daily_views, monthly_price, yearly_price")
           .eq("plan_name", baseTier)
           .eq("is_active", true)
           .eq("is_base", true)
           .maybeSingle();
-        if (baseRow) {
-          authoritativeAmount = pickTierPrice(baseRow, targetBillingInterval);
-          resolvedTierId = baseRow.id;
-          resolvedDailyViews = baseRow.daily_views;
+        if (!baseRow) {
+          // NO SILENT FALLBACK: refuse rather than charge a stale price from admin_subscription_plans.
+          console.error("create_order: no active base tier for plan", { plan_key, baseTier });
+          return jsonResponse({
+            error: "Pricing not configured for this plan. Please contact support.",
+          }, 400);
         }
+        authoritativeAmount = pickTierPrice(baseRow, targetBillingInterval);
+        resolvedTierId = baseRow.id;
+        resolvedDailyViews = baseRow.daily_views;
+      } else {
+        // Unknown plan tier (not basic/pro and no tier_id) — refuse.
+        return jsonResponse({ error: "Pricing not configured for this plan." }, 400);
       }
+
+      if (!authoritativeAmount || authoritativeAmount <= 0) {
+        return jsonResponse({ error: "Pricing not configured for this plan." }, 400);
+      }
+
+      // Defense-in-depth: parity check with what the user actually saw.
+      // Only enforced when no proration applies (proration is computed below and overrides authoritativeAmount).
+      const displayPriceNum = Number(display_price);
+      const displayPriceProvided = Number.isFinite(displayPriceNum) && displayPriceNum > 0;
 
       // ===== Plan upgrade proration (Basic → Pro for users with active paid sub) =====
       // If user already has an active paid subscription on a LOWER plan, charge only
@@ -248,6 +267,30 @@ Deno.serve(async (req) => {
           fromPlanKey = activePaidSub.plan_key;
           authoritativeAmount = proratedCharge;
           activePaidSub.expires_at = exp.toISOString();
+        }
+      }
+
+      // Price-parity guard: if user passed display_price and no upgrade proration applies,
+      // refuse the order if the displayed price doesn't match what we would charge.
+      if (displayPriceProvided && !isPlanUpgrade) {
+        if (Math.round(displayPriceNum) !== Math.round(authoritativeAmount)) {
+          await serviceClient.from("payment_audit_logs").insert({
+            user_id: user.id,
+            event_type: "price_mismatch_blocked",
+            payload: {
+              plan_key,
+              tier_id: resolvedTierId,
+              display_price: displayPriceNum,
+              server_price: authoritativeAmount,
+            },
+            source: "frontend",
+            idempotency_key: `mismatch_${user.id}_${Date.now()}`,
+          });
+          return jsonResponse({
+            error: "Displayed price has changed. Please refresh the page and try again.",
+            display_price: displayPriceNum,
+            server_price: authoritativeAmount,
+          }, 409);
         }
       }
 

@@ -235,8 +235,9 @@ const PricingFullPage = () => {
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) throw new Error("Failed to load payment gateway");
 
+      const displayPrice = getPrice(config);
       const { data, error } = await supabase.functions.invoke("razorpay-portal", {
-        body: { action: "create_order", plan_key: planKey },
+        body: { action: "create_order", plan_key: planKey, display_price: displayPrice },
       });
       if (error || !data?.order_id) {
         const message = await getSupabaseFunctionErrorMessage(error, data?.error || "Failed to create order");

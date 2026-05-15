@@ -1,106 +1,72 @@
-# Admin-Managed Landing Content + Settings Tabs
+# Bug: Razorpay popup shows ₹449/₹499 instead of the ₹149 Basic plan
 
-## Goal
-1. Let you upload/replace every landing page image (and edit its title/subtitle/bullets) from the admin panel — no more re-prompting the LLM or redeploying.
-2. Reorganise `/admin/settings` into a clean tabbed layout (sidebar on desktop, horizontal scroll tabs on mobile) so each setting group has its own page.
-3. Add tasteful image animations (fade-in, parallax-on-scroll, subtle zoom on hover, Ken-Burns drift) so any photo you upload automatically feels alive.
+## Root cause
 
----
+`supabase/functions/razorpay-portal/index.ts` (action `create_order`) computes the charge from **two different tables**:
 
-## 1. Database + Storage
+1. `admin_subscription_plans.price_inr` — initial value of `authoritativeAmount`.
+2. `plan_view_tiers` (row where `is_base = true` and `is_active = true`) — overrides #1 only if a base row exists.
 
-**New table `landing_content`** (single row per "slot"):
-```
-id           text primary key   -- e.g. "story.skip", "story.unknown", "compare.youtube", "compare.nevorai"
-section      text               -- "story" | "compare" | "hero"
-sort_order   int
-title        text
-subtitle     text
-bullets      jsonb              -- string[]
-image_url    text               -- public storage URL
-animation    text               -- "fade-up" | "parallax" | "ken-burns" | "zoom-hover"
-updated_at   timestamptz
-```
-- RLS: public `select`, admin-only `insert/update`.
-- Seeded with the current 6 story sections + 2 comparison sections + their existing image paths (so nothing breaks before you edit anything).
-
-**New storage bucket `landing-images`** (public read, admin-only write).
-
----
-
-## 2. Admin Settings — tabbed layout
-
-Refactor `AdminSettingsPage` into a parent layout with sub-tabs:
-
-```
-/admin/settings              → Gmail
-/admin/settings/announcement → Announcement banner
-/admin/settings/maintenance  → Maintenance mode
-/admin/settings/verification → Verified badge toggle
-/admin/settings/creator      → Testimonials + creator settings
-/admin/settings/landing      → ★ NEW: Landing page content manager
+```ts
+let authoritativeAmount = Number(planData.price_inr);   // e.g. 499 (stale)
+...
+if (baseRow) authoritativeAmount = pickTierPrice(baseRow, ...); // 149 — only if found
 ```
 
-- **Desktop**: vertical sidebar (200px) on the left, content on the right.
-- **Mobile**: horizontal scroll tab bar at the top (same pattern as existing `AdminLayout` tabs).
-- Each tab is its own component — no giant single page.
+The pricing UI (`PricingFullPage.tsx` → `withBasePrice`) shows **only** the `plan_view_tiers` base price (₹149 in the admin screenshot). The server falls back to `admin_subscription_plans.price_inr` whenever:
 
-### New tab: "Landing Page Content"
-A list of cards, one per slot, grouped by section ("Story sections", "Comparison: YouTube vs Nevorai", "Hero"). Each card shows:
-- Current image preview (with replace button → uploads to `landing-images` bucket)
-- Editable title, subtitle, bullets (textarea, one per line)
-- Animation dropdown: Fade up / Parallax / Ken-Burns / Zoom on hover
-- Drag handle to reorder (updates `sort_order`)
-- Save button (per card) with optimistic update + toast
+- the base tier row is missing,
+- `is_base` is not flagged on any row,
+- `is_active = false` on the base row,
+- the `basic`/`pro` branch in the server doesn't run for some reason (e.g. legacy `plan_key` like `basic` without `_monthly`).
 
----
+Result: user sees ₹149 in the UI, Razorpay charges ₹449/₹499 from the legacy `admin_subscription_plans` row.
 
-## 3. Wire the landing page to the DB
+## Fix
 
-- `StorySections.tsx` and `ResultsComparison.tsx` fetch from `landing_content` via React Query (5-min cache, public read).
-- Fall back to the existing bundled images if a row has no `image_url` yet → zero-downtime migration.
-- New `<AnimatedImage>` wrapper component handles the four animation modes uniformly using framer-motion + `useInView`. Any uploaded image automatically gets:
-  - aspect-ratio lock (16:10) + `object-cover` for consistent framing
-  - rounded corners + brand shadow from design tokens
-  - the chosen entrance animation
-  - subtle hover state
+### 1. Server: single source of truth, no silent fallback
+In `supabase/functions/razorpay-portal/index.ts`, action `create_order`:
+- Resolve price **exclusively** from `plan_view_tiers` (the table the admin panel edits and the UI displays).
+- If no active base tier row exists for the requested plan, return `400 { error: "Pricing not configured for this plan" }` instead of falling back to `admin_subscription_plans.price_inr`.
+- Keep `admin_subscription_plans` only as the on/off + metadata table (`is_active`, `billing_type`, `duration_days`).
+- Same change for `create_tier_upgrade_order` if it has the same fallback pattern.
 
----
+### 2. Server: price-parity guard (defense in depth)
+- Accept an optional `display_price` from the client (the price the user actually saw).
+- If `Math.round(display_price) !== Math.round(authoritativeAmount)` AND it isn't a known proration case, refuse with `409 { error: "Displayed price changed; please refresh" }`.
+- Log mismatches to `payment_audit_logs` with `event_type = "price_mismatch_blocked"` so we can see how often this happens.
 
-## 4. Mobile + desktop polish
-- All admin tabs tested at 375px and 1280px.
-- Image cards stack vertically on mobile, 2-up on desktop.
-- Upload uses the same R2/Supabase storage flow already in the project.
+### 3. Client: pass `display_price`
+- `PricingFullPage.tsx` (line ~239) and `PricingSection.tsx` (line ~211): include `display_price: getPrice(config)` in the `create_order` body.
+- No UI change.
 
----
+### 4. One-time data cleanup (migration)
+Sync `admin_subscription_plans.price_inr` with the active base tier from `plan_view_tiers` so any other code path reading `price_inr` stops returning stale values:
 
-## Files
+```sql
+UPDATE admin_subscription_plans p
+SET price_inr = t.monthly_price
+FROM plan_view_tiers t
+WHERE t.plan_name = split_part(p.plan_key, '_', 1)
+  AND t.is_base = true
+  AND t.is_active = true
+  AND p.billing_type = 'monthly';
 
-**New**
-- `supabase/migrations/<ts>_landing_content.sql` (table + RLS + bucket + seed)
-- `src/components/admin/settings/SettingsTabs.tsx` (sidebar + mobile tab bar)
-- `src/components/admin/settings/LandingContentManager.tsx`
-- `src/components/admin/settings/LandingSlotCard.tsx`
-- `src/components/landing/AnimatedImage.tsx`
-- `src/hooks/useLandingContent.ts`
-- `src/routes/admin.settings.announcement.tsx` + `.lazy.tsx`
-- `src/routes/admin.settings.maintenance.tsx` + `.lazy.tsx`
-- `src/routes/admin.settings.verification.tsx` + `.lazy.tsx`
-- `src/routes/admin.settings.creator.tsx` + `.lazy.tsx`
-- `src/routes/admin.settings.landing.tsx` + `.lazy.tsx`
+UPDATE admin_subscription_plans p
+SET price_inr = t.yearly_price
+FROM plan_view_tiers t
+WHERE t.plan_name = split_part(p.plan_key, '_', 1)
+  AND t.is_base = true
+  AND t.is_active = true
+  AND p.billing_type = 'yearly';
+```
 
-**Edited**
-- `src/pages/AdminSettingsPage.tsx` → split into per-tab pages, becomes Gmail tab only
-- `src/components/landing/StorySections.tsx` → read from `landing_content`, use `<AnimatedImage>`
-- `src/components/landing/ResultsComparison.tsx` → same
-- `src/routes/admin.settings.tsx` → wraps children with `<SettingsTabs>` layout
+### 5. Verify
+- Build passes (`npm run build`).
+- Manual test: click Basic ₹149 → Razorpay popup must show ₹149. Click Pro → must show the Pro base tier price from admin. Upgrade Basic→Pro mid-cycle → must show prorated amount.
+- Check `payment_audit_logs` for any `price_mismatch_blocked` entries after deploy.
 
-**Untouched**: hero, navigation, pricing, FAQ, auth, edge functions, Razorpay, public video page.
-
----
-
-## What I'll need from you after build
-1. Run the SQL migration (I'll print it — same flow as last time).
-2. Open `/admin/settings/landing` and upload your improved images. Existing bundled images keep working until you replace them.
-
-Confirm this plan and I'll build it end-to-end.
+## Out of scope
+- Admin UI redesign.
+- Refactoring the proration math (already correct, just downstream of `authoritativeAmount`).
+- Edit-button / loader work from previous turns.
