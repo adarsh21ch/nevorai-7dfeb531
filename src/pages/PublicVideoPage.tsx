@@ -408,17 +408,15 @@ const PublicVideoPage = () => {
         />
       )}
 
-      {/* Bottom brand line */}
-      <footer className="mt-auto max-w-3xl mx-auto w-full px-4 py-6 text-center">
-        <a
-          href="https://nevorai.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          © 2026 Nevorai · All Rights Reserved
-        </a>
+      {/* Footer */}
+      <footer style={{ textAlign: "center", padding: "24px 16px", color: "#9ca3af", fontSize: 13, borderTop: "1px solid hsl(var(--border))", marginTop: "auto" }}>
+        © 2026 Nevorai · All Rights Reserved · India
       </footer>
+    </div>
+  );
+};
+
+export default PublicVideoPage;
     </div>
   );
 };
