@@ -417,8 +417,3 @@ const PublicVideoPage = () => {
 };
 
 export default PublicVideoPage;
-    </div>
-  );
-};
-
-export default PublicVideoPage;
