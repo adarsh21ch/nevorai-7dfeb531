@@ -1,43 +1,65 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { motion } from "framer-motion";
-import { Video, ClipboardList, BarChart3, Route, MessageCircle, Eye, MousePointerClick } from "lucide-react";
+import {
+  Video,
+  ClipboardList,
+  BarChart3,
+  Route,
+  MessageCircle,
+  Eye,
+  ShieldCheck,
+  Lock,
+} from "lucide-react";
 
 const features = [
   {
     icon: Video,
-    title: "Video Funnels",
-    description: "Controlled playback, timed CTAs, and structured viewer flow — your video, your rules.",
-  },
-  {
-    icon: ClipboardList,
-    title: "Lead Capture",
-    description: "Collect name, phone, email, city, and custom details directly from viewers.",
+    title: "Unskippable Video Player — They Watch Every Word",
+    description:
+      "A clean, distraction-free player with no recommendations, no ads and no sidebar. You decide whether the video can be paused, scrubbed or skipped — perfect for sales pitches, plan videos and course previews where every second matters.",
   },
   {
     icon: Eye,
-    title: "Viewer Progress Tracking",
-    description: "See how much viewers watched and exactly where they dropped off.",
+    title: "Real-Time Activity Tracking — See Every Viewer",
+    description:
+      "Watch your activity feed light up the moment a prospect taps your link. See viewer name, city, watch percentage and exact drop-off point. Stop guessing who's interested — call the people who actually watched.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Lead Capture Forms — Built Into Every Video",
+    description:
+      "Collect name, phone, email, city or any custom field before, during or after the video. Leads land in your dashboard instantly and export to CSV or your CRM. No third-party form builders, no Zapier.",
   },
   {
     icon: Route,
-    title: "Step-by-Step Journeys",
-    description: "Turn one video into a guided progression with unlock rules and structured steps.",
-  },
-  {
-    icon: MessageCircle,
-    title: "WhatsApp Auto-message",
-    description: "Automatically follow up with leads on WhatsApp the moment they submit.",
+    title: "Video Funnels — Multi-Step Sequences That Convert",
+    description:
+      "Turn one long video into a guided journey: intro → lead form → product walkthrough → pricing → call booking. Each step unlocks the next. Built for coaches and network marketers who already use a multi-touch sales process.",
   },
   {
     icon: BarChart3,
-    title: "Real-time Analytics",
-    description: "Track engagement, conversions, and viewer behavior across all your funnels.",
+    title: "Scheduled Live Sessions — Like Webinars Without the Hassle",
+    description:
+      "Schedule a recorded video to play live at an announced time. Viewers join together, you get the same tracking and lead capture as any funnel, and you're not stuck managing Zoom. Perfect for product launches and weekly broadcasts.",
   },
   {
-    icon: MousePointerClick,
-    title: "CTA / Action Control",
-    description: "Guide viewers toward the next step intentionally with timed, locked, or conditional CTAs.",
+    icon: MessageCircle,
+    title: "WhatsApp Share with Rich Previews — Built for Indian Business",
+    description:
+      "Smart links with proper preview cards in WhatsApp, Telegram and Instagram. One tap and your prospect is watching — no app install, no friction. The way Indian business actually shares video.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Speaker Verification — Build Trust with Every Viewer",
+    description:
+      "Verified speaker badges and branded share pages tell prospects this video is genuinely from you. No more impersonation, no more confusion about whether the link is safe to open.",
+  },
+  {
+    icon: Lock,
+    title: "Access Code Protection — Premium Videos and Courses",
+    description:
+      "Lock any video behind an access code or one-time link so only invited prospects, paying students or VIP partners can watch. Combine with lead capture for a full pay-to-view course preview.",
   },
 ];
 
@@ -57,11 +79,11 @@ const FeaturesPage = () => {
               <span className="gradient-text">structured funnels.</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Built for digital entrepreneurs who want more control, better lead capture, and a cleaner viewer journey.
+              Built for Indian business owners who want more control, better lead capture and a cleaner viewer journey.
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 gap-6">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -73,11 +95,22 @@ const FeaturesPage = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <f.icon className="text-primary" size={22} />
                 </div>
-                <h3 className="text-base font-heading font-semibold mb-2">{f.title}</h3>
+                <h2 className="text-base font-heading font-semibold mb-2">{f.title}</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
               </motion.div>
             ))}
           </div>
+
+          <motion.div
+            className="glass-card p-8 mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <p className="text-muted-foreground leading-relaxed">
+              Nevorai is a complete video sharing platform built for Indian business owners — coaches, network marketers, insurance agents, real estate agents, course creators and online entrepreneurs. If you've been using YouTube, Vimeo or Google Drive to share sales videos with your prospects, you're losing leads every day. YouTube shows your competitors' videos in the sidebar. Vimeo costs ₹10,000+ a month. Google Drive has no tracking. Nevorai solves all three problems in one tool.
+            </p>
+          </motion.div>
         </div>
       </section>
       <Footer />

@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { motion } from "framer-motion";
-import { Users, Lightbulb, Target, Heart } from "lucide-react";
+import { Lightbulb, Target, Users, Heart } from "lucide-react";
 
 const AboutPage = () => {
   return (
@@ -15,11 +15,11 @@ const AboutPage = () => {
             className="text-center mb-16"
           >
             <h1 className="text-3xl md:text-5xl font-heading font-bold mb-4">
-              Built to turn video attention into{" "}
-              <span className="gradient-text">real business outcomes.</span>
+              About Nevorai —{" "}
+              <span className="gradient-text">the smarter way to share business videos.</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Nevorai helps digital entrepreneurs turn ordinary videos into structured funnels, track engagement, capture leads, and guide viewers step by step.
+              Built in Indore, Madhya Pradesh, for Indian coaches, network marketers, insurance agents, real estate agents and entrepreneurs.
             </p>
           </motion.div>
 
@@ -34,11 +34,19 @@ const AboutPage = () => {
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Lightbulb className="text-primary" size={20} />
                 </div>
-                <h2 className="text-xl font-heading font-semibold">What is Nevorai?</h2>
+                <h2 className="text-xl font-heading font-semibold">Our story</h2>
               </div>
-              <p className="text-muted-foreground leading-relaxed">
-                Nevorai is a smart video funnel platform that helps creators and digital entrepreneurs turn random video sharing into structured journeys that generate leads, attention, and action. Instead of sending viewers to platforms full of distractions, you give them a focused, trackable experience.
-              </p>
+              <div className="text-muted-foreground leading-relaxed space-y-4">
+                <p>
+                  I'm Adarsh, founder of Nevorai. I built this product because every time I shared a sales video on WhatsApp, I had no idea who actually watched it.
+                </p>
+                <p>
+                  YouTube wasn't the answer — too many distractions, no real tracking, and my prospect would watch 30 seconds before clicking into a competitor's reel. Vimeo was too expensive for what I needed. Google Drive had no analytics at all.
+                </p>
+                <p>
+                  So I built Nevorai for myself first, then for friends in the network marketing community across India. Today we're helping coaches, agents and entrepreneurs share videos that actually get watched — and convert.
+                </p>
+              </div>
             </motion.div>
 
             <motion.div
@@ -51,10 +59,10 @@ const AboutPage = () => {
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Target className="text-primary" size={20} />
                 </div>
-                <h2 className="text-xl font-heading font-semibold">Why we built it</h2>
+                <h2 className="text-xl font-heading font-semibold">Why "Nevorai"</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Most people share videos on platforms where viewers get distracted, skip content, or disappear without taking action. There was no simple tool to turn a video into a structured experience with lead capture, progress tracking, and guided next steps. Nevorai was built to solve exactly that.
+                Nevorai is built in India for Indian businesses. We believe Indian entrepreneurs deserve world-class software at Indian prices — built with our context in mind. UPI payments. WhatsApp integration. ₹ pricing. Made in Indore, Madhya Pradesh, used everywhere.
               </p>
             </motion.div>
 
@@ -71,7 +79,7 @@ const AboutPage = () => {
                 <h2 className="text-xl font-heading font-semibold">Who it's for</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                Nevorai is designed for digital entrepreneurs, creators, coaches, educators, and audience-based businesses — anyone who uses video to grow their reach and wants more control over how their content is consumed and converted.
+                Network marketers and MLM leaders sharing plan videos. Insurance agents and financial advisors qualifying prospects. Online coaches and course creators converting students. Real estate agents showing properties. Anyone in India who uses video to win business.
               </p>
             </motion.div>
 
@@ -88,7 +96,7 @@ const AboutPage = () => {
                 <h2 className="text-xl font-heading font-semibold">Our mission</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed text-lg font-medium">
-                "Our mission is to help people turn content into structured business growth."
+                "Give every business owner in India a real way to know who's interested in what they're selling — before the customer ever has to say a word."
               </p>
             </motion.div>
           </div>
