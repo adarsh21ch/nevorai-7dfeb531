@@ -14,7 +14,7 @@ import { TestimonialsViewer } from "@/components/funnel/TestimonialsViewer";
 import { LandingPageCodeGate } from "@/components/funnel/LandingPageCodeGate";
 import { DateOfBirthInput } from "@/components/funnel/DateOfBirthInput";
 import { PostSubmitVideoPlayer } from "@/components/landing/PostSubmitVideoPlayer";
-import { BrandingWatermark } from "@/components/BrandingWatermark";
+
 import {
   normalizePhone,
   trimSmart,
