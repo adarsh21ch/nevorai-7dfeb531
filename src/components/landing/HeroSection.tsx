@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 import { FlowParticles } from "./FlowParticles";
 import { AnimatedLogo3D } from "./AnimatedLogo3D";
-import { CountUp } from "./CountUp";
+import { HeroMarquee } from "./HeroMarquee";
 
 export const HeroSection = () => {
   return (
@@ -87,28 +87,12 @@ export const HeroSection = () => {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-3 gap-6 md:gap-16 py-6 px-6 md:px-10 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md"
+            className="w-full"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            {[
-              { v: 2400, s: "+", l: "Active users" },
-              { v: 2, s: "x", l: "Conversions" },
-              { v: 4.2, s: "x", l: "More leads", decimals: 1 },
-            ].map((stat) => (
-              <div key={stat.l} className="text-center">
-                <CountUp
-                  to={stat.v}
-                  suffix={stat.s}
-                  decimals={stat.decimals || 0}
-                  className="block text-white font-extrabold text-2xl md:text-3xl"
-                />
-                <div className="text-[10px] md:text-xs uppercase mt-1 text-hero-muted tracking-widest font-bold">
-                  {stat.l}
-                </div>
-              </div>
-            ))}
+            <HeroMarquee />
           </motion.div>
 
           <motion.p
