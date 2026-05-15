@@ -52,7 +52,7 @@ const VideoStatusBadge = ({ status }: { status: string | null | undefined }) => 
 
 const VideosPage = () => {
   useDocumentTitle("My Videos");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -66,13 +66,13 @@ const VideosPage = () => {
   const [deleteVideo, setDeleteVideo] = useState<{ id: string; title: string } | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "ready" | "processing" | "failed">("all");
 
-  const { data: ownVideos = [], isLoading } = useQuery({
+  const { data: ownVideos = [], isLoading, error, refetch } = useQuery({
     queryKey: ["videos", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("video_assets").select("*").eq("owner_id", user!.id).order("created_at", { ascending: false });
       return data || [];
     },
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 
   const { data: sharedVideos = [] } = useQuery({
@@ -84,7 +84,7 @@ const VideosPage = () => {
       const { data } = await supabase.from("video_assets").select("*").in("id", videoIds);
       return data || [];
     },
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 
   const allVideos = [
@@ -229,8 +229,22 @@ const VideosPage = () => {
           ))}
         </div>
 
-        {/* Empty state */}
-        {filtered.length === 0 ? (
+        {/* Empty / loading / error states */}
+        {authLoading || isLoading ? (
+          <div className="rounded-xl border border-border bg-card p-10 text-center">
+            <Loader2 size={22} className="text-primary mx-auto mb-3 animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading videos...</p>
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-border bg-card p-10 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+              <Play size={22} className="text-primary" />
+            </div>
+            <h3 className="text-base font-semibold mb-1">Couldn’t load videos</h3>
+            <p className="text-sm text-muted-foreground mb-5 max-w-[280px] mx-auto">Please try again.</p>
+            <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-border bg-card p-10 text-center">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
               <Play size={22} className="text-primary" />
