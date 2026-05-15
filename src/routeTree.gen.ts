@@ -311,9 +311,7 @@ const LandingPagesIdRoute = LandingPagesIdRouteImport.update({
   id: '/landing-pages/$id',
   path: '/landing-pages/$id',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/landing-pages.$id.lazy').then((d) => d.Route),
-)
+} as any)
 const LSlugRoute = LSlugRouteImport.update({
   id: '/l/$slug',
   path: '/l/$slug',
@@ -338,7 +336,7 @@ const FlowsIdRoute = FlowsIdRouteImport.update({
   id: '/flows/$id',
   path: '/flows/$id',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/flows.$id.lazy').then((d) => d.Route))
+} as any)
 const CompareNevoraiVsYoutubeRoute = CompareNevoraiVsYoutubeRouteImport.update({
   id: '/compare/nevorai-vs-youtube',
   path: '/compare/nevorai-vs-youtube',
