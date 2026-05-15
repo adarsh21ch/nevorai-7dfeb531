@@ -25,7 +25,7 @@ Sitemap: https://nevorai.com/sitemap.xml
 `;
 
 export const Route = createFileRoute("/robots.txt")({
-  // @ts-expect-error -- server handlers augmentation missing due to @tanstack/react-start version skew
+  
   server: {
     handlers: {
       GET: async () =>
