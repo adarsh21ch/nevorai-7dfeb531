@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/flows/$id")({
+export const Route = createFileRoute("/funnels/$id")({
   beforeLoad: ({ params }) => {
     throw redirect({ to: "/flows/$id", params: { id: params.id } });
   },
