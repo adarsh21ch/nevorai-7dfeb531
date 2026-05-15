@@ -195,7 +195,7 @@ const BillingPage = () => {
               </p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Funnels</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Flows</p>
               <p className="font-medium mt-0.5">
                 {plan.limits.funnel_limit === null || plan.limits.funnel_limit === -1 ? "Unlimited" : plan.limits.funnel_limit}
               </p>
@@ -228,7 +228,7 @@ const BillingPage = () => {
                     <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Recommended</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Unlock higher view limits, multi-step funnels, live sessions, advanced analytics & priority support.
+                    Unlock higher view limits, multi-step flows, live sessions, advanced analytics & priority support.
                   </p>
                   <div className="text-xs text-muted-foreground mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span>Current: <span className="font-semibold text-foreground">Basic ₹{plan.amountPaid ?? "—"}/mo</span></span>

@@ -11,8 +11,8 @@ const PaymentsPage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: funnels = [] } = useQuery({
-    queryKey: ["my-funnels", user?.id],
+  const { data: flows = [] } = useQuery({
+    queryKey: ["my-flows", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("funnels").select("id, title").eq("owner_id", user!.id);
       return data || [];
@@ -21,14 +21,14 @@ const PaymentsPage = () => {
   });
 
   const { data: payments = [] } = useQuery({
-    queryKey: ["all-payments", user?.id, funnels],
+    queryKey: ["all-payments", user?.id, flows],
     queryFn: async () => {
-      const ids = funnels.map((f) => f.id);
+      const ids = flows.map((f) => f.id);
       if (!ids.length) return [];
       const { data } = await supabase.from("funnel_payments").select("*").in("funnel_id", ids).order("submitted_at", { ascending: false });
       return data || [];
     },
-    enabled: funnels.length > 0,
+    enabled: flows.length > 0,
   });
 
   const verify = useMutation({
@@ -84,7 +84,7 @@ const PaymentsPage = () => {
               <table className="w-full text-sm">
                 <thead><tr className="border-b border-border text-muted-foreground">
                   <th className="text-left p-3 font-medium">Amount</th>
-                  <th className="text-left p-3 font-medium hidden md:table-cell">Funnel</th>
+                  <th className="text-left p-3 font-medium hidden md:table-cell">Flow</th>
                   <th className="text-left p-3 font-medium">Transaction ID</th>
                   <th className="text-left p-3 font-medium">Status</th>
                   <th className="text-left p-3 font-medium">Date</th>

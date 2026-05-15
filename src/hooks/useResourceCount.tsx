@@ -5,10 +5,10 @@ import { useAuth } from "./useAuth";
 export const useResourceCount = () => {
   const { user } = useAuth();
 
-  const { data: counts = { funnels: 0, landing_pages: 0, live_sessions: 0, videos: 0 } } = useQuery({
+  const { data: counts = { flows: 0, landing_pages: 0, live_sessions: 0, videos: 0 } } = useQuery({
     queryKey: ["resource-counts", user?.id],
     queryFn: async () => {
-      if (!user) return { funnels: 0, landing_pages: 0, live_sessions: 0, videos: 0 };
+      if (!user) return { flows: 0, landing_pages: 0, live_sessions: 0, videos: 0 };
 
       const [funnelRes, lpRes, liveRes, videoRes] = await Promise.all([
         supabase.from("funnels").select("id", { count: "exact", head: true }).eq("owner_id", user.id),
@@ -18,7 +18,7 @@ export const useResourceCount = () => {
       ]);
 
       return {
-        funnels: funnelRes.count || 0,
+        flows: funnelRes.count || 0,
         landing_pages: lpRes.count || 0,
         live_sessions: liveRes.count || 0,
         videos: videoRes.count || 0,

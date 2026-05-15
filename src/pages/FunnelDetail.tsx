@@ -22,8 +22,8 @@ const FunnelDetail = () => {
   const [leadSearch, setLeadSearch] = useState("");
   const [leadFilter, setLeadFilter] = useState("all");
 
-  const { data: funnel } = useQuery({
-    queryKey: ["funnel", id],
+  const { data: flow } = useQuery({
+    queryKey: ["flow", id],
     queryFn: async () => {
       const { data } = await supabase.from("funnels").select("*").eq("id", id!).single();
       return data;
@@ -32,7 +32,7 @@ const FunnelDetail = () => {
   });
 
   const { data: leads = [] } = useQuery({
-    queryKey: ["funnel-leads", id],
+    queryKey: ["flow-leads", id],
     queryFn: async () => {
       const { data } = await supabase.from("funnel_leads").select("*").eq("funnel_id", id!).order("submitted_at", { ascending: false });
       return data || [];
@@ -41,7 +41,7 @@ const FunnelDetail = () => {
   });
 
   const { data: payments = [] } = useQuery({
-    queryKey: ["funnel-payments", id],
+    queryKey: ["flow-payments", id],
     queryFn: async () => {
       const { data } = await supabase.from("funnel_payments").select("*").eq("funnel_id", id!).order("submitted_at", { ascending: false });
       return data || [];
@@ -53,7 +53,7 @@ const FunnelDetail = () => {
     mutationFn: async ({ leadId, status }: { leadId: string; status: string }) => {
       await supabase.from("funnel_leads").update({ status }).eq("id", leadId);
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["funnel-leads", id] }); toast.success("Lead updated"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flow-leads", id] }); toast.success("Lead updated"); },
   });
 
   const verifyPayment = useMutation({
@@ -63,10 +63,10 @@ const FunnelDetail = () => {
         rejection_note: note || null,
       }).eq("id", paymentId);
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["funnel-payments", id] }); toast.success("Payment updated"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flow-payments", id] }); toast.success("Payment updated"); },
   });
 
-  if (!funnel) return <DashboardLayout><div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div></DashboardLayout>;
+  if (!flow) return <DashboardLayout><div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div></DashboardLayout>;
 
   const filteredLeads = leads.filter((l: any) => {
     if (leadFilter !== "all" && l.status !== leadFilter) return false;
@@ -74,11 +74,11 @@ const FunnelDetail = () => {
     return true;
   });
 
-  const convRate = funnel.total_views ? ((leads.length / funnel.total_views) * 100).toFixed(1) : "0";
+  const convRate = flow.total_views ? ((leads.length / flow.total_views) * 100).toFixed(1) : "0";
   const totalRevenue = payments.filter((p: any) => p.status === "verified").reduce((a: number, p: any) => a + p.amount, 0);
 
   const isMultiStep = (funnel as any)?.funnel_mode === "multi";
-  const isPrivate = funnel.visibility === "private";
+  const isPrivate = flow.visibility === "private";
 
   const tabs = [
     { key: "overview", label: "Overview" },
@@ -94,19 +94,19 @@ const FunnelDetail = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-heading font-bold">{funnel.title}</h1>
-              <Badge variant={funnel.is_published ? "default" : "secondary"}>{funnel.is_published ? "Published" : "Draft"}</Badge>
+              <h1 className="text-2xl font-heading font-bold">{flow.title}</h1>
+              <Badge variant={flow.is_published ? "default" : "secondary"}>{flow.is_published ? "Published" : "Draft"}</Badge>
               {isPrivate && <Badge variant="outline" className="text-amber-600 border-amber-500/30 bg-amber-500/10"><Lock size={10} className="mr-1" /> Private</Badge>}
             </div>
-            <p className="text-sm text-muted-foreground mt-1">/f/{funnel.slug}</p>
+            <p className="text-sm text-muted-foreground mt-1">/f/{flow.slug}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/f/${funnel.slug}`); toast.success("Copied!"); }}>
+            <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/f/${flow.slug}`); toast.success("Copied!"); }}>
               <Copy size={14} /> Copy Link
             </Button>
-            <Link to={`/f/${funnel.slug}`} target="_blank"><Button variant="outline" size="sm"><ExternalLink size={14} /> Preview</Button></Link>
-            <WhatsAppShareButton url={`${typeof window !== "undefined" ? window.location.origin : ""}/f/${funnel.slug}`} message={`Watch this short video: ${funnel.title}`} size="sm" />
-            <Link to={`/funnels/${id}/edit`}><Button variant="default" size="sm"><Edit size={14} /> Edit</Button></Link>
+            <Link to={`/f/${flow.slug}`} target="_blank"><Button variant="outline" size="sm"><ExternalLink size={14} /> Preview</Button></Link>
+            <WhatsAppShareButton url={`${typeof window !== "undefined" ? window.location.origin : ""}/f/${flow.slug}`} message={`Watch this short video: ${flow.title}`} size="sm" />
+            <Link to={`/flows/${id}/edit`}><Button variant="default" size="sm"><Edit size={14} /> Edit</Button></Link>
           </div>
         </div>
 
@@ -123,7 +123,7 @@ const FunnelDetail = () => {
         {tab === "overview" && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { icon: Eye, label: "Views", value: funnel.total_views || 0 },
+              { icon: Eye, label: "Views", value: flow.total_views || 0 },
               { icon: Users, label: "Leads", value: leads.length },
               { icon: TrendingUp, label: "Conversion", value: `${convRate}%` },
               { icon: IndianRupee, label: "Revenue", value: `₹${totalRevenue.toLocaleString("en-IN")}` },
@@ -158,7 +158,7 @@ const FunnelDetail = () => {
                 const csv = "Name,Phone,Email,City,Status,Date\n" + leads.map((l: any) => `"${l.name || ""}","${l.phone || ""}","${l.email || ""}","${l.city || ""}","${l.status}","${l.submitted_at}"`).join("\n");
                 const blob = new Blob([csv], { type: "text/csv" });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement("a"); a.href = url; a.download = `leads-${funnel.slug}.csv`; a.click();
+                const a = document.createElement("a"); a.href = url; a.download = `leads-${flow.slug}.csv`; a.click();
                 toast.success("CSV exported!");
               }}><Download size={14} /> Export CSV</Button>
             </div>
@@ -169,12 +169,12 @@ const FunnelDetail = () => {
                   <Users size={22} className="text-primary" />
                 </div>
                 <p className="text-sm font-semibold">No leads yet</p>
-                <p className="mt-1 text-xs text-muted-foreground">Share your funnel link to start capturing leads.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Share your flow link to start capturing leads.</p>
                 <Button
                   size="sm"
                   className="mt-4"
                   onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/f/${funnel.slug}`);
+                    navigator.clipboard.writeText(`${window.location.origin}/f/${flow.slug}`);
                     toast.success("Share link copied!");
                   }}
                 >
@@ -284,7 +284,7 @@ const FunnelDetail = () => {
         )}
 
         {tab === "progress" && isMultiStep && <LeadProgressTab funnelId={id!} userId={user?.id || ""} />}
-        {tab === "viewers" && isPrivate && <ViewersAnalyticsTab funnelId={id!} funnelSlug={funnel.slug} hasAccessCode={!!(funnel as any).access_code_hash} userId={user?.id || ""} />}
+        {tab === "viewers" && isPrivate && <ViewersAnalyticsTab funnelId={id!} funnelSlug={flow.slug} hasAccessCode={!!(flow as any).access_code_hash} userId={user?.id || ""} />}
       </div>
     </DashboardLayout>
   );

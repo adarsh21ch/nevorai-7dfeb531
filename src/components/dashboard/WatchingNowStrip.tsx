@@ -14,12 +14,12 @@ export const WatchingNowStrip = () => {
     enabled: !!user,
     refetchInterval: 15000,
     queryFn: async () => {
-      // Active = analytics events recorded in the last 60s for any of my funnels
-      const { data: funnels } = await supabase
+      // Active = analytics events recorded in the last 60s for any of my flows
+      const { data: flows } = await supabase
         .from("funnels")
         .select("id, title, slug")
         .eq("owner_id", user!.id);
-      const ids = (funnels || []).map((f) => f.id);
+      const ids = (flows || []).map((f) => f.id);
       if (!ids.length) return [];
       const since = new Date(Date.now() - 60_000).toISOString();
       const { data: events } = await supabase
@@ -44,7 +44,7 @@ export const WatchingNowStrip = () => {
           .in("id", leadIds);
         leads = Object.fromEntries((leadRows || []).map((l: any) => [l.id, { name: l.name || "Anonymous" }]));
       }
-      const funnelMap = Object.fromEntries((funnels || []).map((f: any) => [f.id, f]));
+      const funnelMap = Object.fromEntries((flows || []).map((f: any) => [f.id, f]));
       return top.map((e: any) => ({
         sessionId: e.session_id,
         viewerName: e.lead_id ? leads[e.lead_id]?.name || "Anonymous" : "Anonymous viewer",

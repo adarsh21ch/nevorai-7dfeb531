@@ -48,7 +48,7 @@ const createEmptyStep = (order: number, type: string = "video"): FlowStep => ({
 });
 
 const generateSlug = (title: string) => {
-  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 50) || "my-funnel";
+  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 50) || "my-flow";
   return `${base}-${Date.now().toString(36)}`;
 };
 
@@ -97,7 +97,7 @@ const FunnelEditor = () => {
   const { canUseMultiStep } = usePlan();
   const { tier, features, planConfigs } = usePlanLimits();
   const queryClient = useQueryClient();
-  // Phase 6 gate: starting a brand-new funnel without any uploaded videos = upload first.
+  // Phase 6 gate: starting a brand-new flow without any uploaded videos = upload first.
   useVideoGate(!isEdit);
 
   const [wizardStep, setWizardStep] = useState(0);
@@ -119,7 +119,7 @@ const FunnelEditor = () => {
 
   const [audioNoteEnabled, setAudioNoteEnabled] = useState(false);
 
-  const [funnel, setFunnel] = useState({
+  const [flow, setFunnel] = useState({
     title: "", slug: "", description: "", visibility: "public", intent_type: "lead",
     funnel_mode: "single" as "single" | "multi",
     allow_seek: false, allow_speed_change: true, lock_cta: false,
@@ -156,17 +156,17 @@ const FunnelEditor = () => {
     enabled: !!user,
   });
   const { data: existingFunnel } = useQuery({
-    queryKey: ["funnel", id],
+    queryKey: ["flow", id],
     queryFn: async () => { if (!id) return null; const { data } = await supabase.from("funnels").select("*").eq("id", id).single(); return data; },
     enabled: isEdit,
   });
   const { data: existingLeadForm } = useQuery({
-    queryKey: ["funnel-lead-form", id],
+    queryKey: ["flow-lead-form", id],
     queryFn: async () => { if (!id) return null; const { data } = await supabase.from("funnel_lead_form_config").select("*").eq("funnel_id", id).single(); return data; },
     enabled: isEdit,
   });
   const { data: existingSteps } = useQuery({
-    queryKey: ["funnel-steps", id],
+    queryKey: ["flow-steps", id],
     queryFn: async () => { if (!id) return []; const { data } = await supabase.from("funnel_steps").select("*").eq("funnel_id", id).order("step_order"); return data || []; },
     enabled: isEdit,
   });
@@ -273,45 +273,45 @@ const FunnelEditor = () => {
 
   const buildPayload = useCallback(() => {
     if (!user) return null;
-    const slug = funnel.slug || generateSlug(funnel.title);
+    const slug = flow.slug || generateSlug(flow.title);
     const s = sanitizeText;
     return {
-      owner_id: user.id, title: s(funnel.title), slug, description: s(funnel.description),
+      owner_id: user.id, title: s(flow.title), slug, description: s(flow.description),
       visibility: funnel.visibility, intent_type: funnel.intent_type, funnel_mode: funnel.funnel_mode,
-      allow_seek: funnel.allow_seek, allow_speed_change: funnel.allow_speed_change,
-      lock_cta: funnel.lock_cta, cta_enabled: funnel.cta_enabled,
-      cta_text: s(funnel.cta_text), cta_timing_seconds: funnel.cta_timing_seconds,
-      cta_url: funnel.cta_url || null, video_access_minutes: funnel.video_access_minutes,
-      show_contact_buttons: funnel.show_contact_buttons,
-      contact_whatsapp: funnel.contact_whatsapp || null, contact_phone: funnel.contact_phone || null,
-      contact_instagram: funnel.contact_instagram || null, show_contact_after_cta: funnel.show_contact_after_cta,
-      whatsapp_auto_message: funnel.whatsapp_auto_message,
-      whatsapp_message_template: funnel.whatsapp_message_template ? s(funnel.whatsapp_message_template) : null,
-      payment_enabled: funnel.payment_enabled, upi_id: funnel.upi_id || null,
-      qr_code_url: funnel.qr_code_url || null,
-      payment_instructions: funnel.payment_instructions ? s(funnel.payment_instructions) : null,
-      is_live_broadcast: funnel.is_live_broadcast, broadcast_scheduled_at: funnel.broadcast_scheduled_at || null,
-      broadcast_password: funnel.broadcast_password || null, broadcast_replay_enabled: funnel.broadcast_replay_enabled,
-      is_published: funnel.is_published, video_asset_id: selectedVideo?.id || null,
-      required_fields: funnel.required_fields,
-      speaker_mode: funnel.speaker_mode,
-      speaker_name: funnel.speaker_name ? s(funnel.speaker_name) : null,
-      speaker_photo_url: funnel.speaker_photo_url || null,
-      speaker_about: funnel.speaker_about ? s(funnel.speaker_about) : null,
-      video_topics_enabled: funnel.video_topics_enabled,
-      video_topics: funnel.video_topics.filter((t: string) => t.trim() !== "").map((t: string) => s(t)),
-      speaker_scope: funnel.speaker_scope,
-      video_topics_scope: funnel.video_topics_scope,
+      allow_seek: flow.allow_seek, allow_speed_change: flow.allow_speed_change,
+      lock_cta: flow.lock_cta, cta_enabled: flow.cta_enabled,
+      cta_text: s(flow.cta_text), cta_timing_seconds: flow.cta_timing_seconds,
+      cta_url: flow.cta_url || null, video_access_minutes: flow.video_access_minutes,
+      show_contact_buttons: flow.show_contact_buttons,
+      contact_whatsapp: flow.contact_whatsapp || null, contact_phone: flow.contact_phone || null,
+      contact_instagram: flow.contact_instagram || null, show_contact_after_cta: flow.show_contact_after_cta,
+      whatsapp_auto_message: flow.whatsapp_auto_message,
+      whatsapp_message_template: flow.whatsapp_message_template ? s(flow.whatsapp_message_template) : null,
+      payment_enabled: flow.payment_enabled, upi_id: flow.upi_id || null,
+      qr_code_url: flow.qr_code_url || null,
+      payment_instructions: flow.payment_instructions ? s(flow.payment_instructions) : null,
+      is_live_broadcast: flow.is_live_broadcast, broadcast_scheduled_at: flow.broadcast_scheduled_at || null,
+      broadcast_password: flow.broadcast_password || null, broadcast_replay_enabled: flow.broadcast_replay_enabled,
+      is_published: flow.is_published, video_asset_id: selectedVideo?.id || null,
+      required_fields: flow.required_fields,
+      speaker_mode: flow.speaker_mode,
+      speaker_name: flow.speaker_name ? s(flow.speaker_name) : null,
+      speaker_photo_url: flow.speaker_photo_url || null,
+      speaker_about: flow.speaker_about ? s(flow.speaker_about) : null,
+      video_topics_enabled: flow.video_topics_enabled,
+      video_topics: flow.video_topics.filter((t: string) => t.trim() !== "").map((t: string) => s(t)),
+      speaker_scope: flow.speaker_scope,
+      video_topics_scope: flow.video_topics_scope,
     };
-  }, [user, funnel, selectedVideo]);
+  }, [user, flow, selectedVideo]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload = buildPayload();
       if (!payload) throw new Error("Not authenticated");
-      if (funnel.access_code_plain && funnel.access_code_plain.trim()) {
+      if (flow.access_code_plain && flow.access_code_plain.trim()) {
         const enc = new TextEncoder();
-        const buf = await crypto.subtle.digest("SHA-256", enc.encode(funnel.access_code_plain.trim().toUpperCase()));
+        const buf = await crypto.subtle.digest("SHA-256", enc.encode(flow.access_code_plain.trim().toUpperCase()));
         (payload as any).access_code_hash = Array.from(new Uint8Array(buf))
           .map((b) => b.toString(16).padStart(2, "0")).join("");
       }
@@ -371,11 +371,11 @@ const FunnelEditor = () => {
       return funnelId;
     },
     onSuccess: (funnelId) => {
-      queryClient.invalidateQueries({ queryKey: ["my-funnels"] });
-      queryClient.invalidateQueries({ queryKey: ["funnel-steps", id] });
+      queryClient.invalidateQueries({ queryKey: ["my-flows"] });
+      queryClient.invalidateQueries({ queryKey: ["flow-steps", id] });
       setLastSavedAt(new Date());
-      toast.success(isEdit ? "Funnel updated!" : "Funnel created!");
-      navigate(`/funnels/${funnelId}`);
+      toast.success(isEdit ? "Flow updated!" : "Flow created!");
+      navigate(`/flows/${funnelId}`);
     },
     onError: (err: any) => toast.error(err.message || "Failed to save"),
   });
@@ -398,7 +398,7 @@ const FunnelEditor = () => {
       }
     }, 1500);
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
-  }, [isEdit, id, funnel, leadForm, selectedVideo, buildPayload]);
+  }, [isEdit, id, flow, leadForm, selectedVideo, buildPayload]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
@@ -440,7 +440,7 @@ const FunnelEditor = () => {
   const baseSteps = isMulti ? MULTI_STEPS : SINGLE_STEPS;
   const visibleSteps = baseSteps.filter((s) => {
     if (s.label === "Lead Capture" && !leadForm.capture_enabled) return false;
-    if (s.label === "Payment" && !funnel.payment_enabled) return false;
+    if (s.label === "Payment" && !flow.payment_enabled) return false;
     return true;
   });
   const totalSteps = visibleSteps.length;
@@ -496,15 +496,15 @@ const FunnelEditor = () => {
   const renderBasicInfo = () => (
     <>
       <h2 className="text-lg font-heading font-semibold">Basic Info</h2>
-      <p className="text-sm text-muted-foreground">Give your funnel a name and description.</p>
+      <p className="text-sm text-muted-foreground">Give your flow a name and description.</p>
       <div className="space-y-4 mt-4">
         <div>
-          <Label>Funnel Name *</Label>
-          <Input value={funnel.title} onChange={(e) => { update("title", e.target.value); if (!isEdit) update("slug", generateSlug(e.target.value)); }} className="mt-1.5 bg-muted border-border" placeholder="e.g. Free Training Funnel" />
+          <Label>Flow Name *</Label>
+          <Input value={flow.title} onChange={(e) => { update("title", e.target.value); if (!isEdit) update("slug", generateSlug(e.target.value)); }} className="mt-1.5 bg-muted border-border" placeholder="e.g. Free Training Flow" />
         </div>
         <div>
           <Label>Description <span className="text-muted-foreground font-normal">(optional)</span></Label>
-          <Textarea value={funnel.description} onChange={(e) => update("description", e.target.value)} className="mt-1.5 bg-muted border-border" rows={3} placeholder="What is this funnel about?" />
+          <Textarea value={flow.description} onChange={(e) => update("description", e.target.value)} className="mt-1.5 bg-muted border-border" rows={3} placeholder="What is this flow about?" />
         </div>
       </div>
     </>
@@ -512,8 +512,8 @@ const FunnelEditor = () => {
 
   const renderModePicker = () => (
     <>
-      <h2 className="text-xl font-heading font-bold">Create New Funnel</h2>
-      <p className="text-sm text-muted-foreground">What type of funnel do you want to build?</p>
+      <h2 className="text-xl font-heading font-bold">Create New Flow</h2>
+      <p className="text-sm text-muted-foreground">What type of flow do you want to build?</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
         <button
           onClick={() => { update("funnel_mode", "single"); setModeChosen(true); setWizardStep(0); }}
@@ -522,7 +522,7 @@ const FunnelEditor = () => {
           <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
             <Video size={22} className="text-primary" />
           </div>
-          <h3 className="font-heading font-bold text-sm group-hover:text-primary transition-colors">Single Video Funnel</h3>
+          <h3 className="font-heading font-bold text-sm group-hover:text-primary transition-colors">Single Video Flow</h3>
           <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
             One video with lead capture, CTA, and optional payment. Simple and effective.
           </p>
@@ -551,7 +551,7 @@ const FunnelEditor = () => {
   const renderVideoStep = () => (
     <>
       <h2 className="text-lg font-heading font-semibold">Video</h2>
-      <p className="text-sm text-muted-foreground">Select the video for your funnel.</p>
+      <p className="text-sm text-muted-foreground">Select the video for your flow.</p>
       {selectedVideo ? (
         <div className="space-y-4 mt-4">
           <div className="border border-border rounded-xl p-4 flex items-center gap-4">
@@ -594,7 +594,7 @@ const FunnelEditor = () => {
             </div>
             <div className="p-4 bg-muted/50 rounded-xl">
               <Label className="font-semibold">When to Play</Label>
-              <Select value={funnel.audio_note_timing} onValueChange={(v) => update("audio_note_timing", v)}>
+              <Select value={flow.audio_note_timing} onValueChange={(v) => update("audio_note_timing", v)}>
                 <SelectTrigger className="mt-1.5 bg-muted border-border"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-card border-border">
                   <SelectItem value="before">Before video starts</SelectItem>
@@ -605,11 +605,11 @@ const FunnelEditor = () => {
             </div>
             <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
               <div><Label className="font-semibold">Autoplay Audio</Label><p className="text-xs text-muted-foreground mt-0.5">Play automatically when triggered</p></div>
-              <Switch checked={funnel.audio_note_autoplay} onCheckedChange={(v) => update("audio_note_autoplay", v)} />
+              <Switch checked={flow.audio_note_autoplay} onCheckedChange={(v) => update("audio_note_autoplay", v)} />
             </div>
             <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
               <div><Label className="font-semibold">Pause Video During Audio</Label><p className="text-xs text-muted-foreground mt-0.5">Lock video until audio completes</p></div>
-              <Switch checked={funnel.audio_lock_video} onCheckedChange={(v) => update("audio_lock_video", v)} />
+              <Switch checked={flow.audio_lock_video} onCheckedChange={(v) => update("audio_lock_video", v)} />
             </div>
           </div>
         )}
@@ -775,8 +775,8 @@ const FunnelEditor = () => {
         totalSteps={flowSteps.length}
         onUpdate={(key, value) => { if (editingStepIdx !== null) updateFlowStep(editingStepIdx, key, value); }}
         onOpenVideoPicker={() => { setStepVideoPickerIdx(editingStepIdx); }}
-        speakerScope={funnel.speaker_scope}
-        videoTopicsScope={funnel.video_topics_scope}
+        speakerScope={flow.speaker_scope}
+        videoTopicsScope={flow.video_topics_scope}
         userProfile={userProfile}
       />
       <VideoPickerModal
@@ -795,12 +795,12 @@ const FunnelEditor = () => {
       <h2 className="text-lg font-heading font-semibold">Video Controls</h2>
       <p className="text-sm text-muted-foreground">Configure playback behavior for your viewers.</p>
       <div className="space-y-4 mt-4">
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Allow Speed Control</Label><p className="text-xs text-muted-foreground mt-0.5">Let viewers change playback speed</p></div><Switch checked={funnel.allow_speed_change} onCheckedChange={(v) => update("allow_speed_change", v)} /></div>
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Allow Forward Seek</Label><p className="text-xs text-muted-foreground mt-0.5">Let viewers skip ahead in the video</p></div><Switch checked={funnel.allow_seek} onCheckedChange={(v) => update("allow_seek", v)} /></div>
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Allow Speed Control</Label><p className="text-xs text-muted-foreground mt-0.5">Let viewers change playback speed</p></div><Switch checked={flow.allow_speed_change} onCheckedChange={(v) => update("allow_speed_change", v)} /></div>
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Allow Forward Seek</Label><p className="text-xs text-muted-foreground mt-0.5">Let viewers skip ahead in the video</p></div><Switch checked={flow.allow_seek} onCheckedChange={(v) => update("allow_seek", v)} /></div>
         <div className="p-4 bg-muted/50 rounded-xl">
           <Label className="font-semibold">Access Time Limit</Label>
           <p className="text-xs text-muted-foreground mt-0.5 mb-2">Auto-expire access after a set time</p>
-          <Select value={funnel.video_access_minutes?.toString() || "unlimited"} onValueChange={(v) => update("video_access_minutes", v === "unlimited" ? null : parseInt(v))}>
+          <Select value={flow.video_access_minutes?.toString() || "unlimited"} onValueChange={(v) => update("video_access_minutes", v === "unlimited" ? null : parseInt(v))}>
             <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
             <SelectContent className="bg-card border-border">
               <SelectItem value="unlimited">No limit</SelectItem>
@@ -860,7 +860,7 @@ const FunnelEditor = () => {
   const renderSpeakerStep = () => (
     <>
       <h2 className="text-lg font-heading font-semibold">Speaker</h2>
-      <p className="text-sm text-muted-foreground">Choose how the speaker is shown on your funnel page.</p>
+      <p className="text-sm text-muted-foreground">Choose how the speaker is shown on your flow page.</p>
       <div className="space-y-5 mt-4">
         {isMulti && (
           <div className="p-4 bg-muted/50 rounded-xl space-y-3">
@@ -871,7 +871,7 @@ const FunnelEditor = () => {
                   key={scope}
                   onClick={() => update("speaker_scope", scope)}
                   className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
-                    funnel.speaker_scope === scope
+                    flow.speaker_scope === scope
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:text-foreground"
                   }`}
@@ -883,11 +883,11 @@ const FunnelEditor = () => {
           </div>
         )}
 
-        {isMulti && funnel.speaker_scope === "per_step" && (
+        {isMulti && flow.speaker_scope === "per_step" && (
           <PerStepSpeakerAssignment steps={flowSteps as any} setSteps={setFlowSteps as any} />
         )}
 
-        {(funnel.speaker_scope === "global" || !isMulti) && (
+        {(flow.speaker_scope === "global" || !isMulti) && (
           <>
             <div className="flex rounded-xl border border-border overflow-hidden">
               {(["none", "account", "custom"] as const).map((mode) => (
@@ -895,7 +895,7 @@ const FunnelEditor = () => {
                   key={mode}
                   onClick={() => update("speaker_mode", mode)}
                   className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
-                    funnel.speaker_mode === mode
+                    flow.speaker_mode === mode
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:text-foreground"
                   }`}
@@ -905,11 +905,11 @@ const FunnelEditor = () => {
               ))}
             </div>
 
-            {funnel.speaker_mode === "none" && (
-              <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-xl">No speaker info will be shown on the funnel page.</p>
+            {flow.speaker_mode === "none" && (
+              <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-xl">No speaker info will be shown on the flow page.</p>
             )}
 
-            {funnel.speaker_mode === "account" && (
+            {flow.speaker_mode === "account" && (
               <div className="p-4 bg-muted/50 rounded-xl space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center overflow-hidden ring-2 ring-primary/20 shrink-0">
@@ -928,48 +928,48 @@ const FunnelEditor = () => {
               </div>
             )}
 
-            {funnel.speaker_mode === "custom" && (
+            {flow.speaker_mode === "custom" && (
               <div className="space-y-4">
                 <SpeakerPhotoUpload
-                  value={funnel.speaker_photo_url}
+                  value={flow.speaker_photo_url}
                   onChange={(url) => update("speaker_photo_url", url)}
                 />
                 <div>
                   <Label className="text-sm font-medium">Speaker Name</Label>
                   <Input
-                    value={funnel.speaker_name}
+                    value={flow.speaker_name}
                     onChange={(e) => update("speaker_name", e.target.value.slice(0, 60))}
                     placeholder="e.g. Anmol Kapoor"
                     className="mt-1.5 bg-muted border-border"
                     maxLength={60}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">{funnel.speaker_name.length}/60</p>
+                  <p className="text-xs text-muted-foreground mt-1">{flow.speaker_name.length}/60</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">About Speaker</Label>
                   <Textarea
-                    value={funnel.speaker_about}
+                    value={flow.speaker_about}
                     onChange={(e) => update("speaker_about", e.target.value.slice(0, 200))}
                     placeholder="e.g. Network Marketing Leader | Diamond Director at Forever Living"
                     className="mt-1.5 bg-muted border-border"
                     rows={3}
                     maxLength={200}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">{funnel.speaker_about.length}/200</p>
+                  <p className="text-xs text-muted-foreground mt-1">{flow.speaker_about.length}/200</p>
                 </div>
                 <div className="pt-3 border-t border-border">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Preview</p>
                   <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
                     <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center overflow-hidden ring-2 ring-primary/20 shrink-0">
-                      {funnel.speaker_photo_url ? (
-                        <img src={funnel.speaker_photo_url} alt="" className="w-full h-full object-cover" />
+                      {flow.speaker_photo_url ? (
+                        <img src={flow.speaker_photo_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-primary font-heading font-bold text-sm">{funnel.speaker_name?.charAt(0)?.toUpperCase() || "?"}</span>
+                        <span className="text-primary font-heading font-bold text-sm">{flow.speaker_name?.charAt(0)?.toUpperCase() || "?"}</span>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-heading font-bold text-sm">{funnel.speaker_name || "Speaker Name"}</p>
-                      {funnel.speaker_about && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{funnel.speaker_about}</p>}
+                      <p className="font-heading font-bold text-sm">{flow.speaker_name || "Speaker Name"}</p>
+                      {flow.speaker_about && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{flow.speaker_about}</p>}
                     </div>
                   </div>
                 </div>
@@ -982,7 +982,7 @@ const FunnelEditor = () => {
   );
 
   const renderVideoTopicsStep = () => {
-    const topics = funnel.video_topics;
+    const topics = flow.video_topics;
     const updateTopics = (newTopics: string[]) => update("video_topics", newTopics);
     const addTopic = () => { if (topics.length < 10) updateTopics([...topics, ""]); };
     const removeTopic = (i: number) => updateTopics(topics.filter((_: string, idx: number) => idx !== i));
@@ -998,7 +998,7 @@ const FunnelEditor = () => {
     return (
       <>
         <h2 className="text-lg font-heading font-semibold">Video Topics</h2>
-        <p className="text-sm text-muted-foreground">Add key points covered in your video. These will appear on your funnel page.</p>
+        <p className="text-sm text-muted-foreground">Add key points covered in your video. These will appear on your flow page.</p>
         <div className="space-y-5 mt-4">
           {isMulti && (
             <div className="p-4 bg-muted/50 rounded-xl space-y-3">
@@ -1009,7 +1009,7 @@ const FunnelEditor = () => {
                     key={scope}
                     onClick={() => update("video_topics_scope", scope)}
                     className={`flex-1 py-2.5 text-sm font-semibold transition-all ${
-                      funnel.video_topics_scope === scope
+                      flow.video_topics_scope === scope
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
@@ -1018,30 +1018,30 @@ const FunnelEditor = () => {
                   </button>
                 ))}
               </div>
-              {funnel.video_topics_scope === "per_step" && (
+              {flow.video_topics_scope === "per_step" && (
                 <p className="text-xs text-muted-foreground">Configure key points individually inside each step's settings.</p>
               )}
             </div>
           )}
 
-          {(funnel.video_topics_scope === "global" || !isMulti) && (
+          {(flow.video_topics_scope === "global" || !isMulti) && (
             <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
               <div>
-                <Label className="font-semibold">Show Video Topics on funnel page</Label>
+                <Label className="font-semibold">Show Video Topics on flow page</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">Display key points below the video</p>
               </div>
-              <Switch checked={funnel.video_topics_enabled} onCheckedChange={(v) => {
+              <Switch checked={flow.video_topics_enabled} onCheckedChange={(v) => {
                 update("video_topics_enabled", v);
-                if (v && funnel.video_topics.length === 0) update("video_topics", ["", "", ""]);
+                if (v && flow.video_topics.length === 0) update("video_topics", ["", "", ""]);
               }} />
             </div>
           )}
 
-          {(funnel.video_topics_scope === "global" || !isMulti) && !funnel.video_topics_enabled && (
-            <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-xl">Video topics section will be hidden on the funnel page.</p>
+          {(flow.video_topics_scope === "global" || !isMulti) && !flow.video_topics_enabled && (
+            <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-xl">Video topics section will be hidden on the flow page.</p>
           )}
 
-          {(funnel.video_topics_scope === "global" || !isMulti) && funnel.video_topics_enabled && (
+          {(flow.video_topics_scope === "global" || !isMulti) && flow.video_topics_enabled && (
             <div className="space-y-3">
               <Label className="text-sm font-medium">Topics / Key Points</Label>
               <p className="text-xs text-muted-foreground">Add what your prospects will learn from this video.</p>
@@ -1100,9 +1100,9 @@ const FunnelEditor = () => {
 
   const renderPrivacyStep = () => (
     <PrivacySettings
-      visibility={funnel.visibility}
-      accessCode={funnel.access_code_plain}
-      requiredFields={funnel.required_fields}
+      visibility={flow.visibility}
+      accessCode={flow.access_code_plain}
+      requiredFields={flow.required_fields}
       onVisibilityChange={(v) => update("visibility", v)}
       onAccessCodeChange={(code) => update("access_code_plain", code)}
       onRequiredFieldsChange={(fields) => update("required_fields", fields)}
@@ -1113,24 +1113,24 @@ const FunnelEditor = () => {
     <>
       <h2 className="text-lg font-heading font-semibold">Contact & WhatsApp</h2>
       <div className="space-y-4 mt-4">
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Show Contact Buttons</Label></div><Switch checked={funnel.show_contact_buttons} onCheckedChange={(v) => update("show_contact_buttons", v)} /></div>
-        {funnel.show_contact_buttons && (
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Show Contact Buttons</Label></div><Switch checked={flow.show_contact_buttons} onCheckedChange={(v) => update("show_contact_buttons", v)} /></div>
+        {flow.show_contact_buttons && (
           <div className="space-y-3 p-4 bg-muted/50 rounded-xl">
             <div>
               <Label className="text-xs text-muted-foreground mb-1">WhatsApp Number</Label>
               <div className="flex gap-2">
                 <div className="flex items-center px-3 bg-muted border border-border rounded-md text-sm text-muted-foreground shrink-0">+91</div>
-                <Input placeholder="9876543210" value={funnel.contact_whatsapp?.replace(/^\+91/, "")} onChange={(e) => update("contact_whatsapp", "+91" + e.target.value.replace(/\D/g, ""))} className="bg-muted border-border" />
+                <Input placeholder="9876543210" value={flow.contact_whatsapp?.replace(/^\+91/, "")} onChange={(e) => update("contact_whatsapp", "+91" + e.target.value.replace(/\D/g, ""))} className="bg-muted border-border" />
               </div>
             </div>
-            <Input placeholder="Phone Number" value={funnel.contact_phone} onChange={(e) => update("contact_phone", e.target.value)} className="bg-muted border-border" />
-            <Input placeholder="Instagram Handle" value={funnel.contact_instagram} onChange={(e) => update("contact_instagram", e.target.value)} className="bg-muted border-border" />
-            <div className="flex items-center justify-between"><Label className="text-sm">Show Only After CTA</Label><Switch checked={funnel.show_contact_after_cta} onCheckedChange={(v) => update("show_contact_after_cta", v)} /></div>
+            <Input placeholder="Phone Number" value={flow.contact_phone} onChange={(e) => update("contact_phone", e.target.value)} className="bg-muted border-border" />
+            <Input placeholder="Instagram Handle" value={flow.contact_instagram} onChange={(e) => update("contact_instagram", e.target.value)} className="bg-muted border-border" />
+            <div className="flex items-center justify-between"><Label className="text-sm">Show Only After CTA</Label><Switch checked={flow.show_contact_after_cta} onCheckedChange={(v) => update("show_contact_after_cta", v)} /></div>
           </div>
         )}
         <div className="p-4 bg-muted/50 rounded-xl space-y-3">
-          <div className="flex items-center justify-between"><Label className="font-semibold">WhatsApp Auto-message</Label><Switch checked={funnel.whatsapp_auto_message} onCheckedChange={(v) => update("whatsapp_auto_message", v)} /></div>
-          {funnel.whatsapp_auto_message && (
+          <div className="flex items-center justify-between"><Label className="font-semibold">WhatsApp Auto-message</Label><Switch checked={flow.whatsapp_auto_message} onCheckedChange={(v) => update("whatsapp_auto_message", v)} /></div>
+          {flow.whatsapp_auto_message && (
             <Textarea value={funnel.whatsapp_message_template} onChange={(e) => update("whatsapp_message_template", e.target.value)} className="bg-muted border-border" placeholder="Use {name}, {phone}, {funnel_title}" rows={3} />
           )}
         </div>
@@ -1142,12 +1142,12 @@ const FunnelEditor = () => {
     <>
       <h2 className="text-lg font-heading font-semibold">Payment (UPI Manual)</h2>
       <div className="space-y-4 mt-4">
-        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Enable Payment Collection</Label></div><Switch checked={funnel.payment_enabled} onCheckedChange={(v) => update("payment_enabled", v)} /></div>
-        {funnel.payment_enabled && (
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Enable Payment Collection</Label></div><Switch checked={flow.payment_enabled} onCheckedChange={(v) => update("payment_enabled", v)} /></div>
+        {flow.payment_enabled && (
           <div className="space-y-3 p-4 bg-muted/50 rounded-xl">
-            <div><Label className="text-sm">UPI ID</Label><Input value={funnel.upi_id} onChange={(e) => update("upi_id", e.target.value)} placeholder="yourname@upi" className="mt-1 bg-muted border-border" /></div>
-            <div><Label className="text-sm">QR Code Image URL</Label><Input value={funnel.qr_code_url} onChange={(e) => update("qr_code_url", e.target.value)} placeholder="Paste QR image URL" className="mt-1 bg-muted border-border" /></div>
-            <div><Label className="text-sm">Payment Instructions</Label><Textarea value={funnel.payment_instructions} onChange={(e) => update("payment_instructions", e.target.value)} className="mt-1 bg-muted border-border" rows={3} /></div>
+            <div><Label className="text-sm">UPI ID</Label><Input value={flow.upi_id} onChange={(e) => update("upi_id", e.target.value)} placeholder="yourname@upi" className="mt-1 bg-muted border-border" /></div>
+            <div><Label className="text-sm">QR Code Image URL</Label><Input value={flow.qr_code_url} onChange={(e) => update("qr_code_url", e.target.value)} placeholder="Paste QR image URL" className="mt-1 bg-muted border-border" /></div>
+            <div><Label className="text-sm">Payment Instructions</Label><Textarea value={flow.payment_instructions} onChange={(e) => update("payment_instructions", e.target.value)} className="mt-1 bg-muted border-border" rows={3} /></div>
           </div>
         )}
       </div>
@@ -1157,20 +1157,20 @@ const FunnelEditor = () => {
   const renderPublishStep = () => (
     <>
       <h2 className="text-lg font-heading font-semibold">Publish</h2>
-      <p className="text-sm text-muted-foreground">Review and publish your funnel.</p>
+      <p className="text-sm text-muted-foreground">Review and publish your flow.</p>
       <div className="space-y-4 mt-4">
         <div className="border border-border rounded-xl p-4 space-y-2.5">
-          <div className="flex items-center gap-2"><Check size={16} className={funnel.title ? "text-emerald-500" : "text-muted-foreground"} /><span className="text-sm">{funnel.title ? "Title added" : "Add a title"}</span></div>
+          <div className="flex items-center gap-2"><Check size={16} className={flow.title ? "text-emerald-500" : "text-muted-foreground"} /><span className="text-sm">{flow.title ? "Title added" : "Add a title"}</span></div>
           {!isMulti && <div className="flex items-center gap-2"><Check size={16} className={selectedVideo ? "text-emerald-500" : "text-muted-foreground"} /><span className="text-sm">{selectedVideo ? "Video selected" : "Select a video"}</span></div>}
           {isMulti && <div className="flex items-center gap-2"><Check size={16} className={flowSteps.length > 0 ? "text-emerald-500" : "text-muted-foreground"} /><span className="text-sm">{flowSteps.length > 0 ? `${flowSteps.length} journey steps configured` : "Add journey steps"}</span></div>}
           {!isMulti && <div className="flex items-center gap-2"><Check size={16} className={leadForm.capture_enabled ? "text-emerald-500" : "text-muted-foreground"} /><span className="text-sm">{leadForm.capture_enabled ? "Lead capture configured" : "Lead capture disabled"}</span></div>}
         </div>
-        {funnel.slug && (
+        {flow.slug && (
           <div className="p-4 bg-muted/50 rounded-xl">
-            <Label className="text-xs text-muted-foreground">Funnel URL</Label>
+            <Label className="text-xs text-muted-foreground">Flow URL</Label>
             <div className="flex items-center gap-2 mt-1">
-              <code className="text-sm text-primary flex-1 truncate">{typeof window !== "undefined" ? window.location.origin : ""}/f/{funnel.slug}</code>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/f/${funnel.slug}`); toast.success("Copied!"); }}>
+              <code className="text-sm text-primary flex-1 truncate">{typeof window !== "undefined" ? window.location.origin : ""}/f/{flow.slug}</code>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/f/${flow.slug}`); toast.success("Copied!"); }}>
                 <Copy size={14} />
               </Button>
             </div>
@@ -1179,14 +1179,14 @@ const FunnelEditor = () => {
         <div className="p-4 bg-muted/50 rounded-xl">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="font-semibold">{funnel.is_published ? "Published" : "Draft"}</Label>
+              <Label className="font-semibold">{flow.is_published ? "Published" : "Draft"}</Label>
               <p className="text-xs text-muted-foreground mt-1">
-                {funnel.is_published
-                  ? "🟢 Your funnel is live! Anyone with the link can see it."
-                  : "🔴 Only you can see this funnel. Toggle to make it public."}
+                {flow.is_published
+                  ? "🟢 Your flow is live! Anyone with the link can see it."
+                  : "🔴 Only you can see this flow. Toggle to make it public."}
               </p>
             </div>
-            <Switch checked={funnel.is_published} onCheckedChange={(v) => update("is_published", v)} />
+            <Switch checked={flow.is_published} onCheckedChange={(v) => update("is_published", v)} />
           </div>
         </div>
       </div>
@@ -1222,7 +1222,7 @@ const FunnelEditor = () => {
                       {lock && <Lock size={10} className="text-amber-500 shrink-0" />}
                     </p>
                   </div>
-                  {i === lastStepIdx && funnel.is_published && <Check size={14} className="ml-auto text-emerald-500" />}
+                  {i === lastStepIdx && flow.is_published && <Check size={14} className="ml-auto text-emerald-500" />}
                 </button>
               );
             })}
@@ -1233,7 +1233,7 @@ const FunnelEditor = () => {
           <div className="flex-1 max-w-2xl min-w-0">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg sm:text-xl font-heading font-bold truncate">{funnel.title || "New Funnel"}</h1>
+                <h1 className="text-lg sm:text-xl font-heading font-bold truncate">{flow.title || "New Flow"}</h1>
                 {isAutoSaving ? (
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
@@ -1244,7 +1244,7 @@ const FunnelEditor = () => {
                 ) : null}
               </div>
               {modeChosen && (
-                <Button variant="hero" size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !funnel.title} className="shrink-0 ml-2">
+                <Button variant="hero" size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !flow.title} className="shrink-0 ml-2">
                   {saveMutation.isPending ? "Saving..." : "Save"}
                 </Button>
               )}
@@ -1303,8 +1303,8 @@ const FunnelEditor = () => {
               {!modeChosen ? null : wizardStep < lastStepIdx ? (
                 <Button variant="default" size="sm" onClick={() => setWizardStep(wizardStep + 1)}>Next</Button>
               ) : (
-                <Button variant="hero" size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !funnel.title}>
-                  {saveMutation.isPending ? "Saving..." : isEdit ? "Update" : "Create Funnel"}
+                <Button variant="hero" size="sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !flow.title}>
+                  {saveMutation.isPending ? "Saving..." : isEdit ? "Update" : "Create Flow"}
                 </Button>
               )}
             </div>
@@ -1313,7 +1313,7 @@ const FunnelEditor = () => {
           {modeChosen && (
             <div className="hidden xl:block w-[300px] shrink-0 sticky top-4 h-[calc(100vh-10rem)]">
               <FunnelLivePreview
-                funnel={funnel}
+                flow={flow}
                 selectedVideo={selectedVideo}
                 flowSteps={flowSteps}
                 leadForm={leadForm}

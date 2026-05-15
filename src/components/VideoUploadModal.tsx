@@ -234,7 +234,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = 
             <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-3">
               <CheckCircle2 size={20} className="text-success shrink-0" />
               <p className="text-sm">
-                Your video is uploaded. Share the link, or use it in a funnel, landing page, or live session.
+                Your video is uploaded. Share the link, or use it in a flow, landing page, or live session.
               </p>
             </div>
 
@@ -259,8 +259,8 @@ export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = 
             <div className="border-t border-border pt-3">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Use this video in</p>
               <div className="grid grid-cols-3 gap-2">
-                <Link to={`/funnels/create?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
-                  <Button variant="hero" className="w-full"><Layers size={14} /> Funnel</Button>
+                <Link to={`/flows/create?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
+                  <Button variant="hero" className="w-full"><Layers size={14} /> Flow</Button>
                 </Link>
                 <Link to={`/landing-pages/create?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
                   <Button variant="outline" className="w-full"><FileText size={14} /> LP</Button>

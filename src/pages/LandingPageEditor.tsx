@@ -179,8 +179,8 @@ const LandingPageEditor = () => {
     enabled: !!id,
   });
 
-  const { data: funnels = [] } = useQuery({
-    queryKey: ["my-funnels", user?.id],
+  const { data: flows = [] } = useQuery({
+    queryKey: ["my-flows", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("funnels").select("id,title,slug").eq("owner_id", user!.id);
       return data || [];
@@ -676,7 +676,7 @@ const LandingPageEditor = () => {
 
         <div className="p-4 bg-muted/50 rounded-xl space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="font-semibold">Link to Funnel</Label>
+            <Label className="font-semibold">Link to Flow</Label>
             <Switch checked={funnelToggle} onCheckedChange={(checked) => {
               setFunnelToggle(checked);
               if (!checked) updateField("linked_funnel_id", null);
@@ -684,10 +684,10 @@ const LandingPageEditor = () => {
           </div>
           {funnelToggle && (
             <Select value={form.linked_funnel_id || "__none__"} onValueChange={(v) => updateField("linked_funnel_id", v === "__none__" ? null : v)}>
-              <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Select funnel..." /></SelectTrigger>
+              <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Select flow..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">None</SelectItem>
-                {funnels.map((f: any) => (<SelectItem key={f.id} value={f.id}>{f.title}</SelectItem>))}
+                {flows.map((f: any) => (<SelectItem key={f.id} value={f.id}>{f.title}</SelectItem>))}
               </SelectContent>
             </Select>
           )}

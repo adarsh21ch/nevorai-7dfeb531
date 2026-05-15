@@ -50,8 +50,8 @@ function DashboardPage() {
     if (!loading && !user) navigate("/auth");
   }, [loading, user]);
 
-  const { data: funnels = [] } = useQuery({
-    queryKey: ["my-funnels", user?.id],
+  const { data: flows = [] } = useQuery({
+    queryKey: ["my-flows", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("funnels").select("*").eq("owner_id", user!.id).order("created_at", { ascending: false });
       return data || [];
@@ -62,12 +62,12 @@ function DashboardPage() {
   const { data: leadCount = 0 } = useQuery({
     queryKey: ["total-leads", user?.id],
     queryFn: async () => {
-      const funnelIds = (funnels as any[]).map((f) => f.id);
+      const funnelIds = (flows as any[]).map((f) => f.id);
       if (!funnelIds.length) return 0;
       const { count } = await (supabase as any).from("funnel_leads").select("*", { count: "exact", head: true }).in("funnel_id", funnelIds);
       return count || 0;
     },
-    enabled: (funnels as any[]).length > 0,
+    enabled: (flows as any[]).length > 0,
   });
 
   const { data: activeLive } = useQuery({
@@ -95,7 +95,7 @@ function DashboardPage() {
     );
   }
 
-  const totalViews = (funnels as any[]).reduce((a, f) => a + (f.total_views || 0), 0);
+  const totalViews = (flows as any[]).reduce((a, f) => a + (f.total_views || 0), 0);
   const convRate = totalViews > 0 ? ((leadCount / totalViews) * 100).toFixed(1) : "0";
   const remainingToday = daily.isUnlimited ? "∞" : Math.max(0, daily.limit - daily.used);
 
@@ -146,7 +146,7 @@ function DashboardPage() {
                 <p className="mt-1 text-sm text-muted-foreground">Here's what's happening on Nevorai today.</p>
               </div>
               <div className="flex gap-2">
-                <Link to="/flows/create"><Button variant="hero" size="sm"><Plus size={14} /> Create Funnel</Button></Link>
+                <Link to="/flows/create"><Button variant="hero" size="sm"><Plus size={14} /> Create Flow</Button></Link>
                 <Link to="/videos"><Button variant="outline" size="sm"><Eye size={14} /> Add Video</Button></Link>
               </div>
             </div>
@@ -214,24 +214,24 @@ function DashboardPage() {
 
         <DashboardContentRow />
 
-        {(funnels as any[]).length === 0 ? (
+        {(flows as any[]).length === 0 ? (
           <div className="premium-card p-10 text-center">
             <div className="stat-icon mx-auto mb-3 h-14 w-14 rounded-2xl">
               <Layers size={26} className="text-primary" />
             </div>
-            <h3 className="mb-2 text-lg font-heading font-semibold">No funnels yet</h3>
-            <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video funnel and start capturing leads on autopilot.</p>
-            <Link to="/flows/create"><Button variant="hero" size="lg">Create Your First Funnel</Button></Link>
+            <h3 className="mb-2 text-lg font-heading font-semibold">No flows yet</h3>
+            <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video flow and start capturing leads on autopilot.</p>
+            <Link to="/flows/create"><Button variant="hero" size="lg">Create Your First Flow</Button></Link>
           </div>
         ) : (
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-base font-heading font-semibold">Recent Funnels</h2>
+              <h2 className="text-base font-heading font-semibold">Recent Flows</h2>
               <Link to="/flows" className="flex items-center gap-1 text-xs text-primary hover:underline">View all <ArrowRight size={12} /></Link>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {(funnels as any[]).slice(0, 3).map((f) => (
-                <Link to={`/funnels/${f.id}`} key={f.id} className="premium-card p-4 group">
+              {(flows as any[]).slice(0, 3).map((f) => (
+                <Link to={`/flows/${f.id}`} key={f.id} className="premium-card p-4 group">
                   <div className="mb-2 flex items-center gap-2">
                     <span className={`h-2 w-2 rounded-full ${f.is_published ? "bg-success" : "bg-muted-foreground"}`} />
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${f.is_published ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>

@@ -15,8 +15,8 @@ const AdminDashboard = () => {
     },
   });
 
-  const { data: funnels = [] } = useQuery({
-    queryKey: ["admin-funnels-count"],
+  const { data: flows = [] } = useQuery({
+    queryKey: ["admin-flows-count"],
     queryFn: async () => {
       const { data } = await supabase.from("funnels").select("id, total_views, total_leads, total_payments");
       return data || [];
@@ -48,12 +48,12 @@ const AdminDashboard = () => {
   });
 
   const mrr = subs.filter((s) => s.status === "active" && s.tier !== "free").reduce((a, s) => a + (s.amount_paid || 0), 0);
-  const totalViews = funnels.reduce((a, f) => a + ((f as any).total_views || 0), 0);
-  const totalLeads = funnels.reduce((a, f) => a + ((f as any).total_leads || 0), 0);
+  const totalViews = flows.reduce((a, f) => a + ((f as any).total_views || 0), 0);
+  const totalLeads = flows.reduce((a, f) => a + ((f as any).total_leads || 0), 0);
 
   const kpis = [
     { icon: Users, label: "Total Users", value: formatInt(profiles.length) },
-    { icon: Layers, label: "Total Funnels", value: formatInt(funnels.length) },
+    { icon: Layers, label: "Total Flows", value: formatInt(flows.length) },
     { icon: Video, label: "Total Videos", value: formatInt(videos.length) },
     { icon: BarChart3, label: "Total Views", value: formatCompact(totalViews) },
     { icon: Users, label: "Total Leads", value: formatCompact(totalLeads) },

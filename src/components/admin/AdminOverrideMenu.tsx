@@ -90,7 +90,7 @@ const GrantUnlimitedModal = ({ user, open, onClose }: { user: AnyUser; open: boo
           <p className="font-medium text-purple-300 mb-2">This removes ALL limits for this user:</p>
           <ul className="space-y-0.5 text-muted-foreground">
             <li>✓ Unlimited daily views (no prospect blocks)</li>
-            <li>✓ Unlimited funnels, storage, landing pages</li>
+            <li>✓ Unlimited flows, storage, landing pages</li>
             <li>✓ Unlimited live sessions and leads</li>
           </ul>
           <p className="mt-2 text-[11px] text-purple-300/70">Badge will show "∞ Unlimited". Revoke any time.</p>

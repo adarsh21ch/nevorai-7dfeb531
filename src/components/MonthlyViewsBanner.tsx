@@ -32,7 +32,7 @@ export const MonthlyViewsBanner = () => {
               You've used all {views.limit.toLocaleString("en-IN")} views this month.
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Your funnels are paused until {resetDateFmt} — or upgrade to Pro for 20,000 views/month.
+              Your flows are paused until {resetDateFmt} — or upgrade to Pro for 20,000 views/month.
             </p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export const MonthlyViewsBanner = () => {
             You've used {views.used.toLocaleString("en-IN")} of {views.limit.toLocaleString("en-IN")} views this month.
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Upgrade to Pro for 20,000 views/month and avoid pausing your funnels.
+            Upgrade to Pro for 20,000 views/month and avoid pausing your flows.
           </p>
         </div>
       </div>

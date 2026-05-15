@@ -16,8 +16,8 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   useDocumentTitle(embedded ? "Tools" : "Insights");
   const { user } = useAuth();
 
-  const { data: funnels = [] } = useQuery({
-    queryKey: ["my-funnels", user?.id],
+  const { data: flows = [] } = useQuery({
+    queryKey: ["my-flows", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("funnels").select("*").eq("owner_id", user!.id);
       return data || [];
@@ -35,14 +35,14 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   });
 
   const { data: leads = [] } = useQuery({
-    queryKey: ["all-leads-insights", user?.id, funnels],
+    queryKey: ["all-leads-insights", user?.id, flows],
     queryFn: async () => {
-      const ids = funnels.map((f) => f.id);
+      const ids = flows.map((f) => f.id);
       if (!ids.length) return [];
       const { data } = await supabase.from("funnel_leads").select("*").in("funnel_id", ids);
       return data || [];
     },
-    enabled: funnels.length > 0,
+    enabled: flows.length > 0,
   });
 
   const { data: registrations = [] } = useQuery({
@@ -55,18 +55,18 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   });
 
   const { data: videoAnalytics = [] } = useQuery({
-    queryKey: ["video-analytics-insights", user?.id, funnels],
+    queryKey: ["video-analytics-insights", user?.id, flows],
     queryFn: async () => {
-      const ids = funnels.map((f) => f.id);
+      const ids = flows.map((f) => f.id);
       if (!ids.length) return [];
       const { data } = await supabase.from("funnel_video_analytics").select("*").in("funnel_id", ids).order("recorded_at", { ascending: true });
       return data || [];
     },
-    enabled: funnels.length > 0,
+    enabled: flows.length > 0,
   });
 
   // KPIs
-  const totalFunnelViews = funnels.reduce((a, f) => a + (f.total_views || 0), 0);
+  const totalFunnelViews = flows.reduce((a, f) => a + (f.total_views || 0), 0);
   const totalLPViews = landingPages.reduce((a, lp) => a + (lp.total_views || 0), 0);
   const totalViews = totalFunnelViews + totalLPViews;
   const uniqueLeads = leads.length;
@@ -81,10 +81,10 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   ]);
 
   const kpis = [
-    { icon: Eye, label: "Total Views", value: formatCompact(totalViews), sub: "Funnels + Landing Pages" },
-    { icon: Users, label: "Unique Leads", value: formatInt(uniqueLeads), sub: "From funnels" },
+    { icon: Eye, label: "Total Views", value: formatCompact(totalViews), sub: "Flows + Landing Pages" },
+    { icon: Users, label: "Unique Leads", value: formatInt(uniqueLeads), sub: "From flows" },
     { icon: UserCheck, label: "Registrations", value: formatInt(totalRegistrations), sub: "From landing pages" },
-    { icon: Target, label: "Funnel Conv.", value: `${funnelConvRate}%`, sub: "Leads / Views" },
+    { icon: Target, label: "Flow Conv.", value: `${funnelConvRate}%`, sub: "Leads / Views" },
     { icon: TrendingUp, label: "LP Conv.", value: `${lpConvRate}%`, sub: "Regs / Views" },
     { icon: BarChart3, label: "Unique Contacts", value: formatInt(allEmails.size), sub: "Across all sources" },
   ];
@@ -96,7 +96,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   }, {} as Record<string, number>);
   const statusData = Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
 
-  // Top funnels by views
+  // Top flows by views
   const topFunnels = [...funnels].sort((a, b) => (b.total_views || 0) - (a.total_views || 0)).slice(0, 6)
     .map((f) => ({ name: f.title.length > 15 ? f.title.slice(0, 15) + "…" : f.title, views: f.total_views || 0, leads: f.total_leads || 0 }));
 
@@ -164,7 +164,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
         <div className="grid lg:grid-cols-2 gap-4">
           <div className="premium-card p-5">
             <h3 className="text-sm font-heading font-semibold mb-4 flex items-center gap-2">
-              <Layers size={14} className="text-primary" /> Top Funnels
+              <Layers size={14} className="text-primary" /> Top Flows
             </h3>
             {topFunnels.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
@@ -178,7 +178,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                   <Bar dataKey="leads" fill="#6366F1" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : <p className="text-sm text-muted-foreground text-center py-12">No funnels yet</p>}
+            ) : <p className="text-sm text-muted-foreground text-center py-12">No flows yet</p>}
           </div>
 
           <div className="premium-card p-5">
@@ -276,14 +276,14 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
           <div className="premium-card p-4 text-center">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Avg Watch Events</p>
             <p className="text-xl font-heading font-bold">
-              {videoAnalytics.length > 0 ? (videoAnalytics.length / Math.max(funnels.length, 1)).toFixed(0) : "0"}
+              {videoAnalytics.length > 0 ? (videoAnalytics.length / Math.max(flows.length, 1)).toFixed(0) : "0"}
             </p>
-            <p className="text-[10px] text-muted-foreground">per funnel</p>
+            <p className="text-[10px] text-muted-foreground">per flow</p>
           </div>
           <div className="premium-card p-4 text-center">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Published Funnels</p>
-            <p className="text-xl font-heading font-bold">{funnels.filter((f) => f.is_published).length}</p>
-            <p className="text-[10px] text-muted-foreground">of {funnels.length} total</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Published Flows</p>
+            <p className="text-xl font-heading font-bold">{flows.filter((f) => f.is_published).length}</p>
+            <p className="text-[10px] text-muted-foreground">of {flows.length} total</p>
           </div>
           <div className="premium-card p-4 text-center">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Active Landing Pages</p>

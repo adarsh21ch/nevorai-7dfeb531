@@ -47,9 +47,9 @@ const MemberDashboard = () => {
     return s;
   });
 
-  // 1) Load funnel by slug
-  const { data: funnel, isLoading: funnelLoading } = useQuery({
-    queryKey: ["member-funnel", slug],
+  // 1) Load flow by slug
+  const { data: flow, isLoading: funnelLoading } = useQuery({
+    queryKey: ["member-flow", slug],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("funnels")
@@ -65,18 +65,18 @@ const MemberDashboard = () => {
     enabled: !!slug,
   });
 
-  // 2) Hydrate the lead once funnel resolves
+  // 2) Hydrate the lead once flow resolves
   useEffect(() => {
-    if (!funnel) return;
+    if (!flow) return;
     try {
-      const raw = localStorage.getItem(`nf_lead_${funnel.id}`);
+      const raw = localStorage.getItem(`nf_lead_${flow.id}`);
       if (raw) setStoredLead(JSON.parse(raw));
     } catch {}
-  }, [funnel]);
+  }, [flow]);
 
   // 3) Load steps + progress + activity in parallel
   const { data: steps = [] } = useQuery({
-    queryKey: ["member-steps", funnel?.id],
+    queryKey: ["member-steps", flow?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from("funnel_steps")
@@ -86,11 +86,11 @@ const MemberDashboard = () => {
         .order("step_order");
       return data || [];
     },
-    enabled: !!funnel?.id,
+    enabled: !!flow?.id,
   });
 
   const { data: progress = [] } = useQuery({
-    queryKey: ["member-progress", funnel?.id, sessionId],
+    queryKey: ["member-progress", flow?.id, sessionId],
     queryFn: async () => {
       const { data } = await supabase.rpc("get_session_step_progress", {
         _funnel_id: funnel!.id,
@@ -98,11 +98,11 @@ const MemberDashboard = () => {
       });
       return data || [];
     },
-    enabled: !!funnel?.id,
+    enabled: !!flow?.id,
   });
 
   const { data: activity = [] } = useQuery({
-    queryKey: ["member-activity", funnel?.id, sessionId],
+    queryKey: ["member-activity", flow?.id, sessionId],
     queryFn: async () => {
       const { data } = await supabase.rpc("get_session_activity", {
         _funnel_id: funnel!.id,
@@ -110,12 +110,12 @@ const MemberDashboard = () => {
       });
       return data || [];
     },
-    enabled: !!funnel?.id,
+    enabled: !!flow?.id,
   });
 
   // 4) Log a "dashboard visit" for today (counts toward Days Active)
   useEffect(() => {
-    if (!funnel?.id) return;
+    if (!flow?.id) return;
     const today = new Date().toISOString().slice(0, 10);
     (async () => {
       const { data: existing } = await supabase.rpc("has_activity_today", {
@@ -133,7 +133,7 @@ const MemberDashboard = () => {
         });
       }
     })();
-  }, [funnel?.id, sessionId, storedLead?.id]);
+  }, [flow?.id, sessionId, storedLead?.id]);
 
   // Derived stats
   const stats = useMemo(() => {
@@ -157,13 +157,13 @@ const MemberDashboard = () => {
     );
   }
 
-  if (!funnel) {
+  if (!flow) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-hero-bg text-white p-6 text-center">
         <div>
           <h1 className="text-xl font-bold mb-2">Program not found</h1>
           <p className="text-sm text-slate-400 mb-4">
-            This funnel may have been unpublished or the link is incorrect.
+            This flow may have been unpublished or the link is incorrect.
           </p>
           <Button onClick={() => navigate("/")}>Go home</Button>
         </div>
@@ -172,18 +172,18 @@ const MemberDashboard = () => {
   }
 
   const memberName = storedLead?.name || "Member";
-  const continueToProgram = () => navigate(`/f/${funnel.slug}`);
+  const continueToProgram = () => navigate(`/f/${flow.slug}`);
 
   return (
     <div className="min-h-screen bg-hero-bg text-white">
       {/* Top bar */}
       <header className="sticky top-0 z-30 bg-hero-bg/80 backdrop-blur border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to={`/f/${funnel.slug}`} className="flex items-center gap-2 text-sm text-slate-300 hover:text-white">
+          <Link to={`/f/${flow.slug}`} className="flex items-center gap-2 text-sm text-slate-300 hover:text-white">
             <ArrowLeft size={16} /> Back to program
           </Link>
           <div className="text-sm font-semibold truncate max-w-[55%] text-right">
-            {funnel.title}
+            {flow.title}
           </div>
         </div>
       </header>
@@ -209,9 +209,9 @@ const MemberDashboard = () => {
           <TabsContent value="home" className="space-y-6 mt-0">
             <WelcomeCard
               memberName={memberName}
-              speakerName={funnel.speaker_name}
-              speakerPhotoUrl={funnel.speaker_photo_url}
-              welcomeMessage={funnel.description}
+              speakerName={flow.speaker_name}
+              speakerPhotoUrl={flow.speaker_photo_url}
+              welcomeMessage={flow.description}
               onContinue={continueToProgram}
             />
 
@@ -241,8 +241,8 @@ const MemberDashboard = () => {
                         onClick={() =>
                           downloadCertificate({
                             memberName,
-                            programName: funnel.title,
-                            signatureName: funnel.speaker_name || undefined,
+                            programName: flow.title,
+                            signatureName: flow.speaker_name || undefined,
                           })
                         }
                       >

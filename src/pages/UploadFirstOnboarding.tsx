@@ -24,7 +24,7 @@ const UploadFirstOnboarding = () => {
   const steps = [
     { icon: Upload, title: "Upload video", desc: "MP4, MOV or WebM up to 500 MB." },
     { icon: Link2, title: "Copy share link", desc: "Send it like a YouTube link — anywhere." },
-    { icon: BarChart3, title: "Capture views & leads", desc: "Track who watched and turn it into a funnel later." },
+    { icon: BarChart3, title: "Capture views & leads", desc: "Track who watched and turn it into a flow later." },
   ];
 
   return (
@@ -37,7 +37,7 @@ const UploadFirstOnboarding = () => {
         <div className="text-center">
           <h1 className="text-3xl font-heading font-bold sm:text-4xl">Upload your first video</h1>
           <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-            Share it like a YouTube link, then turn it into a funnel when you're ready.
+            Share it like a YouTube link, then turn it into a flow when you're ready.
           </p>
         </div>
 

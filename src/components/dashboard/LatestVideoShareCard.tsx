@@ -58,9 +58,9 @@ export const LatestVideoShareCard = ({ video }: Props) => {
                 <ExternalLink size={14} /> Open
               </Button>
             </a>
-            <Link to={`/funnels/create?videoId=${video.id}` as any}>
+            <Link to={`/flows/create?videoId=${video.id}` as any}>
               <Button variant="outline" size="sm">
-                <Rocket size={14} /> Create Funnel
+                <Rocket size={14} /> Create Flow
               </Button>
             </Link>
             <Link to={`/landing-pages/create?videoId=${video.id}` as any}>

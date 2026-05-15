@@ -158,7 +158,7 @@ const SettingsPage = () => {
             <DialogHeader>
               <DialogTitle>Delete account permanently?</DialogTitle>
               <DialogDescription>
-                This will permanently remove your profile, funnels, leads, landing pages and all related data. This cannot be undone.
+                This will permanently remove your profile, flows, leads, landing pages and all related data. This cannot be undone.
                 Type <span className="font-mono font-semibold">DELETE</span> to confirm.
               </DialogDescription>
             </DialogHeader>

@@ -77,7 +77,7 @@ interface StepProgress {
 }
 
 interface MultiStepViewerProps {
-  funnel: any;
+  flow: any;
   steps: FunnelStep[];
   creatorProfile: any;
   formConfig: any;
@@ -119,7 +119,7 @@ const getSessionId = (funnelId: string): string => {
 };
 
 export const MultiStepViewer = ({
-  funnel, steps, creatorProfile, formConfig, priceOptions, VideoPlayer, isDark = true,
+  flow, steps, creatorProfile, formConfig, priceOptions, VideoPlayer, isDark = true,
 }: MultiStepViewerProps) => {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [progressMap, setProgressMap] = useState<Record<string, StepProgress>>({});
@@ -131,7 +131,7 @@ export const MultiStepViewer = ({
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
   const [paymentProof, setPaymentProof] = useState({ upi_transaction_id: "", amount: 0 });
   const [loading, setLoading] = useState(true);
-  const sessionId = useRef(getSessionId(funnel.id));
+  const sessionId = useRef(getSessionId(flow.id));
   const progressSaveTimer = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const [stepCodeUnlocked, setStepCodeUnlocked] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
@@ -197,7 +197,7 @@ export const MultiStepViewer = ({
     };
     if (steps.length > 0) loadProgress();
     else setLoading(false);
-  }, [funnel.id, steps]);
+  }, [flow.id, steps]);
 
   const getStepStatus = (stepId: string): string => progressMap[stepId]?.status || "locked";
 
@@ -205,7 +205,7 @@ export const MultiStepViewer = ({
     setProgressMap((prev) => ({ ...prev, [stepId]: { ...prev[stepId], ...updates } }));
     await supabase.from("funnel_step_progress").update(updates as any)
       .eq("funnel_id", funnel.id).eq("funnel_step_id", stepId).eq("session_id", sessionId.current);
-  }, [funnel.id]);
+  }, [flow.id]);
 
   const completeStep = useCallback(async (stepIndex: number) => {
     const step = steps[stepIndex];
@@ -289,7 +289,7 @@ export const MultiStepViewer = ({
         .eq("session_id", sessionId.current).then(() => {});
     }, 5000);
     return () => { if (progressSaveTimer.current) clearInterval(progressSaveTimer.current); };
-  }, [activeStepIndex, progressMap, steps, funnel.id]);
+  }, [activeStepIndex, progressMap, steps, flow.id]);
 
   const handleCtaClick = async (stepIndex: number) => {
     const step = steps[stepIndex];
@@ -420,7 +420,7 @@ export const MultiStepViewer = ({
     stepBarInactive: isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.6)",
   };
 
-  const hasContact = funnel.show_contact_buttons && (funnel.contact_whatsapp || funnel.contact_phone);
+  const hasContact = flow.show_contact_buttons && (flow.contact_whatsapp || flow.contact_phone);
 
   const JourneySidebar = () => (
     <div className="hidden lg:flex flex-col w-[280px] min-w-[280px] shrink-0 h-screen sticky top-0 border-r"
@@ -496,15 +496,15 @@ export const MultiStepViewer = ({
         <div className="shrink-0 px-3 py-3" style={{ borderTop: `1px solid ${sc.border}`, background: sc.bg }}>
           <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5 px-1" style={{ color: sc.textDim }}>Contact Creator</p>
           <div className="space-y-2">
-            {funnel.contact_whatsapp && (
-              <button onClick={() => window.open(`https://wa.me/${funnel.contact_whatsapp?.replace(/\D/g, "")}`)}
+            {flow.contact_whatsapp && (
+              <button onClick={() => window.open(`https://wa.me/${flow.contact_whatsapp?.replace(/\D/g, "")}`)}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90"
                 style={{ background: "rgba(37,211,102,0.15)", color: "#25d366", border: "1px solid rgba(37,211,102,0.2)" }}>
                 <MessageCircle size={15} /> WhatsApp
               </button>
             )}
-            {funnel.contact_phone && (
-              <button onClick={() => window.open(`tel:${funnel.contact_phone}`)}
+            {flow.contact_phone && (
+              <button onClick={() => window.open(`tel:${flow.contact_phone}`)}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90"
                 style={{ background: sc.itemIconBg, color: sc.text, border: `1px solid ${sc.border}` }}>
                 <PhoneIcon size={15} /> Call
@@ -522,7 +522,7 @@ export const MultiStepViewer = ({
       <div className="flex flex-col flex-1 min-w-0">
         <div className="lg:hidden text-center py-4 px-4" style={{ borderBottom: `1px solid ${sc.border}` }}>
           <h1 className="font-heading font-extrabold tracking-tight leading-tight" style={{ fontSize: "clamp(18px, 5vw, 28px)", letterSpacing: "-0.02em", color: sc.text }}>
-            {funnel.title}
+            {flow.title}
           </h1>
         </div>
         <div className="lg:hidden flex gap-2 overflow-x-auto py-3 px-4" style={{ background: sc.stepBarBg, borderBottom: `1px solid ${sc.border}` }}>
@@ -550,7 +550,7 @@ export const MultiStepViewer = ({
 
         <div className="flex-1 px-4 lg:px-8 py-6 lg:py-8 max-w-[860px] mx-auto w-full">
           <h1 className="hidden lg:block font-heading font-extrabold tracking-tight leading-tight mb-6" style={{ fontSize: "clamp(22px, 3vw, 34px)", letterSpacing: "-0.02em", color: sc.text }}>
-            {funnel.title}
+            {flow.title}
           </h1>
           {activeStep && (
             <div className="space-y-5">
@@ -585,7 +585,7 @@ export const MultiStepViewer = ({
 
               {activeStep.access_code_enabled && !stepCodeUnlocked[activeStep.id] ? (
                 <StepCodeGate
-                  funnelId={funnel.id} stepId={activeStep.id}
+                  funnelId={flow.id} stepId={activeStep.id}
                   stepTitle={activeStep.title}
                   message={activeStep.access_code_message ?? undefined}
                   sessionId={sessionId.current}
@@ -599,8 +599,8 @@ export const MultiStepViewer = ({
                       <VideoPlayer
                         src={activeStep.video_url}
                         poster={activeStep.video_thumbnail || undefined}
-                        allowSeek={activeStep.video_allow_seek !== undefined ? activeStep.video_allow_seek !== false : funnel.allow_seek !== false}
-                        allowSpeed={activeStep.video_allow_playback_speed !== undefined ? activeStep.video_allow_playback_speed !== false : funnel.allow_speed_change !== false}
+                        allowSeek={activeStep.video_allow_seek !== undefined ? activeStep.video_allow_seek !== false : flow.allow_seek !== false}
+                        allowSpeed={activeStep.video_allow_playback_speed !== undefined ? activeStep.video_allow_playback_speed !== false : flow.allow_speed_change !== false}
                         autoplay={true}
                         initialTime={activeProgress?.last_position_seconds || 0}
                         onTimeUpdate={(ct: number, dur: number) => handleVideoTimeUpdate(activeStepIndex, ct, dur)}
@@ -715,12 +715,12 @@ export const MultiStepViewer = ({
                               ))}
                             </div>
                           )}
-                          {funnel.upi_id && (
+                          {flow.upi_id && (
                             <div className="p-3 rounded-xl mb-4" style={{ background: sc.inputBg }}>
                               <span className="text-xs" style={{ color: sc.textMuted }}>Pay via UPI</span>
                               <div className="flex items-center gap-2 mt-1">
-                                <code className="text-sm text-primary flex-1">{funnel.upi_id}</code>
-                                <Button variant="ghost" size="sm" style={{ color: sc.textMuted }} onClick={() => { navigator.clipboard.writeText(funnel.upi_id!); toast.success("UPI ID copied!"); }}>Copy</Button>
+                                <code className="text-sm text-primary flex-1">{flow.upi_id}</code>
+                                <Button variant="ghost" size="sm" style={{ color: sc.textMuted }} onClick={() => { navigator.clipboard.writeText(flow.upi_id!); toast.success("UPI ID copied!"); }}>Copy</Button>
                               </div>
                             </div>
                           )}

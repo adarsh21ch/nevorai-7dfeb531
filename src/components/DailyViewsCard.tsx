@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { usePlan } from "@/hooks/usePlan";
 
 /**
- * Today's Views — plan-level total across ALL funnels (shared pool).
+ * Today's Views — plan-level total across ALL flows (shared pool).
  * Resets at midnight IST. Shown on the creator dashboard.
  */
 export const DailyViewsCard = () => {
@@ -42,7 +42,7 @@ export const DailyViewsCard = () => {
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-[240px] text-xs">
-                    Total unique viewers across all your funnels per day. Resets at midnight IST.
+                    Total unique viewers across all your flows per day. Resets at midnight IST.
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -78,7 +78,7 @@ export const DailyViewsCard = () => {
 
       {status === "limit" && (
         <p className="text-[11px] text-destructive mt-2">
-          New prospects can't view your funnels until tomorrow.
+          New prospects can't view your flows until tomorrow.
         </p>
       )}
       {status === "warning" && (
@@ -88,7 +88,7 @@ export const DailyViewsCard = () => {
       )}
 
       <p className="text-[10px] text-muted-foreground/70 mt-3">
-        Shared across all your funnels — not per funnel.
+        Shared across all your flows — not per flow.
       </p>
     </div>
   );

@@ -155,7 +155,7 @@ export const usePlan = () => {
     return !PREMIUM_FEATURES.includes(feature);
   }, [tier]);
 
-  const canCreate = useCallback((resource: "funnel" | "landing_page" | "live_session", currentCount: number): boolean => {
+  const canCreate = useCallback((resource: "flow" | "landing_page" | "live_session", currentCount: number): boolean => {
     const limitMap = {
       funnel: limits.funnel_limit,
       landing_page: limits.landing_page_limit,

@@ -40,8 +40,8 @@ export function GettingStartedChecklist() {
     staleTime: 60_000,
   });
 
-  const { data: funnels = [] } = useQuery({
-    queryKey: ["gs-funnels", user?.id],
+  const { data: flows = [] } = useQuery({
+    queryKey: ["gs-flows", user?.id],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("funnels")
@@ -54,13 +54,13 @@ export function GettingStartedChecklist() {
   });
 
   const totals = useMemo(() => {
-    const arr = funnels as any[];
+    const arr = flows as any[];
     return {
       hasFunnel: arr.length > 0,
       hasView: arr.some((f) => (f.total_views || 0) > 0),
       hasLead: arr.some((f) => (f.total_leads || 0) > 0),
     };
-  }, [funnels]);
+  }, [flows]);
 
   const steps: Step[] = [
     {
@@ -73,11 +73,11 @@ export function GettingStartedChecklist() {
       done: videoCount > 0,
     },
     {
-      id: "funnel",
-      title: "Create your first funnel",
+      id: "flow",
+      title: "Create your first flow",
       description: "Turn the video into a lead-capturing page.",
       icon: Layers,
-      cta: "Create funnel",
+      cta: "Create flow",
       href: "/flows/create",
       done: totals.hasFunnel,
     },
@@ -86,14 +86,14 @@ export function GettingStartedChecklist() {
       title: "Share on WhatsApp",
       description: "Send your link to 10 contacts to get your first views.",
       icon: Share2,
-      cta: "Open funnels",
+      cta: "Open flows",
       href: "/flows",
       done: totals.hasView,
     },
     {
       id: "lead",
       title: "Get your first lead",
-      description: "Watch leads roll in as people register on your funnel.",
+      description: "Watch leads roll in as people register on your flow.",
       icon: Users,
       cta: "View leads",
       href: "/leads",

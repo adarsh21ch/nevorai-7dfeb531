@@ -14,7 +14,7 @@ interface PreviewStep {
 }
 
 interface FunnelLivePreviewProps {
-  funnel: {
+  flow: {
     title: string;
     description: string;
     funnel_mode: "single" | "multi";
@@ -44,7 +44,7 @@ interface FunnelLivePreviewProps {
 
 export const FunnelLivePreview = ({ funnel, selectedVideo, flowSteps, leadForm, previewStepIndex = null }: FunnelLivePreviewProps) => {
   const isMulti = funnel.funnel_mode === "multi";
-  const isPrivate = funnel.visibility === "private";
+  const isPrivate = flow.visibility === "private";
   const activeSteps = flowSteps.filter((s) => s.is_active !== false);
   const activeIdx = typeof previewStepIndex === "number" ? previewStepIndex : 0;
   const activeStep = activeSteps[activeIdx] || activeSteps[0];
@@ -52,7 +52,7 @@ export const FunnelLivePreview = ({ funnel, selectedVideo, flowSteps, leadForm, 
   const hiddenCount = Math.max(0, activeSteps.length - maxVisibleSteps);
   const visibleSteps = activeSteps.slice(0, maxVisibleSteps);
 
-  const previewUrl = funnel.slug && typeof window !== "undefined" ? `${window.location.origin}/f/${funnel.slug}` : null;
+  const previewUrl = flow.slug && typeof window !== "undefined" ? `${window.location.origin}/f/${flow.slug}` : null;
 
   return (
     <div className="w-full rounded-xl border border-border bg-card overflow-hidden">
@@ -78,7 +78,7 @@ export const FunnelLivePreview = ({ funnel, selectedVideo, flowSteps, leadForm, 
           </div>
         </div>
         <div className="p-2.5 space-y-2.5">
-          <h3 className="font-heading font-extrabold text-center text-[12px] leading-tight text-foreground">{funnel.title || "Your Funnel Title"}</h3>
+          <h3 className="font-heading font-extrabold text-center text-[12px] leading-tight text-foreground">{flow.title || "Your Flow Title"}</h3>
           {isPrivate && (
             <div className="flex items-center justify-center gap-1 text-[9px] text-amber-400">
               <Lock size={8} /> Private
@@ -129,11 +129,11 @@ export const FunnelLivePreview = ({ funnel, selectedVideo, flowSteps, leadForm, 
               <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Registration</p>
               <div className="h-6 rounded bg-muted border border-border px-2 flex items-center text-[9px] text-muted-foreground">Full Name</div>
               <div className="h-6 rounded bg-muted border border-border px-2 flex items-center text-[9px] text-muted-foreground">Phone</div>
-              {funnel.required_fields.email && <div className="h-6 rounded bg-muted border border-border px-2 flex items-center text-[9px] text-muted-foreground">Email</div>}
+              {flow.required_fields.email && <div className="h-6 rounded bg-muted border border-border px-2 flex items-center text-[9px] text-muted-foreground">Email</div>}
             </div>
           )}
-          {funnel.cta_enabled && !isMulti && (
-            <div className="w-full py-1.5 rounded-md bg-primary text-center text-[10px] font-bold text-primary-foreground">{funnel.cta_text || "Get Started"} →</div>
+          {flow.cta_enabled && !isMulti && (
+            <div className="w-full py-1.5 rounded-md bg-primary text-center text-[10px] font-bold text-primary-foreground">{flow.cta_text || "Get Started"} →</div>
           )}
         </div>
       </div>

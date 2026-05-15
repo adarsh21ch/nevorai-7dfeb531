@@ -69,7 +69,7 @@ async function buildEntries(): Promise<Entry[]> {
       .eq("is_published", true)
       .order("updated_at", { ascending: false })
       .limit(20_000);
-    if (error) console.error("sitemap funnels error", error);
+    if (error) console.error("sitemap flows error", error);
     for (const row of data ?? []) {
       if (!row.slug) continue;
       entries.push({
@@ -80,7 +80,7 @@ async function buildEntries(): Promise<Entry[]> {
       });
     }
   } catch (e) {
-    console.error("sitemap funnels exception", e);
+    console.error("sitemap flows exception", e);
   }
 
   try {

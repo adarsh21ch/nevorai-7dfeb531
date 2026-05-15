@@ -42,7 +42,7 @@ export const TrialExpiredGate = ({ trialDays }: { trialDays: number }) => {
               <div className="min-w-0">
                 <p className="font-semibold text-sm">Basic</p>
                 <p className="text-xs text-emerald-400 font-medium mt-0.5">★ 2,000 views / month</p>
-                <p className="text-xs text-muted-foreground mt-0.5">5 funnels · Lead capture · WhatsApp</p>
+                <p className="text-xs text-muted-foreground mt-0.5">5 flows · Lead capture · WhatsApp</p>
               </div>
               <div className="text-right shrink-0">
                 <p className="font-bold text-base">{fmt(basicPrice)}</p>
@@ -58,7 +58,7 @@ export const TrialExpiredGate = ({ trialDays }: { trialDays: number }) => {
               <div className="min-w-0">
                 <p className="font-semibold text-sm">Pro</p>
                 <p className="text-xs text-emerald-400 font-medium mt-0.5">★ 20,000 views / month</p>
-                <p className="text-xs text-muted-foreground mt-0.5">25 funnels · Live · Custom branding</p>
+                <p className="text-xs text-muted-foreground mt-0.5">25 flows · Live · Custom branding</p>
               </div>
               <div className="text-right shrink-0">
                 <p className="font-bold text-base">{fmt(proPrice)}</p>

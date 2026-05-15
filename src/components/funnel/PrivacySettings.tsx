@@ -20,16 +20,16 @@ export const PrivacySettings = ({ visibility, accessCode, requiredFields, onVisi
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-heading font-semibold">Privacy Settings</h2>
-      <p className="text-sm text-muted-foreground">Control who can access this funnel.</p>
+      <p className="text-sm text-muted-foreground">Control who can access this flow.</p>
       <div className="p-4 bg-muted/50 rounded-xl">
-        <Label className="font-semibold mb-3 block">Funnel Visibility</Label>
+        <Label className="font-semibold mb-3 block">Flow Visibility</Label>
         <div className="flex gap-2 p-1 bg-muted rounded-lg">
           <button onClick={() => onVisibilityChange("public")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-md transition-all ${!isPrivate ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Globe size={14} /> Public</button>
           <button onClick={() => onVisibilityChange("private")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-md transition-all ${isPrivate ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Lock size={14} /> Private</button>
         </div>
         <div className="flex items-center gap-2 mt-3">
           <span className={`w-2 h-2 rounded-full ${isPrivate ? "bg-amber-500" : "bg-emerald-500"}`} />
-          <p className="text-xs text-muted-foreground">{isPrivate ? "Viewers must enter an access code to unlock this funnel" : "Anyone with the link can view this funnel"}</p>
+          <p className="text-xs text-muted-foreground">{isPrivate ? "Viewers must enter an access code to unlock this flow" : "Anyone with the link can view this flow"}</p>
         </div>
       </div>
       {isPrivate && (
@@ -52,7 +52,7 @@ export const PrivacySettings = ({ visibility, accessCode, requiredFields, onVisi
                 <div key={key} className="flex items-center justify-between p-3.5"><span className="text-sm font-medium">{label}</span><Switch checked={requiredFields[key]} onCheckedChange={(v) => onRequiredFieldsChange({ ...requiredFields, [key]: v })} /></div>
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground italic">Password field is always included so viewers can re-access the funnel later</p>
+            <p className="text-[11px] text-muted-foreground italic">Password field is always included so viewers can re-access the flow later</p>
           </div>
         </div>
       )}

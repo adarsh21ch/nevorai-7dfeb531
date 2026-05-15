@@ -66,7 +66,7 @@ const VideoDetailPage = () => {
         supabase.from("live_sessions").select("id, title, status").eq("video_asset_id", id!),
       ]);
       return {
-        funnels: (funnelsRes.data || []) as Array<{ id: string; title: string; is_published: boolean | null }>,
+        flows: (funnelsRes.data || []) as Array<{ id: string; title: string; is_published: boolean | null }>,
         landingPages: (lpRes.data || []) as Array<{ id: string; title: string; status: string | null }>,
         liveSessions: (liveRes.data || []) as Array<{ id: string; title: string; status: string | null }>,
       };
@@ -264,8 +264,8 @@ const VideoDetailPage = () => {
           {/* USAGE */}
           <TabsContent value="usage" className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-3">
-              <Link to={`/funnels/create?videoId=${video.id}`}>
-                <Button variant="outline" className="w-full justify-start"><Layers size={14} /> Use in Funnel</Button>
+              <Link to={`/flows/create?videoId=${video.id}`}>
+                <Button variant="outline" className="w-full justify-start"><Layers size={14} /> Use in Flow</Button>
               </Link>
               <Link to={`/landing-pages/create?videoId=${video.id}`}>
                 <Button variant="outline" className="w-full justify-start"><FileText size={14} /> Use in Landing Page</Button>
@@ -275,7 +275,7 @@ const VideoDetailPage = () => {
               </Link>
             </div>
 
-            <UsageList title="Funnels using this video" icon={Layers} items={usage?.funnels.map((f) => ({ id: f.id, title: f.title, badge: f.is_published ? "Published" : "Draft", href: `/funnels/${f.id}` })) || []} emptyHint="Not used in any funnel yet." />
+            <UsageList title="Flows using this video" icon={Layers} items={usage?.flows.map((f) => ({ id: f.id, title: f.title, badge: f.is_published ? "Published" : "Draft", href: `/flows/${f.id}` })) || []} emptyHint="Not used in any flow yet." />
             <UsageList title="Landing pages using this video" icon={FileText} items={usage?.landingPages.map((p) => ({ id: p.id, title: p.title, badge: p.status === "published" ? "Published" : (p.status || "Draft"), href: `/landing-pages/${p.id}` })) || []} emptyHint="Not used in any landing page yet." />
             <UsageList title="Live sessions using this video" icon={Radio} items={usage?.liveSessions.map((s) => ({ id: s.id, title: s.title, badge: s.status || "scheduled", href: `/live/${s.id}` })) || []} emptyHint="Not used in any live session yet." />
           </TabsContent>

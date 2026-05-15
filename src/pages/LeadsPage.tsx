@@ -13,12 +13,12 @@ import {
 import { cn } from "@/lib/utils";
 import { useNavigate } from "@/lib/router-compat";
 
-type SourceKey = "recent" | "videos" | "funnels" | "pages" | "live";
+type SourceKey = "recent" | "videos" | "flows" | "pages" | "live";
 
 const sourceTabs: { id: SourceKey; label: string; icon: any }[] = [
   { id: "recent", label: "Recent", icon: Clock },
   { id: "videos", label: "Videos", icon: Play },
-  { id: "funnels", label: "Funnels", icon: Layers },
+  { id: "flows", label: "Flows", icon: Layers },
   { id: "pages", label: "Landing Pages", icon: FileText },
   { id: "live", label: "Live Sessions", icon: Radio },
 ];
@@ -50,8 +50,8 @@ const LeadsPage = () => {
   const [activeSource, setActiveSource] = useState<SourceKey>("recent");
   const [drillItem, setDrillItem] = useState<{ id: string; title: string; source: SourceKey } | null>(null);
 
-  const { data: funnels = [] } = useQuery({
-    queryKey: ["my-funnels", user?.id],
+  const { data: flows = [] } = useQuery({
+    queryKey: ["my-flows", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("funnels").select("id, title").eq("owner_id", user!.id);
       return data || [];
@@ -78,9 +78,9 @@ const LeadsPage = () => {
   });
 
   const { data: funnelLeads = [] } = useQuery({
-    queryKey: ["all-funnel-leads", user?.id, funnels],
+    queryKey: ["all-flow-leads", user?.id, flows],
     queryFn: async () => {
-      const ids = (funnels as any[]).map((f) => f.id);
+      const ids = (flows as any[]).map((f) => f.id);
       if (!ids.length) return [];
       const { data } = await supabase
         .from("funnel_leads")
@@ -89,7 +89,7 @@ const LeadsPage = () => {
         .order("submitted_at", { ascending: false });
       return data || [];
     },
-    enabled: (funnels as any[]).length > 0,
+    enabled: (flows as any[]).length > 0,
   });
 
   const { data: pageLeads = [] } = useQuery({
@@ -133,7 +133,7 @@ const LeadsPage = () => {
         phone: l.phone,
         contentTitle: titleOf(funnels as any[], l.funnel_id),
         contentId: l.funnel_id,
-        sourceType: "funnel" as SourceKey | "funnel",
+        sourceType: "flow" as SourceKey | "flow",
         when: l.submitted_at,
       })),
       ...(pageLeads as any[]).map((l) => ({
@@ -156,7 +156,7 @@ const LeadsPage = () => {
       })),
     ];
     return merged.sort((a, b) => new Date(b.when || 0).getTime() - new Date(a.when || 0).getTime());
-  }, [funnelLeads, pageLeads, liveLeads, funnels, pages, liveSessions]);
+  }, [funnelLeads, pageLeads, liveLeads, flows, pages, liveSessions]);
 
   // Per-content lead counts for level-2 lists
   const countLeadsFor = (source: SourceKey, id: string) => {
@@ -201,7 +201,7 @@ const LeadsPage = () => {
 
   const renderLevel2List = () => {
     const list =
-      activeSource === "funnels" ? (funnels as any[]) :
+      activeSource === "flows" ? (flows as any[]) :
       activeSource === "pages" ? (pages as any[]) :
       activeSource === "live" ? (liveSessions as any[]) : [];
     if (activeSource === "videos") {
@@ -209,7 +209,7 @@ const LeadsPage = () => {
         <EmptyState
           icon={Play}
           title="Per-video contacts coming soon"
-          body="Right now contacts are tracked from Funnels, Landing Pages, and Live Sessions. Use one of those tabs to see who watched."
+          body="Right now contacts are tracked from Flows, Landing Pages, and Live Sessions. Use one of those tabs to see who watched."
           ctaLabel="Go to My Videos"
           onClick={() => navigate("/videos")}
         />
@@ -217,7 +217,7 @@ const LeadsPage = () => {
     }
     if (!list.length) {
       const meta =
-        activeSource === "funnels" ? { title: "No funnels yet", body: "Create a funnel to start collecting contacts.", to: "/flows/create" } :
+        activeSource === "flows" ? { title: "No flows yet", body: "Create a flow to start collecting contacts.", to: "/flows/create" } :
         activeSource === "pages" ? { title: "No landing pages yet", body: "Create a landing page to share your video.", to: "/landing-pages/create" } :
         { title: "No live sessions yet", body: "Go live to capture viewers in real time.", to: "/live" };
       const Icon = sourceTabs.find((t) => t.id === activeSource)!.icon;
@@ -234,7 +234,7 @@ const LeadsPage = () => {
               className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-muted/60 border-b border-border last:border-b-0 transition-colors"
             >
               <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                {activeSource === "funnels" ? <Layers size={16} className="text-muted-foreground" /> :
+                {activeSource === "flows" ? <Layers size={16} className="text-muted-foreground" /> :
                  activeSource === "pages" ? <FileText size={16} className="text-muted-foreground" /> :
                  <Radio size={16} className="text-muted-foreground" />}
               </div>

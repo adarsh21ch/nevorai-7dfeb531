@@ -734,9 +734,9 @@ const PublicFunnel = () => {
   };
 
   const { data: bundle, isLoading } = useQuery({
-    queryKey: ["public-funnel-bundle", slug],
+    queryKey: ["public-flow-bundle", slug],
     queryFn: async () => {
-      const requestUrl = `${supabaseProjectUrl}/functions/v1/get-funnel-data?slug=${encodeURIComponent(slug ?? "")}`;
+      const requestUrl = `${supabaseProjectUrl}/functions/v1/get-flow-data?slug=${encodeURIComponent(slug ?? "")}`;
       const response = await fetch(requestUrl, {
         method: "GET",
         headers: {
@@ -765,7 +765,7 @@ const PublicFunnel = () => {
     retry: 1,
   });
 
-  const funnel = bundle?.funnel;
+  const flow = bundle?.flow;
   const videoAsset = bundle?.video;
   const creatorProfile = bundle?.creator;
   const creatorActive = bundle ? bundle.creatorActive !== false : true;
@@ -774,15 +774,15 @@ const PublicFunnel = () => {
   const funnelSteps: any[] = bundle?.steps || [];
   const isMultiStep = funnel?.funnel_mode === "multi" && funnelSteps.length > 0;
 
-  const canView = funnel && funnel.is_published;
-  const isPrivateFunnel = funnel?.visibility === "private";
-  const requiredFields = funnel?.required_fields || { email: false, city: false, state: false, whatsapp: false };
+  const canView = flow && flow.is_published;
+  const isPrivateFunnel = flow?.visibility === "private";
+  const requiredFields = flow?.required_fields || { email: false, city: false, state: false, whatsapp: false };
 
   const [dailyLimitState, setDailyLimitState] = useState<"unknown" | "allowed" | "blocked">("unknown");
   useEffect(() => {
-    if (!funnel?.id) return;
+    if (!flow?.id) return;
     const todayIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const sessionKey = `nf_view_check_${funnel.owner_id || funnel.id}_${todayIST}`;
+    const sessionKey = `nf_view_check_${flow.owner_id || flow.id}_${todayIST}`;
     if (sessionStorage.getItem(sessionKey)) {
       setDailyLimitState("allowed");
       return;
@@ -792,12 +792,12 @@ const PublicFunnel = () => {
       visitorSession = crypto.randomUUID();
       localStorage.setItem("nf_visitor_session", visitorSession);
     }
-    const sessionId = `${visitorSession}_${funnel.owner_id || funnel.id}_${todayIST}`;
+    const sessionId = `${visitorSession}_${flow.owner_id || flow.id}_${todayIST}`;
 
     (async () => {
       try {
-        const { data } = await supabase.functions.invoke("check-funnel-view-limit", {
-          body: { funnelId: funnel.id, sessionId },
+        const { data } = await supabase.functions.invoke("check-flow-view-limit", {
+          body: { funnelId: flow.id, sessionId },
         });
         if (data?.allowed === false) {
           setDailyLimitState("blocked");
@@ -809,56 +809,56 @@ const PublicFunnel = () => {
         setDailyLimitState("allowed");
       }
     })();
-  }, [funnel?.id, funnel?.owner_id]);
+  }, [flow?.id, flow?.owner_id]);
 
   useEffect(() => {
-    if (!funnel) return;
-    const codeVerified = localStorage.getItem(`nf_code_verified_${funnel.id}`);
+    if (!flow) return;
+    const codeVerified = localStorage.getItem(`nf_code_verified_${flow.id}`);
     if (codeVerified) setCodeGateUnlocked(true);
-    const leadStored = localStorage.getItem(`nf_lead_${funnel.id}`);
+    const leadStored = localStorage.getItem(`nf_lead_${flow.id}`);
     if (leadStored) setPrivateLeadSubmitted(true);
-  }, [funnel]);
+  }, [flow]);
 
   useEffect(() => {
-    if (!funnel || funnel.cta_enabled !== true) return;
-    if (!funnel.cta_timing_seconds) {
+    if (!flow || flow.cta_enabled !== true) return;
+    if (!flow.cta_timing_seconds) {
       setShowCta(true);
       return;
     }
-    if (watchSeconds >= funnel.cta_timing_seconds) {
+    if (watchSeconds >= flow.cta_timing_seconds) {
       setShowCta(true);
     }
-  }, [funnel, watchSeconds]);
+  }, [flow, watchSeconds]);
 
   useEffect(() => {
-    if (!funnel) return;
-    document.title = `${funnel.title} | Nevorai`;
+    if (!flow) return;
+    document.title = `${flow.title} | Nevorai`;
     const setMeta = (name: string, content: string, prop = false) => {
       const attr = prop ? "property" : "name";
       let el = document.querySelector(`meta[${attr}="${name}"]`);
       if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
       el.setAttribute("content", content);
     };
-    setMeta("description", funnel.description || funnel.title);
-    setMeta("og:title", funnel.title, true);
-    setMeta("og:description", funnel.description || funnel.title, true);
+    setMeta("description", flow.description || flow.title);
+    setMeta("og:title", flow.title, true);
+    setMeta("og:description", flow.description || flow.title, true);
     setMeta("og:type", "website", true);
     setMeta("og:url", window.location.href, true);
-    if (funnel.thumbnail_url) setMeta("og:image", funnel.thumbnail_url, true);
+    if (flow.thumbnail_url) setMeta("og:image", flow.thumbnail_url, true);
     setMeta("og:site_name", "Nevorai", true);
     setMeta("twitter:card", "summary_large_image");
-    setMeta("twitter:title", funnel.title);
-    setMeta("twitter:description", funnel.description || funnel.title);
-    if (funnel.thumbnail_url) setMeta("twitter:image", funnel.thumbnail_url);
-  }, [funnel]);
+    setMeta("twitter:title", flow.title);
+    setMeta("twitter:description", flow.description || flow.title);
+    if (flow.thumbnail_url) setMeta("twitter:image", flow.thumbnail_url);
+  }, [flow]);
 
   useEffect(() => {
-    if (!funnel || !videoPlaying) return;
+    if (!flow || !videoPlaying) return;
     const interval = setInterval(() => {
-      localStorage.setItem(`nevora_progress_${funnel.id}`, JSON.stringify({ lastPosition: watchSeconds, watchedAt: Date.now() }));
+      localStorage.setItem(`nevora_progress_${flow.id}`, JSON.stringify({ lastPosition: watchSeconds, watchedAt: Date.now() }));
     }, 5000);
     return () => clearInterval(interval);
-  }, [funnel, videoPlaying, watchSeconds]);
+  }, [flow, videoPlaying, watchSeconds]);
 
   const submitLead = useMutation({
     mutationFn: async () => {
@@ -903,8 +903,8 @@ const PublicFunnel = () => {
   if (!canView) return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: tc.bg }}>
       <div className="text-center">
-        <h1 className="text-xl font-heading font-bold mb-2" style={{ color: tc.text }}>Funnel Not Found</h1>
-        <p className="text-sm" style={{ color: tc.textMuted }}>This funnel doesn't exist or has been unpublished.</p>
+        <h1 className="text-xl font-heading font-bold mb-2" style={{ color: tc.text }}>Flow Not Found</h1>
+        <p className="text-sm" style={{ color: tc.textMuted }}>This flow doesn't exist or has been unpublished.</p>
       </div>
     </div>
   );
@@ -913,13 +913,13 @@ const PublicFunnel = () => {
 
   if (dailyLimitState === "blocked") return <FunnelDailyLimitGate />;
 
-  if (funnel.visibility === "password" && !passwordUnlocked) {
+  if (flow.visibility === "password" && !passwordUnlocked) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: tc.bg }}>
         <div className="rounded-2xl p-8 w-full max-w-sm text-center" style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
           <Lock size={32} className="text-primary mx-auto mb-4" />
-          <h2 className="text-lg font-heading font-semibold mb-2" style={{ color: tc.text }}>{funnel.title}</h2>
-          <p className="text-sm mb-4" style={{ color: tc.textMuted }}>This funnel is password protected.</p>
+          <h2 className="text-lg font-heading font-semibold mb-2" style={{ color: tc.text }}>{flow.title}</h2>
+          <p className="text-sm mb-4" style={{ color: tc.textMuted }}>This flow is password protected.</p>
           <Input type="password" placeholder="Enter password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="mb-3" />
           <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => setPasswordUnlocked(true)}>Unlock</Button>
         </div>
@@ -930,8 +930,8 @@ const PublicFunnel = () => {
   if (isPrivateFunnel && !codeGateUnlocked) {
     return (
       <CodeGateScreen
-        funnelId={funnel.id}
-        funnelTitle={funnel.title}
+        funnelId={flow.id}
+        funnelTitle={flow.title}
         creatorName={creatorProfile?.full_name}
         onSuccess={() => setCodeGateUnlocked(true)}
         onLoginClick={() => {}}
@@ -944,8 +944,8 @@ const PublicFunnel = () => {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: tc.bg }}>
         <PrivateLeadForm
-          funnelId={funnel.id}
-          funnelTitle={funnel.title}
+          funnelId={flow.id}
+          funnelTitle={flow.title}
           requiredFields={requiredFields}
           onSuccess={() => setPrivateLeadSubmitted(true)}
           isDark={isDark}
@@ -954,13 +954,13 @@ const PublicFunnel = () => {
     );
   }
 
-  const ctaEnabled = funnel.cta_enabled === true;
+  const ctaEnabled = flow.cta_enabled === true;
   const hasLeadForm = formConfig?.capture_enabled;
   const showLeadFormNow = hasLeadForm && !leadSubmitted && formConfig.capture_timing === "before_video";
   const showLeadFormAfterCta = hasLeadForm && !leadSubmitted && formConfig.capture_timing === "after_cta" && showCta;
   const showLeadFormSidebar = hasLeadForm && !leadSubmitted && formConfig.capture_timing !== "before_video";
   const videoUrl = videoAsset?.public_url;
-  const ctaTimingLeft = funnel.cta_timing_seconds ? Math.max(0, funnel.cta_timing_seconds - watchSeconds) : 0;
+  const ctaTimingLeft = flow.cta_timing_seconds ? Math.max(0, flow.cta_timing_seconds - watchSeconds) : 0;
   const isVerified = creatorProfile?.kyc_status === "approved";
 
   const handleShare = () => {
@@ -1001,7 +1001,7 @@ const PublicFunnel = () => {
 
   const LeadFormCard = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-2xl p-6 ${className}`} style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
-      <h3 className="text-lg font-heading font-bold mb-1" style={{ color: tc.text }}>{funnel.cta_text || "Register Now"}</h3>
+      <h3 className="text-lg font-heading font-bold mb-1" style={{ color: tc.text }}>{flow.cta_text || "Register Now"}</h3>
       <p className="text-xs mb-5" style={{ color: tc.textMuted }}>Fill in your details to continue</p>
       <form onSubmit={handleLeadSubmit} className="space-y-3" noValidate>
         <input type="text" name="website" value={leadForm.website} onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })} style={{ position: "absolute", left: "-9999px" }} tabIndex={-1} autoComplete="off" />
@@ -1043,7 +1043,7 @@ const PublicFunnel = () => {
           className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl"
           disabled={submitLead.isPending}
         >
-          {submitLead.isPending ? <><Loader2 size={16} className="animate-spin mr-2 inline" /> Submitting…</> : <>{funnel.cta_text || "Get Started"} →</>}
+          {submitLead.isPending ? <><Loader2 size={16} className="animate-spin mr-2 inline" /> Submitting…</> : <>{flow.cta_text || "Get Started"} →</>}
         </Button>
         <PrivacyMicrocopy color={tc.textMuted} />
       </form>
@@ -1095,7 +1095,7 @@ const PublicFunnel = () => {
 
       {isMultiStep ? (
         <MultiStepViewer
-          funnel={funnel}
+          flow={flow}
           steps={funnelSteps}
           creatorProfile={creatorProfile}
           formConfig={formConfig}
@@ -1110,15 +1110,15 @@ const PublicFunnel = () => {
             className="font-heading font-extrabold tracking-tight leading-tight"
             style={{ fontSize: "clamp(20px, 3vw, 36px)", letterSpacing: "-0.02em", color: tc.text }}
           >
-            {funnel.title}
+            {flow.title}
           </h1>
-          {funnel.description && <p style={{ fontSize: "15px", color: tc.textDim, lineHeight: "1.6" }} className="mt-3 max-w-xl mx-auto">{funnel.description}</p>}
+          {flow.description && <p style={{ fontSize: "15px", color: tc.textDim, lineHeight: "1.6" }} className="mt-3 max-w-xl mx-auto">{flow.description}</p>}
         </div>
           <>
         {(leadSubmitted || privateLeadSubmitted) && (
           <div className="max-w-4xl mx-auto mb-4 flex justify-end">
             <Link
-              to={`/f/${funnel.slug}/member`}
+              to={`/f/${flow.slug}/member`}
               className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-slate-200 transition"
             >
               👤 Member area
@@ -1134,9 +1134,9 @@ const PublicFunnel = () => {
               {videoUrl && (
                 <CustomVideoPlayer
                   src={videoUrl}
-                  poster={funnel.thumbnail_url || videoAsset?.thumbnail_url || undefined}
-                  allowSeek={(videoAsset as any)?.allow_seek !== undefined ? (videoAsset as any).allow_seek !== false : funnel.allow_seek !== false}
-                  allowSpeed={(videoAsset as any)?.allow_playback_speed !== undefined ? (videoAsset as any).allow_playback_speed !== false : funnel.allow_speed_change !== false}
+                  poster={flow.thumbnail_url || videoAsset?.thumbnail_url || undefined}
+                  allowSeek={(videoAsset as any)?.allow_seek !== undefined ? (videoAsset as any).allow_seek !== false : flow.allow_seek !== false}
+                  allowSpeed={(videoAsset as any)?.allow_playback_speed !== undefined ? (videoAsset as any).allow_playback_speed !== false : flow.allow_speed_change !== false}
                   autoplay={true}
                   onTimeUpdate={(ct, dur) => { setWatchSeconds(Math.floor(ct)); setVideoDuration(dur); }}
                   onPlay={() => setVideoPlaying(true)}
@@ -1154,7 +1154,7 @@ const PublicFunnel = () => {
               )}
 
               {(() => {
-                const speakerMode = funnel.speaker_mode || "account";
+                const speakerMode = flow.speaker_mode || "account";
                 const showSpeaker = speakerMode !== "none";
                 if (!showSpeaker) return null;
 
@@ -1166,14 +1166,14 @@ const PublicFunnel = () => {
                   speakerPhoto = creatorProfile?.avatar_url || "";
                   speakerAbout = creatorProfile?.bio || "";
                 } else {
-                  speakerName = funnel.speaker_name || "";
-                  speakerPhoto = funnel.speaker_photo_url || "";
-                  speakerAbout = funnel.speaker_about || "";
+                  speakerName = flow.speaker_name || "";
+                  speakerPhoto = flow.speaker_photo_url || "";
+                  speakerAbout = flow.speaker_about || "";
                 }
 
                 if (!speakerName) return null;
 
-                const whatsappNumber = funnel.contact_whatsapp;
+                const whatsappNumber = flow.contact_whatsapp;
                 return (
                   <div
                     className="flex items-center gap-4 mt-4 p-4 sm:p-5 rounded-2xl flex-wrap nf-creator-card"
@@ -1240,15 +1240,15 @@ const PublicFunnel = () => {
                 );
               })()}
 
-              {funnel.video_topics_enabled && Array.isArray(funnel.video_topics) && funnel.video_topics.filter((t: string) => t?.trim()).length > 0 && (
+              {flow.video_topics_enabled && Array.isArray(flow.video_topics) && flow.video_topics.filter((t: string) => t?.trim()).length > 0 && (
                 <div className="rounded-2xl p-5" style={{ background: tc.bgCard, border: `1px solid ${tc.border}`, marginTop: "20px" }}>
                   <h3 className="font-heading font-bold text-[16px] mb-3.5" style={{ color: tc.text }}>What you'll learn in this session</h3>
                   <div className="space-y-0">
-                    {funnel.video_topics.filter((t: string) => t?.trim()).map((topic: string, idx: number) => (
+                    {flow.video_topics.filter((t: string) => t?.trim()).map((topic: string, idx: number) => (
                       <div
                         key={idx}
                         className="flex items-start gap-2.5 py-2"
-                        style={{ borderBottom: idx < funnel.video_topics.filter((t: string) => t?.trim()).length - 1 ? `1px solid ${tc.border}` : "none" }}
+                        style={{ borderBottom: idx < flow.video_topics.filter((t: string) => t?.trim()).length - 1 ? `1px solid ${tc.border}` : "none" }}
                       >
                         <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(34,197,94,0.12)" }}>
                           <Check size={11} className="text-emerald-500" />
@@ -1264,14 +1264,14 @@ const PublicFunnel = () => {
                 {ctaEnabled && showCta && (
                   <Button
                     className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg shadow-primary/20 cta-pulse"
-                    onClick={() => funnel.cta_url ? window.open(funnel.cta_url, "_blank") : null}
+                    onClick={() => flow.cta_url ? window.open(flow.cta_url, "_blank") : null}
                   >
-                    {funnel.cta_text || "Get Started"} →
+                    {flow.cta_text || "Get Started"} →
                   </Button>
                 )}
-                {ctaEnabled && funnel.lock_cta && !showCta && videoPlaying && (
+                {ctaEnabled && flow.lock_cta && !showCta && videoPlaying && (
                   <Button disabled className="w-full h-14 text-base rounded-xl cursor-not-allowed" style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", color: tc.textDimmer, border: `1px solid ${tc.borderSubtle}` }}>
-                    🔒 {funnel.cta_text || "Get Started"} — unlocks in {Math.floor(ctaTimingLeft / 60)}:{(ctaTimingLeft % 60).toString().padStart(2, "0")}
+                    🔒 {flow.cta_text || "Get Started"} — unlocks in {Math.floor(ctaTimingLeft / 60)}:{(ctaTimingLeft % 60).toString().padStart(2, "0")}
                   </Button>
                 )}
               </div>
@@ -1282,12 +1282,12 @@ const PublicFunnel = () => {
             {showLeadFormSidebar && !leadSubmitted && (
               <div className="hidden lg:block sticky top-6 self-start">
                 <LeadFormCard />
-                {ctaEnabled && showCta && funnel.cta_url && (
+                {ctaEnabled && showCta && flow.cta_url && (
                   <Button
                     className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg shadow-primary/20 mt-4 cta-pulse"
-                    onClick={() => window.open(funnel.cta_url!, "_blank")}
+                    onClick={() => window.open(flow.cta_url!, "_blank")}
                   >
-                    {funnel.cta_text || "Get Started"} →
+                    {flow.cta_text || "Get Started"} →
                   </Button>
                 )}
               </div>
@@ -1297,7 +1297,7 @@ const PublicFunnel = () => {
 
         {showLeadFormAfterCta && !showLeadFormSidebar && <LeadFormCard className="max-w-md mx-auto mt-6" />}
 
-        {funnel.payment_enabled && leadSubmitted && !paymentSubmitted && (
+        {flow.payment_enabled && leadSubmitted && !paymentSubmitted && (
           <div className="rounded-2xl p-6 max-w-md mx-auto mt-6" style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
             <h3 className="text-lg font-heading font-semibold mb-4" style={{ color: tc.text }}>Complete Payment</h3>
             {priceOptions.length > 0 && (
@@ -1315,17 +1315,17 @@ const PublicFunnel = () => {
                 ))}
               </div>
             )}
-            {funnel.upi_id && (
+            {flow.upi_id && (
               <div className="p-3 rounded-xl mb-4" style={{ background: tc.inputBg }}>
                 <Label className="text-xs" style={{ color: tc.textMuted }}>Pay via UPI</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="text-sm text-primary flex-1">{funnel.upi_id}</code>
-                  <Button variant="ghost" size="sm" style={{ color: tc.textMuted }} onClick={() => { navigator.clipboard.writeText(funnel.upi_id!); toast.success("UPI ID copied!"); }}>Copy</Button>
+                  <code className="text-sm text-primary flex-1">{flow.upi_id}</code>
+                  <Button variant="ghost" size="sm" style={{ color: tc.textMuted }} onClick={() => { navigator.clipboard.writeText(flow.upi_id!); toast.success("UPI ID copied!"); }}>Copy</Button>
                 </div>
               </div>
             )}
-            {funnel.qr_code_url && <img src={funnel.qr_code_url} alt="QR Code" className="w-48 h-48 mx-auto mb-4 rounded-xl" />}
-            {funnel.payment_instructions && <p className="text-sm mb-4" style={{ color: tc.textMuted }}>{funnel.payment_instructions}</p>}
+            {flow.qr_code_url && <img src={flow.qr_code_url} alt="QR Code" className="w-48 h-48 mx-auto mb-4 rounded-xl" />}
+            {flow.payment_instructions && <p className="text-sm mb-4" style={{ color: tc.textMuted }}>{flow.payment_instructions}</p>}
             <div className="space-y-3">
               <Input placeholder="UPI Transaction ID (optional)" value={paymentProof.upi_transaction_id} onChange={(e) => setPaymentProof({ ...paymentProof, upi_transaction_id: e.target.value })} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="h-12 rounded-xl" />
               <Button className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl" onClick={() => submitPayment.mutate()} disabled={submitPayment.isPending}>
@@ -1344,15 +1344,15 @@ const PublicFunnel = () => {
         )}
         </>
 
-        {funnel.show_contact_buttons && (leadSubmitted || !funnel.show_contact_after_cta) && (
+        {flow.show_contact_buttons && (leadSubmitted || !flow.show_contact_after_cta) && (
           <div className="fixed bottom-0 left-0 right-0 p-4 backdrop-blur-xl flex gap-3 justify-center z-50" style={{ background: tc.contactBg, borderTop: `1px solid ${tc.borderSubtle}` }}>
-            {funnel.contact_whatsapp && (
-              <Button className="bg-[#25d366] hover:bg-[#20b858] text-white" onClick={() => window.open(`https://wa.me/${funnel.contact_whatsapp?.replace(/\D/g, "")}`)}>
+            {flow.contact_whatsapp && (
+              <Button className="bg-[#25d366] hover:bg-[#20b858] text-white" onClick={() => window.open(`https://wa.me/${flow.contact_whatsapp?.replace(/\D/g, "")}`)}>
                 <MessageCircle size={16} /> WhatsApp
               </Button>
             )}
-            {funnel.contact_phone && (
-              <Button style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", color: tc.text, border: `1px solid ${tc.borderSubtle}` }} onClick={() => window.open(`tel:${funnel.contact_phone}`)}>
+            {flow.contact_phone && (
+              <Button style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)", color: tc.text, border: `1px solid ${tc.borderSubtle}` }} onClick={() => window.open(`tel:${flow.contact_phone}`)}>
                 <PhoneIcon size={16} /> Call
               </Button>
             )}
@@ -1381,7 +1381,7 @@ const PublicFunnel = () => {
           50%      { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
         }
       `}</style>
-      <BrandingWatermark ownerId={(funnel as any)?.owner_id} />
+      <BrandingWatermark ownerId={(flow as any)?.owner_id} />
     </div>
   );
 };

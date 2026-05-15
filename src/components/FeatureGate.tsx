@@ -17,8 +17,8 @@ const defaultMessages: Record<string, { title: string; desc: string }> = {
   video_link: { title: "Add Video by Link", desc: "Add videos from YouTube, Vimeo, or any URL with a paid plan." },
   video_sharing: { title: "Video Sharing", desc: "Share videos with your audience as a Pro member." },
   live_broadcast: { title: "Live Broadcasts", desc: "Go live with your audience — available on the Pro plan." },
-  advanced_analytics: { title: "Advanced Analytics", desc: "Get deep insights into your funnels and leads." },
-  premium_templates: { title: "Premium Templates", desc: "Access premium funnel templates to convert faster." },
+  advanced_analytics: { title: "Advanced Analytics", desc: "Get deep insights into your flows and leads." },
+  premium_templates: { title: "Premium Templates", desc: "Access premium flow templates to convert faster." },
   premium_automation: { title: "Automation", desc: "Automate WhatsApp messages and lead workflows." },
 };
 

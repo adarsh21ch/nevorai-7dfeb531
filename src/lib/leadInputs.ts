@@ -1,6 +1,6 @@
 /**
  * Shared input normalization + validation for public lead-capture forms.
- * Keeps phone/email/name handling identical across landing, funnel, live, etc.
+ * Keeps phone/email/name handling identical across landing, flow, live, etc.
  */
 
 /** Strip non-digits, drop leading +91 / 91 / 0, cap at 10. */

@@ -374,7 +374,7 @@ const AdminSubscriptionsPage = () => {
           </TabsContent>
 
           <TabsContent value="limits" className="pt-2 space-y-0.5">
-            <PlanField planName={planName} field="daily_view_limit" label="Daily Views / Day" hint="-1 = unlimited. Shown on pricing page & enforced per funnel." value={config?.daily_view_limit} onSave={saveField} disabled={isDisabled} />
+            <PlanField planName={planName} field="daily_view_limit" label="Daily Views / Day" hint="-1 = unlimited. Shown on pricing page & enforced per flow." value={config?.daily_view_limit} onSave={saveField} disabled={isDisabled} />
             <PlanField planName={planName} field="max_funnels" label="Max Funnels" hint="-1 = unlimited" value={config?.max_funnels} onSave={saveField} disabled={isDisabled} />
             <StorageFieldGB planName={planName} mbValue={config?.max_storage_mb} disabled={isDisabled} onSave={saveField} />
             <PlanField planName={planName} field="max_landing_pages" label="Max Landing Pages" hint="-1 = unlimited" value={config?.max_landing_pages} onSave={saveField} disabled={isDisabled} />

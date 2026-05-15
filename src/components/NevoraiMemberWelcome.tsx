@@ -46,7 +46,7 @@ export const NevoraiMemberWelcome = () => {
               Because you're a Nevorai Pro member, you have free access to the Nevorai Individual plan.
             </span>
             <span className="block text-left mt-3 space-y-1 text-sm">
-              ✓ Create up to 10 video funnels<br />
+              ✓ Create up to 10 video flows<br />
               ✓ Capture leads from every prospect<br />
               ✓ Track who watched and for how long<br />
               ✓ Follow up on WhatsApp instantly
@@ -56,7 +56,7 @@ export const NevoraiMemberWelcome = () => {
         </DialogHeader>
         <DialogFooter>
           <Button onClick={handleClose} className="w-full">
-            Start Creating My First Funnel →
+            Start Creating My First Flow →
           </Button>
         </DialogFooter>
       </DialogContent>

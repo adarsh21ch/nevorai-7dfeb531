@@ -120,7 +120,7 @@ const VideosPage = () => {
   };
 
   const useInFunnel = (videoId: string) => {
-    navigate(`/funnels/create?videoId=${videoId}`);
+    navigate(`/flows/create?videoId=${videoId}`);
   };
 
   const copyLink = (videoId: string) => {
@@ -145,7 +145,7 @@ const VideosPage = () => {
 
   const deleteOwnedVideo = async (videoId: string) => {
     if (!user) return;
-    // Detach from any funnels using this video first to avoid FK / orphaned references.
+    // Detach from any flows using this video first to avoid FK / orphaned references.
     await supabase.from("funnels").update({ video_asset_id: null }).eq("video_asset_id", videoId).eq("owner_id", user.id);
     await supabase.from("video_asset_access").delete().eq("video_id", videoId);
     const { error } = await supabase.from("video_assets").delete().eq("id", videoId).eq("owner_id", user.id);
@@ -313,7 +313,7 @@ const VideosPage = () => {
                         <Share2 size={13} className="mr-2" /> Share
                       </DropdownMenuItem>
                       <DropdownMenuItem disabled={!isReady} onSelect={() => useInFunnel(v.id)}>
-                        <Rocket size={13} className="mr-2" /> Use in Funnel
+                        <Rocket size={13} className="mr-2" /> Use in Flow
                       </DropdownMenuItem>
                       <DropdownMenuItem onSelect={() => navigate(`/leads`)}>
                         <Users size={13} className="mr-2" /> View Insights
@@ -424,7 +424,7 @@ const VideosPage = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete this video?</AlertDialogTitle>
               <AlertDialogDescription>
-                "{deleteVideo?.title}" will be permanently removed. Any funnels using it will be detached. This cannot be undone.
+                "{deleteVideo?.title}" will be permanently removed. Any flows using it will be detached. This cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

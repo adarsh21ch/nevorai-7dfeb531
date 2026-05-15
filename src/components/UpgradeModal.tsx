@@ -4,7 +4,7 @@ import { Crown, Lock, ArrowRight, Eye, Layers, Video, Radio, UserPlus, Download 
 import { useNavigate } from "@/lib/router-compat";
 import { planName } from "@/config/planDisplay";
 
-export type UpgradeReason = "views" | "funnels" | "videos" | "live" | "leads" | "team";
+export type UpgradeReason = "views" | "flows" | "videos" | "live" | "leads" | "team";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -18,8 +18,8 @@ interface UpgradeModalProps {
 }
 
 const REASON_COPY: Record<UpgradeReason, { title: string; desc: (planLabel: string, limit?: number) => string; icon: any }> = {
-  views: { title: "You've used all your monthly funnel views", desc: (p, l) => `Your ${p} plan includes ${l?.toLocaleString("en-IN")} funnel views/month. Upgrade to Pro for 20,000 monthly views.`, icon: Eye },
-  funnels: { title: "You've reached your funnel limit", desc: (p, l) => `Your ${p} plan allows ${l} funnels. Upgrade to Pro to create more.`, icon: Layers },
+  views: { title: "You've used all your monthly flow views", desc: (p, l) => `Your ${p} plan includes ${l?.toLocaleString("en-IN")} flow views/month. Upgrade to Pro for 20,000 monthly views.`, icon: Eye },
+  flows: { title: "You've reached your flow limit", desc: (p, l) => `Your ${p} plan allows ${l} flows. Upgrade to Pro to create more.`, icon: Layers },
   videos: { title: "You've reached your video upload limit", desc: (p, l) => `Your ${p} plan allows ${l} videos. Upgrade to Pro for more storage.`, icon: Video },
   live: { title: "You've reached your live sessions limit", desc: (p, l) => `Your ${p} plan allows ${l} live sessions. Upgrade to Pro to host more.`, icon: Radio },
   leads: { title: "You've reached the leads export limit", desc: (p, l) => `Your ${p} plan exports up to ${l} leads at a time. Upgrade to Pro for higher exports.`, icon: Download },

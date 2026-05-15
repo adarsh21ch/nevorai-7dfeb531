@@ -426,8 +426,8 @@ const PublicLivePage = () => {
   const funnel = stateData.funnel_data;
   const needsRegistration = session.access_type === "lead_gated" || session.access_type === "paid";
   const isFunnelVideo = stateData.session_type === "funnel_video";
-  const speakerName = funnel?.speaker_name;
-  const speakerPhoto = funnel?.speaker_photo_url;
+  const speakerName = flow?.speaker_name;
+  const speakerPhoto = flow?.speaker_photo_url;
   const allSlots = stateData.all_slots || [];
 
   // ============ EXTERNAL LINK (legacy) ============

@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/router-compat";
 
 interface LimitGateProps {
-  resource: "funnel" | "landing_page" | "live_session";
+  resource: "flow" | "landing_page" | "live_session";
   children: React.ReactNode;
 }
 
 const labels: Record<string, { singular: string; plural: string }> = {
-  funnel: { singular: "Funnel", plural: "Funnels" },
+  flow: { singular: "Flow", plural: "Flows" },
   landing_page: { singular: "Landing Page", plural: "Landing Pages" },
   live_session: { singular: "Live Session", plural: "Live Sessions" },
 };
@@ -20,7 +20,7 @@ export const LimitGate = ({ resource, children }: LimitGateProps) => {
   const counts = useResourceCount();
 
   const countMap = {
-    funnel: counts.funnels,
+    flow: counts.flows,
     landing_page: counts.landing_pages,
     live_session: counts.live_sessions,
   };
@@ -65,12 +65,12 @@ export const LimitGate = ({ resource, children }: LimitGateProps) => {
 };
 
 /** Inline indicator showing usage count */
-export const LimitBadge = ({ resource }: { resource: "funnel" | "landing_page" | "live_session" }) => {
+export const LimitBadge = ({ resource }: { resource: "flow" | "landing_page" | "live_session" }) => {
   const { plan } = usePlan();
   const counts = useResourceCount();
 
   const countMap = {
-    funnel: counts.funnels,
+    flow: counts.flows,
     landing_page: counts.landing_pages,
     live_session: counts.live_sessions,
   };

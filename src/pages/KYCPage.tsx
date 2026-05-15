@@ -140,7 +140,7 @@ const KYCPage = () => {
           <div>
             <p className="font-heading font-semibold text-sm">Build Trust with Your Leads</p>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Complete a quick identity check to get a verified badge on your funnel pages. Takes less than 2 minutes.
+              Complete a quick identity check to get a verified badge on your flow pages. Takes less than 2 minutes.
             </p>
           </div>
         </div>
@@ -167,7 +167,7 @@ const KYCPage = () => {
             <p className="font-heading font-semibold text-sm flex items-center gap-2">
               Verified Creator <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-medium">VERIFIED</span>
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Your identity has been verified. A trust badge is shown on your public funnels.</p>
+            <p className="text-xs text-muted-foreground mt-1">Your identity has been verified. A trust badge is shown on your public flows.</p>
           </div>
         </div>
       );

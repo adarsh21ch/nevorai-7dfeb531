@@ -89,7 +89,7 @@ export const UserEditDrawer = ({ open, onClose, user, subscription }: Props) => 
           _action: "edit_user",
           _target_type: "user",
           _target_id: user.id,
-          _metadata: { tier, monthly, daily, funnels } as any,
+          _metadata: { tier, monthly, daily, flows } as any,
         });
       }
 
@@ -150,9 +150,9 @@ export const UserEditDrawer = ({ open, onClose, user, subscription }: Props) => 
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Max funnels override</Label>
+            <Label className="text-xs">Max flows override</Label>
             <Input
-              value={funnels}
+              value={flows}
               onChange={(e) => setFunnels(e.target.value.replace(/[^0-9-]/g, ""))}
               placeholder="empty = use plan"
             />

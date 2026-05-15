@@ -18,7 +18,7 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
   const { data: steps = [] } = useQuery({
-    queryKey: ["funnel-steps", funnelId],
+    queryKey: ["flow-steps", funnelId],
     queryFn: async () => {
       const { data } = await supabase.from("funnel_steps").select("id, title, step_order, step_type").eq("funnel_id", funnelId).order("step_order");
       return data || [];
@@ -26,7 +26,7 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
   });
 
   const { data: leads = [] } = useQuery({
-    queryKey: ["funnel-leads", funnelId],
+    queryKey: ["flow-leads", funnelId],
     queryFn: async () => {
       const { data } = await supabase.from("funnel_leads").select("id, name, phone, email, status, submitted_at").eq("funnel_id", funnelId).order("submitted_at", { ascending: false });
       return data || [];
@@ -34,7 +34,7 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
   });
 
   const { data: allProgress = [] } = useQuery({
-    queryKey: ["funnel-step-progress", funnelId],
+    queryKey: ["flow-step-progress", funnelId],
     queryFn: async () => {
       const { data } = await supabase.from("funnel_step_progress").select("*").eq("funnel_id", funnelId);
       return data || [];
@@ -49,11 +49,11 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
         await supabase.from("funnel_step_progress").insert({ funnel_id: funnelId, funnel_step_id: stepId, lead_id: leadId || null, session_id: sessionId || null, status: "unlocked", manually_unlocked: true, unlocked_by: userId, unlocked_at: new Date().toISOString() });
       }
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["funnel-step-progress", funnelId] }); toast.success("Step unlocked!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flow-step-progress", funnelId] }); toast.success("Step unlocked!"); },
   });
 
   if (steps.length === 0) {
-    return <div className="glass-card p-12 text-center"><Eye size={40} className="text-muted-foreground mx-auto mb-3" /><p className="text-sm text-muted-foreground">This funnel doesn't have multi-step flow enabled.</p></div>;
+    return <div className="glass-card p-12 text-center"><Eye size={40} className="text-muted-foreground mx-auto mb-3" /><p className="text-sm text-muted-foreground">This flow doesn't have multi-step flow enabled.</p></div>;
   }
 
   const sessionMap = new Map<string, typeof allProgress>();

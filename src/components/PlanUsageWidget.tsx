@@ -74,7 +74,7 @@ export const PlanUsageWidget = () => {
           )}
           <p className="text-[11px] text-muted-foreground">
             {views.isOverLimit
-              ? <span className="text-destructive font-medium">Monthly limit reached — funnels paused until {resetDateFmt}</span>
+              ? <span className="text-destructive font-medium">Monthly limit reached — flows paused until {resetDateFmt}</span>
               : views.isApproachingLimit
               ? <span className="text-amber-500 font-medium">{Math.round(100 - views.pct)}% remaining · resets {resetDateFmt}</span>
               : <>Resets on {resetDateFmt}</>}

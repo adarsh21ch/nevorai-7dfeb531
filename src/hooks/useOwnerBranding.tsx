@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Resolve whether the owner of a public asset (funnel / landing page / video)
+ * Resolve whether the owner of a public asset (flow / landing page / video)
  * is on a plan where the Nevorai branding watermark must be shown.
  *
  * Logic:

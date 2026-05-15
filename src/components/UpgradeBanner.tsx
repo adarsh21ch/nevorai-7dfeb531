@@ -53,7 +53,7 @@ export const UpgradeBanner = () => {
         <Crown size={18} className="text-primary shrink-0" />
         <div>
           <p className="text-sm font-medium">Upgrade to unlock more features</p>
-          <p className="text-xs text-muted-foreground">Get more funnels, landing pages, live sessions, and premium tools.</p>
+          <p className="text-xs text-muted-foreground">Get more flows, landing pages, live sessions, and premium tools.</p>
         </div>
       </div>
       <Link to="/billing">
