@@ -1,30 +1,36 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { useLandingContent } from "@/hooks/useLandingContent";
 import { AnimatedImage, type AnimationKind } from "./AnimatedImage";
-import youtubeFlow from "@/assets/landing/section-8-youtube-flow.jpg";
-import nevoraiFlow from "@/assets/landing/section-8-nevorai-flow.jpg";
+import combinedRoutes from "@/assets/landing/section-8-combined-routes.png";
 
-type Mode = "youtube" | "nevorai";
-
-const FALLBACKS: Record<Mode, { id: string; image: string; defaultAnim: AnimationKind; accent: string }> = {
-  youtube: { id: "compare.youtube", image: youtubeFlow, defaultAnim: "fade-up",   accent: "text-destructive" },
-  nevorai: { id: "compare.nevorai", image: nevoraiFlow, defaultAnim: "ken-burns", accent: "text-brand-emerald" },
-};
+const SLOT_ID = "compare.combined";
 
 export const ResultsComparison = () => {
-  const [mode, setMode] = useState<Mode>("nevorai");
   const { data } = useLandingContent();
-  const map = data?.map ?? {};
+  const row = data?.map?.[SLOT_ID];
 
-  const fb = FALLBACKS[mode];
-  const row = map[fb.id];
-  const header = row?.title || (mode === "youtube" ? "YouTube Route → 6–8% conversion" : "Nevorai Route → 16–18% conversion");
-  const sub = row?.subtitle || "";
-  const bullets = row?.bullets?.length ? row.bullets : [];
-  const image = row?.image_url || fb.image;
-  const animation = (row?.animation as AnimationKind) || fb.defaultAnim;
+  const heading = row?.title || "Same prospect. 2x the conversion.";
+  const sub =
+    row?.subtitle ||
+    "Here's the side-by-side: same link, two journeys, two completely different outcomes.";
+  const image = row?.image_url || combinedRoutes;
+  const animation = (row?.animation as AnimationKind) || "fade-up";
+
+  // Split bullets into two columns: first half = YouTube weaknesses, rest = Nevorai wins.
+  // Admins can edit them in /admin/settings#landing.
+  const bullets = row?.bullets ?? [
+    "Viewers see 5+ suggested videos",
+    "Comments distract them",
+    "Autoplay confuses them",
+    "Most leave before your pitch ends",
+    "Can't skip, so they watch",
+    "Zero distractions, stays focused",
+    "Automatic lead capture",
+    "Follow-up scheduled instantly",
+  ];
+  const half = Math.ceil(bullets.length / 2);
+  const ytBullets = bullets.slice(0, half);
+  const nvBullets = bullets.slice(half);
 
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden bg-hero-bg">
@@ -37,72 +43,68 @@ export const ResultsComparison = () => {
           transition={{ duration: 0.5 }}
         >
           <h2 className="font-heading font-extrabold text-white text-3xl md:text-5xl leading-[1.1] mb-4">
-            Same prospect.{" "}
-            <span className="text-gradient-brand">2x the conversion.</span>
+            {heading.includes("2x") ? (
+              <>
+                Same prospect.{" "}
+                <span className="text-gradient-brand">2x the conversion.</span>
+              </>
+            ) : (
+              heading
+            )}
           </h2>
-          <p className="text-hero-muted text-base md:text-lg">
-            Here's what changes when you use Nevorai instead of YouTube:
-          </p>
+          <p className="text-hero-muted text-base md:text-lg">{sub}</p>
         </motion.div>
 
-        <div className="sticky top-20 z-20 flex justify-center mb-8">
-          <div role="tablist" className="inline-flex p-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-            {(["youtube", "nevorai"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                role="tab"
-                aria-selected={mode === m}
-                onClick={() => setMode(m)}
-                className={cn(
-                  "px-5 sm:px-7 py-2.5 rounded-full text-sm font-semibold transition-all",
-                  mode === m
-                    ? m === "nevorai"
-                      ? "bg-gradient-brand text-white shadow-glow-brand"
-                      : "bg-destructive/90 text-white"
-                    : "text-white/70 hover:text-white",
-                )}
-              >
-                {m === "youtube" ? "📊 YouTube Route" : "✅ Nevorai Route"}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="max-w-5xl mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={mode}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35 }}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 md:p-10 backdrop-blur-md"
-            >
-              <h3 className={cn("font-heading font-bold text-xl md:text-2xl mb-2", fb.accent)}>
-                {header}
-              </h3>
-              {sub && <p className="text-hero-muted text-sm md:text-base mb-6">{sub}</p>}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.5 }}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-8 backdrop-blur-md"
+          >
+            <AnimatedImage
+              src={image}
+              alt="YouTube Route vs Nevorai Route — side-by-side conversion flow"
+              animation={animation}
+              className="!aspect-[3/2]"
+            />
 
-              <div className="mb-8">
-                <AnimatedImage
-                  src={image}
-                  alt={`${mode} conversion flow`}
-                  animation={animation}
-                />
-              </div>
-
-              {bullets.length > 0 && (
-                <ul className="grid sm:grid-cols-2 gap-3">
-                  {bullets.map((b) => (
-                    <li key={b} className="flex items-start gap-2 text-sm md:text-base text-white/85">
-                      <span className={cn("mt-1 h-1.5 w-1.5 rounded-full shrink-0", mode === "nevorai" ? "bg-brand-emerald" : "bg-destructive")} />
+            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-8">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-destructive mb-3">
+                  ❌ YouTube Route — 6–8%
+                </p>
+                <ul className="space-y-2">
+                  {ytBullets.map((b) => (
+                    <li
+                      key={b}
+                      className="flex items-start gap-2 text-sm md:text-base text-white/85"
+                    >
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 bg-destructive" />
                       {b}
                     </li>
                   ))}
                 </ul>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-emerald mb-3">
+                  ✅ Nevorai Route — 16–18%
+                </p>
+                <ul className="space-y-2">
+                  {nvBullets.map((b) => (
+                    <li
+                      key={b}
+                      className="flex items-start gap-2 text-sm md:text-base text-white/85"
+                    >
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 bg-brand-emerald" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
