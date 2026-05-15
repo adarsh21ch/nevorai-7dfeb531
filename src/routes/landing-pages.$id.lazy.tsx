@@ -1,6 +1,5 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import LandingPageDetail from "@/pages/LandingPageDetail";
+import { Outlet, createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/landing-pages/$id")({
-  component: LandingPageDetail,
+  component: Outlet,
 });

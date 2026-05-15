@@ -69,6 +69,8 @@ import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
+import { Route as LandingPagesIdIndexRouteImport } from './routes/landing-pages.$id.index'
+import { Route as FunnelsIdIndexRouteImport } from './routes/funnels.$id.index'
 import { Route as FSlugIndexRouteImport } from './routes/f.$slug.index'
 import { Route as LandingPagesIdEditRouteImport } from './routes/landing-pages.$id.edit'
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
@@ -394,6 +396,20 @@ const AdminKycRoute = AdminKycRouteImport.update({
   path: '/admin/kyc',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.kyc.lazy').then((d) => d.Route))
+const LandingPagesIdIndexRoute = LandingPagesIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LandingPagesIdRoute,
+} as any).lazy(() =>
+  import('./routes/landing-pages.$id.index.lazy').then((d) => d.Route),
+)
+const FunnelsIdIndexRoute = FunnelsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FunnelsIdRoute,
+} as any).lazy(() =>
+  import('./routes/funnels.$id.index.lazy').then((d) => d.Route),
+)
 const FSlugIndexRoute = FSlugIndexRouteImport.update({
   id: '/f/$slug/',
   path: '/f/$slug/',
@@ -486,6 +502,8 @@ export interface FileRoutesByFullPath {
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
   '/f/$slug/': typeof FSlugIndexRoute
+  '/funnels/$id/': typeof FunnelsIdIndexRoute
+  '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -532,10 +550,8 @@ export interface FileRoutesByTo {
   '/compare/nevorai-vs-google-drive': typeof CompareNevoraiVsGoogleDriveRoute
   '/compare/nevorai-vs-vimeo': typeof CompareNevoraiVsVimeoRoute
   '/compare/nevorai-vs-youtube': typeof CompareNevoraiVsYoutubeRoute
-  '/funnels/$id': typeof FunnelsIdRouteWithChildren
   '/funnels/create': typeof FunnelsCreateRoute
   '/l/$slug': typeof LSlugRoute
-  '/landing-pages/$id': typeof LandingPagesIdRouteWithChildren
   '/landing-pages/create': typeof LandingPagesCreateRoute
   '/live/$id': typeof LiveIdRoute
   '/s/$slug': typeof SSlugRoute
@@ -552,6 +568,8 @@ export interface FileRoutesByTo {
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
   '/f/$slug': typeof FSlugIndexRoute
+  '/funnels/$id': typeof FunnelsIdIndexRoute
+  '/landing-pages/$id': typeof LandingPagesIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -619,6 +637,8 @@ export interface FileRoutesById {
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
   '/f/$slug/': typeof FSlugIndexRoute
+  '/funnels/$id/': typeof FunnelsIdIndexRoute
+  '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -687,6 +707,8 @@ export interface FileRouteTypes {
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
     | '/f/$slug/'
+    | '/funnels/$id/'
+    | '/landing-pages/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -733,10 +755,8 @@ export interface FileRouteTypes {
     | '/compare/nevorai-vs-google-drive'
     | '/compare/nevorai-vs-vimeo'
     | '/compare/nevorai-vs-youtube'
-    | '/funnels/$id'
     | '/funnels/create'
     | '/l/$slug'
-    | '/landing-pages/$id'
     | '/landing-pages/create'
     | '/live/$id'
     | '/s/$slug'
@@ -753,6 +773,8 @@ export interface FileRouteTypes {
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
     | '/f/$slug'
+    | '/funnels/$id'
+    | '/landing-pages/$id'
   id:
     | '__root__'
     | '/'
@@ -819,6 +841,8 @@ export interface FileRouteTypes {
     | '/funnels/$id/edit'
     | '/landing-pages/$id/edit'
     | '/f/$slug/'
+    | '/funnels/$id/'
+    | '/landing-pages/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1304,6 +1328,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKycRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/landing-pages/$id/': {
+      id: '/landing-pages/$id/'
+      path: '/'
+      fullPath: '/landing-pages/$id/'
+      preLoaderRoute: typeof LandingPagesIdIndexRouteImport
+      parentRoute: typeof LandingPagesIdRoute
+    }
+    '/funnels/$id/': {
+      id: '/funnels/$id/'
+      path: '/'
+      fullPath: '/funnels/$id/'
+      preLoaderRoute: typeof FunnelsIdIndexRouteImport
+      parentRoute: typeof FunnelsIdRoute
+    }
     '/f/$slug/': {
       id: '/f/$slug/'
       path: '/f/$slug'
@@ -1370,10 +1408,12 @@ const VideosRouteWithChildren =
 
 interface FunnelsIdRouteChildren {
   FunnelsIdEditRoute: typeof FunnelsIdEditRoute
+  FunnelsIdIndexRoute: typeof FunnelsIdIndexRoute
 }
 
 const FunnelsIdRouteChildren: FunnelsIdRouteChildren = {
   FunnelsIdEditRoute: FunnelsIdEditRoute,
+  FunnelsIdIndexRoute: FunnelsIdIndexRoute,
 }
 
 const FunnelsIdRouteWithChildren = FunnelsIdRoute._addFileChildren(
@@ -1382,10 +1422,12 @@ const FunnelsIdRouteWithChildren = FunnelsIdRoute._addFileChildren(
 
 interface LandingPagesIdRouteChildren {
   LandingPagesIdEditRoute: typeof LandingPagesIdEditRoute
+  LandingPagesIdIndexRoute: typeof LandingPagesIdIndexRoute
 }
 
 const LandingPagesIdRouteChildren: LandingPagesIdRouteChildren = {
   LandingPagesIdEditRoute: LandingPagesIdEditRoute,
+  LandingPagesIdIndexRoute: LandingPagesIdIndexRoute,
 }
 
 const LandingPagesIdRouteWithChildren = LandingPagesIdRoute._addFileChildren(
@@ -1455,3 +1497,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

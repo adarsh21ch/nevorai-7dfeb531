@@ -1,6 +1,5 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import FunnelDetail from "@/pages/FunnelDetail";
+import { Outlet, createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/funnels/$id")({
-  component: FunnelDetail,
+  component: Outlet,
 });
