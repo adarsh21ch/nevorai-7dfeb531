@@ -28,20 +28,33 @@ interface Props {
   skipStorageCheck?: boolean;
 }
 
-const ALLOWED_EXTENSIONS = [".mp4", ".mov", ".webm"];
-const ALLOWED_MIME_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
+// MP4 = best path. MOV/WEBM = supported but soft-warned. M4V/MKV/AVI =
+// best-effort: we accept and warn, instead of rejecting a file the user
+// just spent a minute picking.
+const PREFERRED_EXTENSIONS = [".mp4"];
+const SUPPORTED_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
+const LENIENT_EXTENSIONS = [".mkv", ".avi"];
+const SUPPORTED_MIME_TYPES = [
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+  "video/x-m4v",
+  "video/x-matroska",
+  "video/x-msvideo",
+];
 const MAX_SIZE_BYTES = 500 * 1024 * 1024;
 
 type AcceptResult = "ok" | "warn" | "reject";
 
 const checkVideoAcceptance = (file: File): AcceptResult => {
   const name = file.name.toLowerCase();
-  const isMp4 = name.endsWith(".mp4") || file.type === "video/mp4";
-  if (isMp4) return "ok";
-
-  const extOk = ALLOWED_EXTENSIONS.some((ext) => name.endsWith(ext));
-  const mimeOk = file.type ? ALLOWED_MIME_TYPES.includes(file.type) : true;
-  if (extOk && mimeOk) return "warn";
+  if (PREFERRED_EXTENSIONS.some((ext) => name.endsWith(ext)) || file.type === "video/mp4") {
+    return "ok";
+  }
+  if (SUPPORTED_EXTENSIONS.some((ext) => name.endsWith(ext))) return "warn";
+  if (LENIENT_EXTENSIONS.some((ext) => name.endsWith(ext))) return "warn";
+  if (file.type && file.type.startsWith("video/")) return "warn";
+  if (SUPPORTED_MIME_TYPES.includes(file.type)) return "warn";
   return "reject";
 };
 
@@ -55,9 +68,9 @@ const formatEta = (seconds: number): string => {
 };
 
 const FORMAT_WARNING_MSG =
-  "This format may not play correctly on all devices. For best results, upload a video downloaded from YouTube, or convert to MP4 using cloudconvert.com";
+  "We'll try to upload this format, but MP4 plays the smoothest on every device. If playback stutters, convert to MP4 at cloudconvert.com.";
 const FORMAT_REJECT_MSG =
-  "This format may not play correctly. For best results, upload a video downloaded from YouTube, or convert your video to MP4 using cloudconvert.com";
+  "That doesn't look like a video file. Please pick an MP4, MOV, WEBM, M4V, MKV, or AVI — or convert it first at cloudconvert.com.";
 
 export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = false }: Props) => {
   const { user } = useAuth();
