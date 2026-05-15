@@ -476,9 +476,8 @@ const FunnelEditor = () => {
   const totalSteps = visibleSteps.length;
   const lastStepIdx = totalSteps - 1;
 
-  useEffect(() => {
-    if (wizardStep > lastStepIdx && lastStepIdx >= 0) setWizardStep(lastStepIdx);
-  }, [lastStepIdx, wizardStep]);
+  // (lastStepIdx kept for future use; no clamping needed without wizardStep)
+  void lastStepIdx;
 
   type StepLock = { featureName: string; requiredPlan: "Basic" | "Pro"; priceLabel: string } | null;
   const basicPrice = `from ₹149/mo`;
