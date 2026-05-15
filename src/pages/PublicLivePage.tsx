@@ -912,9 +912,10 @@ const PublicLivePage = () => {
         })()}
 
         {/* Footer */}
-        <div className="text-center pt-4">
-          <p className="text-[10px] text-muted-foreground"><span className="text-primary font-semibold">Nevorai</span></p>
-        </div>
+      </div>
+      <footer style={{ textAlign: "center", padding: "24px 16px", color: "#9ca3af", fontSize: 13, borderTop: "1px solid hsl(var(--border))" }}>
+        © 2026 Nevorai · All Rights Reserved · India
+      </footer>
       </div>
     </div>
   );
