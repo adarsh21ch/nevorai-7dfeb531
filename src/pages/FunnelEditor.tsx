@@ -124,7 +124,7 @@ const FunnelEditor = () => {
   // Phase 6 gate: starting a brand-new funnel without any uploaded videos = upload first.
   useVideoGate(!isEdit);
 
-  const [wizardStep, setWizardStep] = useState(0);
+  // Wizard step navigation removed — editor is now a single scrollable page.
   const [modeChosen, setModeChosen] = useState(isEdit);
 
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
