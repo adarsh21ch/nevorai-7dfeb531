@@ -48,24 +48,84 @@ Deno.serve(async (req) => {
 
     // Server-side file size cap. Mirrors the client's 500 MB limit so a
     // tampered client cannot presign uploads larger than the platform allows.
-    // (Wave 2 / C3 will add per-plan quota checks here.)
     const ABSOLUTE_MAX_BYTES = 500 * 1024 * 1024;
-    if (typeof fileSize === "number" && fileSize > 0) {
-      if (fileSize > ABSOLUTE_MAX_BYTES) {
-        const sizeMb = Math.round(fileSize / (1024 * 1024));
-        return new Response(
-          JSON.stringify({
-            error: `That file is ${sizeMb} MB — uploads are capped at 500 MB. Compress it and try again.`,
-          }),
-          { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
+    if (typeof fileSize === "number" && fileSize > 0 && fileSize > ABSOLUTE_MAX_BYTES) {
+      const sizeMb = Math.round(fileSize / (1024 * 1024));
+      return new Response(
+        JSON.stringify({
+          error: `That file is ${sizeMb} MB — uploads are capped at 500 MB. Compress it and try again.`,
+        }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const serviceClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // C3 — Server-side per-plan storage quota enforcement.
+    // The client also gates this via useStorageUsage, but a tampered client
+    // could bypass it. Here we re-derive the user's plan tier and storage cap
+    // from authoritative tables and reject the presign if this upload would
+    // push them over their quota.
+    if (typeof fileSize === "number" && fileSize > 0) {
+      try {
+        // 1) Resolve active plan tier (default free).
+        const { data: sub } = await serviceClient
+          .from("user_subscriptions")
+          .select("tier, status, expires_at")
+          .eq("user_id", user.id)
+          .in("status", ["active", "payment_failed", "pending"])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const now = Date.now();
+        const expired = sub?.expires_at ? new Date(sub.expires_at).getTime() < now : false;
+        const rawTier = sub?.status === "active" && !expired ? (sub?.tier || "free") : "free";
+        const planName = rawTier === "trial" ? "pro" : rawTier;
+
+        // 2) Storage limit for this plan (fallback 1 GB for free).
+        const { data: planRow } = await serviceClient
+          .from("plan_config")
+          .select("max_storage_mb")
+          .eq("plan_name", planName)
+          .maybeSingle();
+        const limitMb = (planRow?.max_storage_mb && planRow.max_storage_mb > 0)
+          ? planRow.max_storage_mb
+          : 1024;
+        const limitBytes = limitMb * 1024 * 1024;
+
+        // 3) Sum existing usage.
+        const { data: usageRows } = await serviceClient
+          .from("video_assets")
+          .select("file_size_bytes")
+          .eq("owner_id", user.id);
+        const usedBytes = (usageRows || []).reduce(
+          (sum: number, r: { file_size_bytes: number | null }) => sum + (r.file_size_bytes || 0),
+          0,
+        );
+
+        if (usedBytes + fileSize > limitBytes) {
+          const usedMb = Math.round(usedBytes / (1024 * 1024));
+          return new Response(
+            JSON.stringify({
+              error: `Storage quota exceeded. You've used ${usedMb} MB of your ${limitMb} MB limit. Delete some videos or upgrade your plan.`,
+              code: "QUOTA_EXCEEDED",
+              usedBytes,
+              limitBytes,
+            }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+      } catch (quotaErr) {
+        // Fail-open on quota lookup errors so a transient DB hiccup doesn't
+        // block legitimate uploads. The client gate still ran, and we'll
+        // surface real errors via the upload itself.
+        console.error("Quota check failed (allowing upload):", quotaErr);
+      }
+    }
 
     const safeFilename = sanitizeFilename(filename);
 
