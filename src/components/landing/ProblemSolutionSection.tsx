@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { AnimatedImage, type AnimationKind } from "./AnimatedImage";
 
 export type Tone = "problem" | "solution-green" | "solution-blue";
 
@@ -12,8 +13,7 @@ interface Props {
   metric?: string;
   image: string;
   imageAlt: string;
-  imageWidth?: number;
-  imageHeight?: number;
+  animation?: AnimationKind;
 }
 
 const toneStyles: Record<Tone, { bg: string; eyebrow: string; metric: string; ring: string }> = {
