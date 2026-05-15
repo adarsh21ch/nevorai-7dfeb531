@@ -1,4 +1,5 @@
 import { useParams, Link } from "@/lib/router-compat";
+import { useNavigate } from "@tanstack/react-router";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 
 const FunnelDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"overview" | "leads" | "payments" | "progress" | "viewers">("overview");
@@ -106,7 +108,16 @@ const FunnelDetail = () => {
             </Button>
             <Link to={`/f/${funnel.slug}`} target="_blank"><Button variant="outline" size="sm"><ExternalLink size={14} /> Preview</Button></Link>
             <WhatsAppShareButton url={`${typeof window !== "undefined" ? window.location.origin : ""}/f/${funnel.slug}`} message={`Watch this short video: ${funnel.title}`} size="sm" />
-            <Link to={`/funnels/${id}/edit`}><Button variant="default" size="sm"><Edit size={14} /> Edit</Button></Link>
+            <button
+              type="button"
+              onClick={() => {
+                if (!id) return;
+                console.log("[EditButton] Navigating to edit page for funnel:", id);
+                navigate({ to: "/funnels/$id/edit", params: { id } });
+              }}
+            >
+              <Button variant="default" size="sm"><Edit size={14} /> Edit</Button>
+            </button>
           </div>
         </div>
 
