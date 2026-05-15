@@ -60,7 +60,9 @@ export const useStorageUsage = (): StorageUsage => {
         .select("max_storage_mb")
         .eq("plan_name", planName)
         .maybeSingle();
-      return data?.max_storage_mb ?? FREE_FALLBACK_MB;
+      // Use `||` (not `??`) so a stored 0 also falls back to the default —
+      // a misconfigured plan_config row must not zero out user quotas.
+      return data?.max_storage_mb || FREE_FALLBACK_MB;
     },
     staleTime: 10 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
