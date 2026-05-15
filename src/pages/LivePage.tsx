@@ -560,23 +560,12 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     ⚠ This session is currently <strong>live</strong>. Edits will only affect future scheduled slots.
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 mt-3 overflow-x-auto no-scrollbar">
-                  {[
-                    { id: "live-section-delivery", label: "1 Delivery" },
-                    { id: "live-section-details", label: "2 Details" },
-                    { id: "live-section-schedule", label: "3 Schedule" },
-                    { id: "live-section-replay", label: "4 Replay & Publish" },
-                  ].map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => document.getElementById(c.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                      className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-muted/60 text-muted-foreground hover:bg-primary/10 hover:text-foreground transition-colors"
-                    >
-                      {c.label}
-                    </button>
+                <div className="flex items-center gap-1.5 mt-3">
+                  {Array.from({ length: totalSteps }).map((_, i) => (
+                    <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i + 1 <= step ? "bg-primary" : "bg-muted"}`} />
                   ))}
                 </div>
+                <p className="text-[11px] text-muted-foreground mt-1.5">Step {step} of {totalSteps}</p>
               </div>
 
               {step === 1 && (
