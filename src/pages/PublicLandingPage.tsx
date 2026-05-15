@@ -178,6 +178,19 @@ const PublicLandingPage = () => {
     );
   }
 
+  useEffect(() => {
+    if (!page) return;
+    document.title = `${page.title || "Page"} | Nevorai`;
+    const setMeta = (name: string, content: string, prop = false) => {
+      const attr = prop ? "property" : "name";
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, name); document.head.appendChild(el); }
+      el.setAttribute("content", content);
+    };
+    setMeta("og:site_name", "Nevorai", true);
+    setMeta("og:title", page.title || "Nevorai", true);
+  }, [page]);
+
   const sections = (page.sections as any[]) || [];
   const bgClass = page.background_style === "light"
     ? "bg-background text-foreground"
