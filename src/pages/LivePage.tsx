@@ -600,11 +600,10 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     </div>
                   </div>
                 </div>
-              )}
               </EditorSectionBlock>
 
               <EditorSectionBlock id="live-section-details">
-              
+
                 <div className="space-y-4">
                   <div>
                     <Label className="text-sm font-medium">Session Title *</Label>
@@ -744,9 +743,10 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     </div>
                   )}
                 </div>
-              )}
+              </EditorSectionBlock>
 
-              {(
+              <EditorSectionBlock id="live-section-schedule">
+
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <h2 className="text-base font-heading font-semibold">When should this session play?</h2>
@@ -867,9 +867,10 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     </div>
                   )}
                 </div>
-              )}
+              </EditorSectionBlock>
 
-              {(
+              <EditorSectionBlock id="live-section-replay">
+
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <h2 className="text-base font-heading font-semibold">Can viewers rewatch a recording after it ends?</h2>
@@ -937,16 +938,13 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                       placeholder="Unlimited" className="mt-1" />
                   </div>
                 </div>
-              )}
-
-              <div className="flex items-center justify-end pt-2 border-t border-border">
-                <Button size="sm" disabled={!finalCanSubmit || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-                  {saveMutation.isPending ? "Saving..." : editingId ? "Save Changes" : "Schedule Session"}
-                </Button>
-              </div>
+              </EditorSectionBlock>
+              </EditorScrollLayout>
             </div>
           </div>
-        )}
+          );
+        })()}
+
 
         {authLoading || isLoading ? (
           <div className="glass-card p-12 text-center"><p className="text-sm text-muted-foreground">Loading sessions...</p></div>
