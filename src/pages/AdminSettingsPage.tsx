@@ -435,6 +435,8 @@ const AdminSettingsPage = () => {
           </div>
         </div>
 
+        <VerifiedBadgeToggle />
+
         <Button variant="hero" className="w-full min-h-[44px] text-sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
           <Save size={16} /> {saveMutation.isPending ? "Saving..." : "Save Settings"}
         </Button>
