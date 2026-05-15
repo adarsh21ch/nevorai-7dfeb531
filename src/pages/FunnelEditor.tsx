@@ -503,7 +503,7 @@ const FunnelEditor = () => {
     }
   };
 
-  const currentStepLock = modeChosen ? getStepLock(visibleSteps[wizardStep]?.label ?? "") : null;
+  // currentStepLock removed — locks now applied per-section in the scrollable layout.
 
   const renderByLabel = (label: string) => {
     switch (label) {
