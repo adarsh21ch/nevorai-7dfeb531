@@ -1,5 +1,4 @@
 import { Link } from "@/lib/router-compat";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 import { FlowParticles } from "./FlowParticles";
@@ -7,15 +6,13 @@ import { AnimatedLogo3D } from "./AnimatedLogo3D";
 import { CountUp } from "./CountUp";
 
 export const HeroSection = () => {
-  const ctaLabel = "Start Free →";
-
   return (
     <section className="hero-section relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden bg-hero-bg">
       <FlowParticles />
       <div className="absolute inset-0 bg-gradient-hero-glow pointer-events-none" />
 
       <div className="container-app relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -29,119 +26,99 @@ export const HeroSection = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold tracking-wide uppercase text-brand-emerald"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 bg-brand-emerald/10 border border-brand-emerald/30">
-              <span className="w-2 h-2 rounded-full animate-pulse bg-brand-emerald" />
-              <span className="text-xs font-medium text-brand-emerald">
-                The YouTube alternative for business
-              </span>
-            </div>
+            <span className="flex h-2 w-2 rounded-full bg-brand-emerald animate-pulse" />
+            The YouTube Alternative for Business
           </motion.div>
 
           <div className="relative mb-6">
             <div className="hero-glow" aria-hidden="true" />
             <h1 className="font-heading font-extrabold tracking-tight text-white relative leading-[1.1]">
               <motion.span
-                className="block text-white text-4xl sm:text-5xl md:text-6xl"
+                className="block text-4xl sm:text-5xl md:text-7xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Share business videos
+                Stop losing leads to
               </motion.span>
               <motion.span
-                className="block text-gradient-brand text-5xl sm:text-6xl md:text-7xl mt-1"
+                className="block text-gradient-brand text-4xl sm:text-5xl md:text-7xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
               >
-                that get watched.
-              </motion.span>
-              <motion.span
-                className="block text-2xl sm:text-3xl md:text-4xl mt-2 text-white/80"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-              >
-                Built for coaches, agents & entrepreneurs in India.
+                YouTube distractions.
               </motion.span>
             </h1>
           </div>
 
           <motion.p
-            className="text-base md:text-lg max-w-xl mx-auto mb-10 text-hero-muted"
+            className="text-base md:text-xl max-w-2xl mb-10 text-hero-muted leading-relaxed"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
           >
-            Stop losing leads on YouTube and WhatsApp. With Nevorai, your prospects
-            <span className="text-brand-emerald"> can't skip</span> your sales video — and you see exactly
-            <span className="text-white"> who watched, when</span>, and for how long. In real-time.
+            Host unskippable sales videos that actually convert. Built for{" "}
+            <span className="text-white font-medium">Indian coaches & entrepreneurs</span>{" "}
+            who value their prospects' attention.
           </motion.p>
 
           <motion.div
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
           >
-            <Link to="/auth?tab=signup">
-              <Button
-                size="xl"
-                className="rounded-full text-white font-semibold border-0 bg-gradient-brand shadow-glow-brand-lg px-10 py-4 min-h-11"
-              >
-                {ctaLabel}
-              </Button>
+            <Link to="/auth?tab=signup" className="relative group">
+              <div className="absolute -inset-1 rounded-full bg-gradient-brand blur opacity-40 group-hover:opacity-70 transition duration-300" />
+              <button className="relative px-10 py-4 rounded-full bg-gradient-brand text-white font-bold shadow-glow-brand-lg hover:scale-[1.02] transition-transform">
+                Start Free →
+              </button>
             </Link>
-            <a href="#how-it-works">
-              <Button
-                size="xl"
-                variant="outline"
-                className="rounded-full bg-transparent text-white border-white/20 px-8 py-4 min-h-11"
-              >
-                <Play size={18} />
-                See How It Works
-              </Button>
+            <a
+              href="#how-it-works"
+              className="px-8 py-4 rounded-full font-semibold text-white/80 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2"
+            >
+              <Play size={18} />
+              See How It Works
             </a>
           </motion.div>
-          <motion.p
-            className="text-xs -mt-10 mb-14 text-hero-muted"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            🇮🇳 Made in India · Free forever for 1 GB · Pay only when you grow
-          </motion.p>
 
           <motion.div
-            className="flex flex-wrap items-center justify-center gap-6 sm:gap-10"
+            className="grid grid-cols-3 gap-6 md:gap-16 py-6 px-6 md:px-10 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
           >
             {[
               { v: 2400, s: "+", l: "Active users" },
-              { v: 2, s: "x", l: "Average conversion lift" },
-              { v: 4.2, s: "x", l: "More leads captured", decimals: 1 },
-            ].map((stat, i, arr) => (
-              <div key={stat.l} className="flex items-center gap-6 sm:gap-10">
-                <div className="text-center">
-                  <CountUp
-                    to={stat.v}
-                    suffix={stat.s}
-                    decimals={stat.decimals || 0}
-                    className="block text-gradient-brand font-extrabold text-3xl"
-                  />
-                  <div className="text-[11px] uppercase mt-1 text-hero-muted tracking-[1px]">
-                    {stat.l}
-                  </div>
+              { v: 2, s: "x", l: "Conversions" },
+              { v: 4.2, s: "x", l: "More leads", decimals: 1 },
+            ].map((stat) => (
+              <div key={stat.l} className="text-center">
+                <CountUp
+                  to={stat.v}
+                  suffix={stat.s}
+                  decimals={stat.decimals || 0}
+                  className="block text-white font-extrabold text-2xl md:text-3xl"
+                />
+                <div className="text-[10px] md:text-xs uppercase mt-1 text-hero-muted tracking-widest font-bold">
+                  {stat.l}
                 </div>
-                {i < arr.length - 1 && (
-                  <div className="hidden sm:block h-10 w-px bg-white/10" />
-                )}
               </div>
             ))}
           </motion.div>
+
+          <motion.p
+            className="mt-8 text-xs text-hero-muted"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+          >
+            🇮🇳 Made in India · Free forever for 1 GB
+          </motion.p>
         </div>
       </div>
     </section>
