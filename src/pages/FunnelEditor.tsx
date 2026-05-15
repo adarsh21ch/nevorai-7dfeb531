@@ -332,9 +332,12 @@ const FunnelEditor = () => {
     mutationFn: async () => {
       const payload = buildPayload();
       if (!payload) throw new Error("Not authenticated");
-      // Ensure slug is clean + globally unique (no random hash suffix).
+      // Preserve existing slug on edit; generate suffixed slug for new funnels.
+      // The random suffix protects against URL enumeration regardless of whether
+      // the user typed a custom slug or we derived one from the title.
+      const existingFunnelSlug = isEdit ? (funnel.slug || "") : "";
       const desired = (funnel.slug && funnel.slug.trim()) ? generateSlug(funnel.slug) : generateSlug(funnel.title);
-      payload.slug = await ensureUniqueSlug(desired, isEdit ? id : undefined);
+      payload.slug = await ensureUniqueSlug(desired, existingFunnelSlug);
       if (funnel.access_code_plain && funnel.access_code_plain.trim()) {
         const enc = new TextEncoder();
         const buf = await crypto.subtle.digest("SHA-256", enc.encode(funnel.access_code_plain.trim().toUpperCase()));
