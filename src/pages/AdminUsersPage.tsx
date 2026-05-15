@@ -1,14 +1,52 @@
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useMemo, useState } from "react";
-import { Search, AlertTriangle, Pencil } from "lucide-react";
+import { Search, AlertTriangle, Pencil, Check } from "lucide-react";
 import { planDisplay } from "@/config/planDisplay";
 import { UserEditDrawer } from "@/components/admin/UserEditDrawer";
 import { AdminOverrideMenu, AdminUserOverrideBadge } from "@/components/admin/AdminOverrideMenu";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { toast } from "sonner";
+
+// TODO: optionally restrict verified eligibility to Pro subscribers only.
+const VerifiedToggle = ({ userId, value }: { userId: string; value: boolean }) => {
+  const qc = useQueryClient();
+  const [local, setLocal] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const onChange = async (next: boolean) => {
+    setLocal(next);
+    setSaving(true);
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({ is_verified: next })
+      .eq("id", userId);
+    setSaving(false);
+    if (error) {
+      setLocal(!next);
+      toast.error("Failed to update verified status");
+      return;
+    }
+    toast.success(next ? "Marked verified" : "Verified removed");
+    qc.invalidateQueries({ queryKey: ["admin-all-profiles"] });
+  };
+  return (
+    <div className="flex items-center gap-2 justify-center">
+      <Switch checked={local} disabled={saving} onCheckedChange={onChange} />
+      {local && (
+        <span
+          title="Verified"
+          className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground"
+        >
+          <Check size={10} strokeWidth={3} />
+        </span>
+      )}
+    </div>
+  );
+};
 
 const monthStartIST = (() => {
   const d = new Date();
@@ -112,6 +150,7 @@ const AdminUsersPage = () => {
                   <th className="p-4 text-xs text-muted-foreground font-medium">User</th>
                   <th className="p-4 text-xs text-muted-foreground font-medium">Plan</th>
                   <th className="p-4 text-xs text-muted-foreground font-medium">KYC</th>
+                  <th className="p-4 text-xs text-muted-foreground font-medium text-center">Verified</th>
                   <th className="p-4 text-xs text-muted-foreground font-medium">Joined</th>
                   <th className="p-4 text-xs text-muted-foreground font-medium text-right">Views (this month)</th>
                   <th className="p-4 text-xs text-muted-foreground font-medium text-right">Actions</th>
@@ -121,11 +160,11 @@ const AdminUsersPage = () => {
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-border">
-                      <td className="p-4" colSpan={6}><div className="h-4 bg-muted rounded animate-pulse" /></td>
+                      <td className="p-4" colSpan={7}><div className="h-4 bg-muted rounded animate-pulse" /></td>
                     </tr>
                   ))
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No users found</td></tr>
+                  <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">No users found</td></tr>
                 ) : (
                   filtered.map((p: any) => {
                     const sub = subMap[p.id];
@@ -147,6 +186,9 @@ const AdminUsersPage = () => {
                           <span className={`px-2 py-0.5 rounded-full text-xs ${p.kyc_status === "verified" ? "bg-success/10 text-success" : p.kyc_status === "pending" ? "bg-warning/10 text-warning" : "bg-muted text-muted-foreground"}`}>
                             {p.kyc_status || "none"}
                           </span>
+                        </td>
+                        <td className="p-4">
+                          <VerifiedToggle userId={p.id} value={!!p.is_verified} />
                         </td>
                         <td className="p-4 text-xs text-muted-foreground">
                           {p.created_at ? new Date(p.created_at).toLocaleDateString("en-IN") : "—"}
@@ -197,6 +239,10 @@ const AdminUsersPage = () => {
                   <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
                     <span className="text-[10px] text-muted-foreground">Views</span>
                     <ViewsCell used={used} limit={p.is_unlimited ? -1 : limit} />
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <span className="text-[10px] text-muted-foreground">Verified</span>
+                    <VerifiedToggle userId={p.id} value={!!p.is_verified} />
                   </div>
                   <div className="flex items-center justify-between pt-1">
                     <p className="text-[10px] text-muted-foreground">

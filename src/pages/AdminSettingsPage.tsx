@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useState, useEffect, useCallback } from "react";
 import { Save, Star, Mail, CheckCircle2, XCircle, Loader2, AlertTriangle, Clock } from "lucide-react";
+import { VerifiedBadgeToggle } from "@/components/admin/VerifiedBadgeToggle";
 // TrialSettingsCard moved to AdminSubscriptionsPage (Plans tab)
 
 const AdminSettingsPage = () => {
@@ -433,6 +434,8 @@ const AdminSettingsPage = () => {
             </div>
           </div>
         </div>
+
+        <VerifiedBadgeToggle />
 
         <Button variant="hero" className="w-full min-h-[44px] text-sm" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
           <Save size={16} /> {saveMutation.isPending ? "Saving..." : "Save Settings"}

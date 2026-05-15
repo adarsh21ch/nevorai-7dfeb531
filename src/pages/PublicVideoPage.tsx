@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { VideoUploadModal } from "@/components/VideoUploadModal";
-import { BrandingWatermark } from "@/components/BrandingWatermark";
 import {
   formatViewCount,
   formatDuration,
@@ -31,6 +30,7 @@ const PublicVideoPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [videoError, setVideoError] = useState(false);
   const [reuploadOpen, setReuploadOpen] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
@@ -56,6 +56,53 @@ const PublicVideoPage = () => {
     refetchOnWindowFocus: false,
   });
 
+  // Creator profile (owner of the video)
+  const { data: creatorProfile } = useQuery({
+    queryKey: ["public-video-creator", video?.owner_id],
+    queryFn: async () => {
+      if (!video?.owner_id) return null;
+      const { data, error } = await (supabase as any)
+        .from("profiles")
+        .select("id, full_name, avatar_url, bio, is_verified")
+        .eq("id", video.owner_id)
+        .maybeSingle();
+      if (error) return null;
+      return data as
+        | {
+            id: string;
+            full_name: string | null;
+            avatar_url: string | null;
+            bio: string | null;
+            is_verified: boolean | null;
+          }
+        | null;
+    },
+    enabled: !!video?.owner_id,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  // Global verified-badge enabled flag (admin-controlled).
+  // If the row is missing or the column doesn't exist yet, default to true.
+  const { data: verifiedBadgeEnabled = true } = useQuery({
+    queryKey: ["app-setting", "verified_badge_enabled"],
+    queryFn: async () => {
+      try {
+        const { data } = await (supabase as any)
+          .from("app_settings")
+          .select("value")
+          .eq("key", "verified_badge_enabled")
+          .maybeSingle();
+        if (!data) return true;
+        return data.value === "true" || data.value === true;
+      } catch {
+        return true;
+      }
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
   // View ping — once per session.
   useEffect(() => {
     if (!id) return;
@@ -79,10 +126,6 @@ const PublicVideoPage = () => {
       }
     })();
   }, [id]);
-
-  // Meta tags are handled server-side by the route's head() (see src/routes/v.$id.tsx)
-  // so social crawlers (WhatsApp, Telegram, iMessage, Twitter) get them in the
-  // initial HTML response without running JavaScript.
 
   const handleCopyLink = () => {
     try {
@@ -137,11 +180,16 @@ const PublicVideoPage = () => {
   const isOwner = !!user && user.id === video.owner_id;
   const showDescToggle =
     !!video.description && video.description.length > 200;
+  const showVerifiedBadge =
+    verifiedBadgeEnabled && !!creatorProfile?.is_verified;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
+        {/* 2px brand accent line at top */}
+        <div className="h-0.5 w-full bg-primary" />
+
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <NFlowLogo size="sm" />
           <button
@@ -149,13 +197,13 @@ const PublicVideoPage = () => {
             className="p-2 rounded-full hover:bg-muted transition-colors"
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
         </div>
       </header>
 
       {/* Player */}
-      <div className="max-w-3xl mx-auto px-0 sm:px-4 mt-4">
+      <div className="max-w-3xl mx-auto w-full px-0 sm:px-4 mt-4">
         <div className="aspect-video bg-black sm:rounded-2xl overflow-hidden relative">
           {videoError ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-center px-4 gap-3 bg-card">
@@ -212,7 +260,7 @@ const PublicVideoPage = () => {
       </div>
 
       {/* Title + meta */}
-      <div className="max-w-3xl mx-auto px-4 py-4 space-y-3">
+      <div className="max-w-3xl mx-auto w-full px-4 py-4 space-y-3">
         <h1 className="text-xl sm:text-2xl font-heading font-bold leading-tight tracking-tight">
           {video.title || "Untitled video"}
         </h1>
@@ -238,30 +286,77 @@ const PublicVideoPage = () => {
           )}
         </div>
 
-        {/* Action chips */}
+        {/* Action chips — icon+text on desktop, icon-only on mobile */}
         <div className="flex flex-wrap gap-2 pt-1">
           {video.allow_copy_link !== false && (
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 px-4 h-11 rounded-full bg-muted hover:bg-muted/80 text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 h-9 rounded-full bg-muted hover:bg-muted/80 text-sm font-medium transition-colors"
+              title="Copy link"
+              aria-label="Copy link"
             >
               {copied ? <Check size={14} /> : <Link2 size={14} />}
-              {copied ? "Copied" : "Copy link"}
+              <span className="hidden sm:inline">
+                {copied ? "Copied" : "Copy link"}
+              </span>
             </button>
           )}
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 px-4 h-11 rounded-full bg-muted hover:bg-muted/80 text-sm font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 h-9 rounded-full bg-muted hover:bg-muted/80 text-sm font-medium transition-colors"
+            title="Share"
+            aria-label="Share"
           >
             <Share2 size={14} />
-            Share
+            <span className="hidden sm:inline">Share</span>
           </button>
         </div>
       </div>
 
+      {/* Creator card */}
+      {creatorProfile && (
+        <div className="max-w-3xl mx-auto w-full px-4 mb-2">
+          <div className="flex items-center gap-3 py-3 border-t border-border">
+            <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0 overflow-hidden">
+              {creatorProfile.avatar_url ? (
+                <img
+                  src={creatorProfile.avatar_url}
+                  alt={creatorProfile.full_name || "Creator"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
+                  {(creatorProfile.full_name || "?")[0].toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-sm truncate">
+                  {creatorProfile.full_name || "Creator"}
+                </span>
+                {showVerifiedBadge && (
+                  <span
+                    title="Verified creator"
+                    className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground flex-shrink-0"
+                  >
+                    <Check size={10} strokeWidth={3} />
+                  </span>
+                )}
+              </div>
+              {creatorProfile.bio && (
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {creatorProfile.bio}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Description */}
       {video.description && (
-        <div className="max-w-3xl mx-auto px-4 mb-10">
+        <div className="max-w-3xl mx-auto w-full px-4 mb-10">
           <div className="rounded-xl bg-muted/50 p-4">
             <div
               className={`text-sm leading-relaxed whitespace-pre-wrap ${
@@ -294,7 +389,17 @@ const PublicVideoPage = () => {
         />
       )}
 
-      <BrandingWatermark ownerId={video?.owner_id} />
+      {/* Bottom brand line */}
+      <footer className="mt-auto max-w-3xl mx-auto w-full px-4 py-6 text-center">
+        <a
+          href="https://nevorai.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          © 2026 Nevorai · All Rights Reserved
+        </a>
+      </footer>
     </div>
   );
 };
