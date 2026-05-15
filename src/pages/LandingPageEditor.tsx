@@ -872,20 +872,20 @@ const LandingPageEditor = () => {
     </div>
   );
 
-  const renderWizardContent = () => {
-    switch (wizardStep) {
-      case 0: return renderPageInfo();
-      case 1: return renderDesign();
-      case 2: return renderFormStep();
-      case 3: return renderEmailStep();
-      case 4: return renderSpeakerStep();
-      case 5: return renderVideoStep();
-      case 6: return renderTestimonialsStep();
-      case 7: return renderSeoStep();
-      case 8: return renderPublishStep();
-      default: return null;
-    }
-  };
+  const STEP_RENDERERS = [
+    renderPageInfo, renderDesign, renderFormStep, renderEmailStep,
+    renderSpeakerStep, renderVideoStep, renderTestimonialsStep, renderSeoStep, renderPublishStep,
+  ];
+
+  const labelToId = (label: string) => `section-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
+
+  const editorSections: EditorSection[] = WIZARD_STEPS.map((s, i) => ({
+    id: labelToId(s.label),
+    label: s.label,
+    num: s.num,
+    icon: s.icon,
+    complete: i === lastStepIdx ? form.status === "published" : false,
+  }));
 
   if (isMobile && previewMode) {
     return (
