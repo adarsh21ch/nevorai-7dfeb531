@@ -304,13 +304,8 @@ const LandingPageEditor = () => {
           <Label>Landing Page Title *</Label>
           <Input value={form.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Join Our Exclusive Business Session" className="mt-1.5 bg-muted border-border" />
         </div>
-        <div>
-          <Label>Slug *</Label>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">/l/</span>
-            <Input value={form.slug} onChange={(e) => { setSlugEdited(true); updateField("slug", e.target.value); }} className="bg-muted border-border" />
-          </div>
-        </div>
+        {/* Slug is auto-generated server-side with a random suffix to prevent
+            URL enumeration. The shareable URL is shown in the Publish step. */}
         <div>
           <Label>Short Description</Label>
           <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} rows={3} placeholder="A brief description shown below the title" className="mt-1.5 bg-muted border-border" />
