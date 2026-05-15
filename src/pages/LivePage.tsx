@@ -923,21 +923,10 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-2">
-                <Button variant="outline" size="sm" disabled={step === 1} onClick={() => setStep((s) => Math.max(1, s - 1))}>
-                  <ChevronLeft size={14} /> Back
+              <div className="flex items-center justify-end pt-2 border-t border-border">
+                <Button size="sm" disabled={!finalCanSubmit || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+                  {saveMutation.isPending ? "Saving..." : editingId ? "Save Changes" : "Schedule Session"}
                 </Button>
-                {step < totalSteps ? (
-                  <Button size="sm"
-                    disabled={(step === 1 && !canNextFromStep1) || (step === 2 && !canNextFromStep2) || (step === 3 && !canNextFromStep3)}
-                    onClick={() => setStep((s) => s + 1)}>
-                    Next <ChevronRight size={14} />
-                  </Button>
-                ) : (
-                  <Button size="sm" disabled={!finalCanSubmit || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-                    {saveMutation.isPending ? "Saving..." : editingId ? "Save Changes" : "Schedule Session"}
-                  </Button>
-                )}
               </div>
             </div>
           </div>
