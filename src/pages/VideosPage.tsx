@@ -20,7 +20,7 @@ import { VideoShareModal } from "@/components/VideoShareModal";
 import { VideoRenameModal } from "@/components/VideoRenameModal";
 import { StorageUsageInline } from "@/components/StorageUsageCard";
 import { VideoThumbnail } from "@/components/VideoThumbnail";
-import { useNavigate } from "@/lib/router-compat";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -264,7 +264,7 @@ const VideosPage = () => {
               const isFailed = v.status === "failed";
               const dur = formatDuration(v.duration_seconds);
               const dateLabel = v.created_at ? new Date(v.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : null;
-              const goEdit = () => navigate(`/videos/${v.id}`);
+              const goEdit = () => navigate({ to: "/videos/$id", params: { id: v.id } });
               return (
                 <div
                   key={v.id}
@@ -329,7 +329,7 @@ const VideosPage = () => {
                       <DropdownMenuItem disabled={!isReady} onSelect={() => useInFunnel(v.id)}>
                         <Rocket size={13} className="mr-2" /> Use in Funnel
                       </DropdownMenuItem>
-                      <DropdownMenuItem onSelect={() => navigate(`/leads`)}>
+                      <DropdownMenuItem onSelect={() => navigate({ to: "/leads" })}>
                         <Users size={13} className="mr-2" /> View Insights
                       </DropdownMenuItem>
                       {v._source === "own" && isFailed && (
@@ -381,7 +381,7 @@ const VideosPage = () => {
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem onSelect={() => setRenameVideo({ id: v.id, title: v.title })}><Pencil size={13} className="mr-2" /> Edit Title</DropdownMenuItem>
                           {v._source === "own" && v.status === "ready" && (
-                            <DropdownMenuItem onSelect={() => navigate(`/videos/${v.id}`)}><Settings size={13} className="mr-2" /> Edit Details</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => navigate({ to: "/videos/$id", params: { id: v.id } })}><Settings size={13} className="mr-2" /> Edit Details</DropdownMenuItem>
                           )}
                           <DropdownMenuItem disabled={v.status !== "ready"} onSelect={() => setShareVideo({ id: v.id, title: v.title })}><Share2 size={13} className="mr-2" /> Share</DropdownMenuItem>
                           <DropdownMenuItem disabled={v.status !== "ready"} onSelect={() => useInFunnel(v.id)}><Rocket size={13} className="mr-2" /> Use in Funnel</DropdownMenuItem>
