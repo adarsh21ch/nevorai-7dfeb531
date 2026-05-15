@@ -436,7 +436,7 @@ const PublicLivePage = () => {
     const isEnded = stateData.state === "ended";
     return (
       <div className="min-h-[100dvh] bg-background">
-        <div className="border-b border-border px-4 py-3"><Logo size="sm" /></div>
+        <div className="border-b border-border px-4 py-3"><a href="https://nevorai.com" target="_blank" rel="noopener noreferrer"><Logo size="sm" /></a></div>
         <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
           <div className="text-center space-y-3">
             {isLive && <LiveDot />}
