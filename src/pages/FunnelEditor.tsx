@@ -224,7 +224,7 @@ const FunnelEditor = () => {
         speaker_name: (f as any).speaker_name || "",
         speaker_photo_url: (f as any).speaker_photo_url || "",
         speaker_about: (f as any).speaker_about || "",
-        video_topics_enabled: (f as any).video_topics_enabled ?? false,
+        video_topics_enabled: (f as any).video_topics_enabled ?? true,
         video_topics: Array.isArray((f as any).video_topics) ? (f as any).video_topics : [],
         speaker_scope: (f as any).speaker_scope || "global",
         video_topics_scope: (f as any).video_topics_scope || "global",
