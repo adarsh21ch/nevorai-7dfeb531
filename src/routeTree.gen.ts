@@ -246,7 +246,7 @@ const FunnelsIndexRoute = FunnelsIndexRouteImport.update({
   id: '/funnels/',
   path: '/funnels/',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/funnels.index.lazy').then((d) => d.Route))
+} as any)
 const FlowsIndexRoute = FlowsIndexRouteImport.update({
   id: '/flows/',
   path: '/flows/',
@@ -321,14 +321,12 @@ const FunnelsCreateRoute = FunnelsCreateRouteImport.update({
   id: '/funnels/create',
   path: '/funnels/create',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/funnels.create.lazy').then((d) => d.Route),
-)
+} as any)
 const FunnelsIdRoute = FunnelsIdRouteImport.update({
   id: '/funnels/$id',
   path: '/funnels/$id',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/funnels.$id.lazy').then((d) => d.Route))
+} as any)
 const FlowsCreateRoute = FlowsCreateRouteImport.update({
   id: '/flows/create',
   path: '/flows/create',
@@ -429,9 +427,7 @@ const FunnelsIdEditRoute = FunnelsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
   getParentRoute: () => FunnelsIdRoute,
-} as any).lazy(() =>
-  import('./routes/funnels.$id.edit.lazy').then((d) => d.Route),
-)
+} as any)
 const FlowsIdEditRoute = FlowsIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -1550,3 +1546,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
