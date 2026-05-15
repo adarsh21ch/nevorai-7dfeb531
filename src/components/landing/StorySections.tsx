@@ -1,104 +1,57 @@
 import { ProblemSolutionSection } from "./ProblemSolutionSection";
+import { useLandingContent } from "@/hooks/useLandingContent";
 import skipImg from "@/assets/landing/section-2-skip-button.jpg";
 import noSkipImg from "@/assets/landing/section-3-no-skip.jpg";
 import unknownImg from "@/assets/landing/section-4-unknown-viewers.jpg";
 import realtimeImg from "@/assets/landing/section-5-realtime-activity.jpg";
 import clutterImg from "@/assets/landing/section-6-youtube-clutter.jpg";
 import cleanImg from "@/assets/landing/section-7-clean-player.jpg";
+import type { AnimationKind } from "./AnimatedImage";
 
-export const StorySections = () => (
-  <>
-    <ProblemSolutionSection
-      tone="problem"
-      imagePosition="right"
-      eyebrow="The Problem"
-      headline={
-        <>
-          Your prospects skip your video <br />
-          <span className="text-destructive">in the first 30 seconds.</span>
-        </>
-      }
-      subheading="On YouTube, Loom, Vimeo — the skip button is always there."
-      image={skipImg}
-      imageAlt="Cursor about to click a red SKIP button on a video player"
-    />
+const FALLBACKS: Record<
+  string,
+  { image: string; tone: "problem" | "solution-green" | "solution-blue"; position: "left" | "right"; eyebrow: string; defaultAnim: AnimationKind; alt: string }
+> = {
+  "story.skip":     { image: skipImg,     tone: "problem",         position: "right", eyebrow: "The Problem", defaultAnim: "fade-up",   alt: "Cursor about to click skip on a video player" },
+  "story.no-skip":  { image: noSkipImg,   tone: "solution-green",  position: "left",  eyebrow: "The Fix",     defaultAnim: "ken-burns", alt: "Clean player with full progress bar" },
+  "story.unknown":  { image: unknownImg,  tone: "problem",         position: "right", eyebrow: "The Problem", defaultAnim: "fade-up",   alt: "Creator staring at a blank dashboard" },
+  "story.realtime": { image: realtimeImg, tone: "solution-blue",   position: "left",  eyebrow: "The Fix",     defaultAnim: "parallax",  alt: "Real-time viewer activity dashboard" },
+  "story.clutter":  { image: clutterImg,  tone: "problem",         position: "right", eyebrow: "The Problem", defaultAnim: "fade-up",   alt: "Cluttered YouTube interface" },
+  "story.clean":    { image: cleanImg,    tone: "solution-green",  position: "left",  eyebrow: "The Fix",     defaultAnim: "zoom-hover",alt: "Minimal full-screen video player" },
+};
 
-    <ProblemSolutionSection
-      tone="solution-green"
-      imagePosition="left"
-      eyebrow="The Fix"
-      headline={
-        <>
-          With Nevorai, they watch <br />
-          <span className="text-brand-emerald">the entire thing.</span>
-        </>
-      }
-      subheading="No skip button. No distractions. Just your message, start to finish."
-      metric="91% of viewers watch to the end"
-      image={noSkipImg}
-      imageAlt="Clean video player with full green progress bar and checkmark"
-    />
+const ORDER = ["story.skip", "story.no-skip", "story.unknown", "story.realtime", "story.clutter", "story.clean"] as const;
 
-    <ProblemSolutionSection
-      tone="problem"
-      imagePosition="right"
-      eyebrow="The Problem"
-      headline={
-        <>
-          You share a video. Then you wonder:{" "}
-          <span className="text-destructive">did they watch?</span>
-        </>
-      }
-      subheading="YouTube doesn't tell you who opened your link, or how far they got."
-      image={unknownImg}
-      imageAlt="Confused creator staring at a blank analytics dashboard"
-    />
+export const StorySections = () => {
+  const { data } = useLandingContent();
+  const map = data?.map ?? {};
 
-    <ProblemSolutionSection
-      tone="solution-blue"
-      imagePosition="left"
-      eyebrow="The Fix"
-      headline={
-        <>
-          See who watched in real-time. <br />
-          <span className="text-brand-blue">Even mid-meeting.</span>
-        </>
-      }
-      subheading="Know exactly who opened your link, from where, on which device — and how much they watched."
-      metric="Live activity updates as they watch"
-      image={realtimeImg}
-      imageAlt="Real-time viewer activity dashboard with live indicator"
-    />
+  return (
+    <>
+      {ORDER.map((id) => {
+        const fb = FALLBACKS[id];
+        const row = map[id];
+        const title = row?.title ?? "";
+        const subtitle = row?.subtitle ?? "";
+        const metric = row?.bullets?.[0];
+        const image = row?.image_url || fb.image;
+        const animation = (row?.animation as AnimationKind) || fb.defaultAnim;
 
-    <ProblemSolutionSection
-      tone="problem"
-      imagePosition="right"
-      eyebrow="The Problem"
-      headline={
-        <>
-          While they're watching your pitch,{" "}
-          <span className="text-destructive">YouTube recommends cat videos.</span>
-        </>
-      }
-      subheading="Suggested videos, comments, autoplay — prospects leave mid-message."
-      image={clutterImg}
-      imageAlt="Cluttered YouTube interface with many recommended videos"
-    />
-
-    <ProblemSolutionSection
-      tone="solution-green"
-      imagePosition="left"
-      eyebrow="The Fix"
-      headline={
-        <>
-          Your video. Nothing else. <br />
-          <span className="text-brand-emerald">No escape routes.</span>
-        </>
-      }
-      subheading="Clean player. No suggestions. No comments. Just your message, full-screen ready."
-      metric="Full attention. Zero leakage."
-      image={cleanImg}
-      imageAlt="Minimal full-screen video player with no distractions"
-    />
-  </>
-);
+        return (
+          <ProblemSolutionSection
+            key={id}
+            tone={fb.tone}
+            imagePosition={fb.position}
+            eyebrow={fb.eyebrow}
+            headline={title}
+            subheading={subtitle}
+            metric={metric}
+            image={image}
+            imageAlt={fb.alt}
+            animation={animation}
+          />
+        );
+      })}
+    </>
+  );
+};
