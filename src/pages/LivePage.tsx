@@ -560,15 +560,10 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     ⚠ This session is currently <strong>live</strong>. Edits will only affect future scheduled slots.
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 mt-3">
-                  {Array.from({ length: totalSteps }).map((_, i) => (
-                    <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i + 1 <= step ? "bg-primary" : "bg-muted"}`} />
-                  ))}
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">Step {step} of {totalSteps}</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">Fill out all sections, then schedule.</p>
               </div>
 
-              {step === 1 && (
+              {(
                 <div className="space-y-3">
                   <div>
                     <h3 className="font-semibold mb-1">How will this session be delivered?</h3>
@@ -593,7 +588,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 </div>
               )}
 
-              {step === 2 && (
+              {(
                 <div className="space-y-4">
                   <div>
                     <Label className="text-sm font-medium">Session Title *</Label>
@@ -735,7 +730,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 </div>
               )}
 
-              {step === 3 && (
+              {(
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <h2 className="text-base font-heading font-semibold">When should this session play?</h2>
@@ -858,7 +853,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 </div>
               )}
 
-              {step === 4 && (
+              {(
                 <div className="space-y-4">
                   <div className="space-y-1">
                     <h2 className="text-base font-heading font-semibold">Can viewers rewatch a recording after it ends?</h2>
@@ -928,21 +923,10 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-2">
-                <Button variant="outline" size="sm" disabled={step === 1} onClick={() => setStep((s) => Math.max(1, s - 1))}>
-                  <ChevronLeft size={14} /> Back
+              <div className="flex items-center justify-end pt-2 border-t border-border">
+                <Button size="sm" disabled={!finalCanSubmit || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
+                  {saveMutation.isPending ? "Saving..." : editingId ? "Save Changes" : "Schedule Session"}
                 </Button>
-                {step < totalSteps ? (
-                  <Button size="sm"
-                    disabled={(step === 1 && !canNextFromStep1) || (step === 2 && !canNextFromStep2) || (step === 3 && !canNextFromStep3)}
-                    onClick={() => setStep((s) => s + 1)}>
-                    Next <ChevronRight size={14} />
-                  </Button>
-                ) : (
-                  <Button size="sm" disabled={!finalCanSubmit || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-                    {saveMutation.isPending ? "Saving..." : editingId ? "Save Changes" : "Schedule Session"}
-                  </Button>
-                )}
               </div>
             </div>
           </div>
