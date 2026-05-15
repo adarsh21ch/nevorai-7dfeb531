@@ -109,17 +109,6 @@ const FunnelDetail = () => {
             </Button>
             <Link to={`/f/${funnel.slug}`} target="_blank"><Button variant="outline" size="sm"><ExternalLink size={14} /> Preview</Button></Link>
             <WhatsAppShareButton url={`${typeof window !== "undefined" ? window.location.origin : ""}/f/${funnel.slug}`} message={`Watch this short video: ${funnel.title}`} size="sm" />
-            <button
-              type="button"
-              className={buttonVariants({ variant: "default", size: "sm" })}
-              onClick={() => {
-                if (!id) return;
-                console.log("[EditButton] Navigating to edit page for funnel:", id);
-                navigate({ to: "/funnels/$id/edit", params: { id } });
-              }}
-            >
-              <Edit size={14} /> Edit
-            </button>
           </div>
         </div>
 
