@@ -33,7 +33,7 @@ export const HeroSection = () => {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 bg-brand-emerald/10 border border-brand-emerald/30">
               <span className="w-2 h-2 rounded-full animate-pulse bg-brand-emerald" />
               <span className="text-xs font-medium text-brand-emerald">
-                2,400+ network marketers converting more prospects
+                The YouTube alternative for business
               </span>
             </div>
           </motion.div>
@@ -47,7 +47,7 @@ export const HeroSection = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                Same Effort.
+                Share business videos
               </motion.span>
               <motion.span
                 className="block text-gradient-brand text-5xl sm:text-6xl md:text-7xl mt-1"
@@ -55,7 +55,7 @@ export const HeroSection = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
               >
-                Twice the Conversions.
+                that get watched.
               </motion.span>
               <motion.span
                 className="block text-2xl sm:text-3xl md:text-4xl mt-2 text-white/80"
@@ -63,7 +63,7 @@ export const HeroSection = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.8 }}
               >
-                Zero Extra Work.
+                Built for coaches, agents & entrepreneurs in India.
               </motion.span>
             </h1>
           </div>
@@ -74,9 +74,9 @@ export const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.0 }}
           >
-            Most people share a YouTube link and <span className="text-white">hope</span> for the best.
-            Nevorai <span className="text-brand-emerald">controls</span> what your prospect sees,
-            keeps them focused, captures their details, and follows up — <span className="text-white">automatically</span>.
+            Stop losing leads on YouTube and WhatsApp. With Nevorai, your prospects
+            <span className="text-brand-emerald"> can't skip</span> your sales video — and you see exactly
+            <span className="text-white"> who watched, when</span>, and for how long. In real-time.
           </motion.p>
 
           <motion.div
@@ -110,7 +110,7 @@ export const HeroSection = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            Start free · No credit card · Upgrade when you grow
+            🇮🇳 Made in India · Free forever for 1 GB · Pay only when you grow
           </motion.p>
 
           <motion.div
