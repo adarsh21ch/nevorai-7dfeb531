@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "@/lib/router-compat";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import {
   Check,
   Sun,
   Moon,
+  Maximize,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,6 +36,19 @@ const PublicVideoPage = () => {
   const [reuploadOpen, setReuploadOpen] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const playerWrapRef = useRef<HTMLDivElement | null>(null);
+
+  const requestWrapperFullscreen = () => {
+    const w: any = playerWrapRef.current;
+    const doc: any = document;
+    const isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
+    if (isFs) {
+      (doc.exitFullscreen || doc.webkitExitFullscreen)?.call(doc);
+      return;
+    }
+    if (w?.requestFullscreen) w.requestFullscreen().catch(() => {});
+    else if (w?.webkitRequestFullscreen) w.webkitRequestFullscreen();
+  };
 
   const { data: video, isLoading, error, refetch } = useQuery({
     queryKey: ["public-video", id],
@@ -204,7 +218,7 @@ const PublicVideoPage = () => {
 
       {/* Player */}
       <div className="max-w-3xl mx-auto w-full px-0 sm:px-4 mt-4">
-        <div className="aspect-video bg-black sm:rounded-2xl overflow-hidden relative">
+        <div ref={playerWrapRef} className="aspect-video bg-black sm:rounded-2xl overflow-hidden relative">
           {videoError ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-center px-4 gap-3 bg-card">
               <AlertTriangle size={36} className="text-destructive" />
@@ -223,9 +237,9 @@ const PublicVideoPage = () => {
               src={video.public_url}
               controls
               controlsList={
-                `${video.allow_seek === false ? "nodownload noplaybackrate " : ""}${
+                `nofullscreen ${video.allow_seek === false ? "nodownload noplaybackrate " : ""}${
                   video.allow_playback_speed === false ? "noplaybackrate" : ""
-                }`.trim() || undefined
+                }`.trim()
               }
               autoPlay
               muted
@@ -274,6 +288,16 @@ const PublicVideoPage = () => {
             >
               nevorai.com
             </div>
+          )}
+          {!videoError && video.public_url && (
+            <button
+              type="button"
+              onClick={requestWrapperFullscreen}
+              aria-label="Toggle fullscreen"
+              className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-black/40 hover:bg-black/60 text-white/90 backdrop-blur-sm transition-colors"
+            >
+              <Maximize size={16} />
+            </button>
           )}
         </div>
       </div>

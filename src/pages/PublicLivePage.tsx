@@ -861,13 +861,13 @@ const PublicLivePage = () => {
           const replayAllowSpeed = stateData.video_allow_playback_speed !== false;
           return (
           <div className="space-y-3">
-            <div className="rounded-xl overflow-hidden bg-black aspect-video shadow-2xl relative">
+            <div data-fs-wrap className="rounded-xl overflow-hidden bg-black aspect-video shadow-2xl relative">
               <video
                 ref={videoRef}
                 src={stateData.video_url}
                 className="w-full h-full"
                 controls
-                controlsList={`${!replayAllowSeek ? "noplaybackrate " : ""}${!replayAllowSpeed ? "noplaybackrate" : ""}`.trim() || undefined}
+                controlsList={`nofullscreen ${!replayAllowSeek ? "noplaybackrate " : ""}${!replayAllowSpeed ? "noplaybackrate" : ""}`.trim()}
                 playsInline
                 onLoadedMetadata={(e) => {
                   const v = e.currentTarget;
@@ -882,6 +882,21 @@ const PublicLivePage = () => {
               <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-emerald-500/90 text-white text-[11px] font-bold shadow">
                 REPLAY
               </div>
+              <button
+                type="button"
+                aria-label="Toggle fullscreen"
+                onClick={(e) => {
+                  const w = (e.currentTarget.closest("[data-fs-wrap]") as any);
+                  const doc: any = document;
+                  if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+                    (doc.exitFullscreen || doc.webkitExitFullscreen)?.call(doc);
+                  } else if (w?.requestFullscreen) w.requestFullscreen().catch(() => {});
+                  else if (w?.webkitRequestFullscreen) w.webkitRequestFullscreen();
+                }}
+                className="absolute top-3 right-3 z-10 p-1.5 rounded-md bg-black/40 hover:bg-black/60 text-white/90 backdrop-blur-sm transition-colors"
+              >
+                <Maximize2 size={16} />
+              </button>
               <div style={{ position: "absolute", bottom: 56, right: 12, color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 500, letterSpacing: "0.3px", pointerEvents: "none", userSelect: "none", textShadow: "0 1px 3px rgba(0,0,0,0.5)", zIndex: 10 }}>nevorai.com</div>
             </div>
             {allSlots.length > 0 && (

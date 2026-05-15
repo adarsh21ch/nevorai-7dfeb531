@@ -323,15 +323,15 @@ const CustomVideoPlayer = ({
       return;
     }
 
-    const v: any = videoEl;
-    if (v.webkitEnterFullscreen) {
-      try { v.webkitEnterFullscreen(); return; } catch {}
-    }
+    // Prefer wrapper fullscreen so the watermark overlay stays visible.
     const w: any = wrapperEl;
-    if (w?.requestFullscreen) w.requestFullscreen().catch(() => {});
-    else if (w?.webkitRequestFullscreen) w.webkitRequestFullscreen();
-    else if (w?.mozRequestFullScreen) w.mozRequestFullScreen();
-    else if (w?.msRequestFullscreen) w.msRequestFullscreen();
+    if (w?.requestFullscreen) { w.requestFullscreen().catch(() => {}); return; }
+    if (w?.webkitRequestFullscreen) { w.webkitRequestFullscreen(); return; }
+    if (w?.mozRequestFullScreen) { w.mozRequestFullScreen(); return; }
+    if (w?.msRequestFullscreen) { w.msRequestFullscreen(); return; }
+    // iOS Safari fallback (only the <video> can go fullscreen).
+    const v: any = videoEl;
+    if (v.webkitEnterFullscreen) { try { v.webkitEnterFullscreen(); } catch {} }
   };
 
   useEffect(() => {
