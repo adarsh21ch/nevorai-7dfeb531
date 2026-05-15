@@ -202,7 +202,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const confirm = useConfirm();
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [step, setStep] = useState(1);
+  
   const [form, setForm] = useState<FormState>(emptyForm());
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"upgrade" | "limit">("upgrade");
@@ -381,7 +381,6 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       queryClient.invalidateQueries({ queryKey: ["live-sessions"] });
       setCreating(false);
       setEditingId(null);
-      setStep(1);
       setForm(emptyForm());
     },
     onError: (e: any) => toast.error(e?.message || "Failed to save session"),
@@ -445,7 +444,6 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     };
     setForm(initial);
     setEditingId(s.id);
-    setStep(1);
     setCreating(true);
   };
 
