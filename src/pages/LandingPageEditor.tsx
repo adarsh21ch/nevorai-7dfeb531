@@ -238,6 +238,10 @@ const LandingPageEditor = () => {
         const { error } = await supabase.from("landing_pages").update(payload).eq("id", id!);
         if (error) throw error;
       } else {
+        // Append a 4-char random base62 suffix so URLs cannot be enumerated.
+        // Existing landing pages keep their slug — we only suffix on first insert.
+        const baseSlug = generateSlug(payload.slug || payload.title || "page") || "page";
+        payload.slug = await generateUniqueSuffixedSlug(baseSlug, "landing_pages");
         const { error } = await supabase.from("landing_pages").insert(payload);
         if (error) throw error;
       }
