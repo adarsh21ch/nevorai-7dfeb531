@@ -78,7 +78,7 @@ export function GettingStartedChecklist() {
       description: "Turn the video into a lead-capturing page.",
       icon: Layers,
       cta: "Create funnel",
-      href: "/funnels/create",
+      href: "/flows/create",
       done: totals.hasFunnel,
     },
     {
@@ -87,7 +87,7 @@ export function GettingStartedChecklist() {
       description: "Send your link to 10 contacts to get your first views.",
       icon: Share2,
       cta: "Open funnels",
-      href: "/funnels",
+      href: "/flows",
       done: totals.hasView,
     },
     {

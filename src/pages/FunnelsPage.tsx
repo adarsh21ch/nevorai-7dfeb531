@@ -50,7 +50,7 @@ const FunnelsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const handleCreate = () => {
     if (isFree) { setModalType("upgrade"); setModalOpen(true); return; }
     if (!canCreateFunnel) { setModalType("limit"); setModalOpen(true); return; }
-    navigate("/funnels/create");
+    navigate("/flows/create");
   };
 
   const filtered = funnels.filter((f: any) => {

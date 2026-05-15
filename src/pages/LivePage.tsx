@@ -617,7 +617,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                       {funnels.length === 0 && (
                         <p className="text-xs text-muted-foreground mt-2">
                           You need a published funnel with a video first.{" "}
-                          <button onClick={() => navigate("/funnels")} className="text-primary underline">Create one</button>.
+                          <button onClick={() => navigate("/flows")} className="text-primary underline">Create one</button>.
                         </p>
                       )}
                       <div className="mt-3 pt-3 border-t border-border">

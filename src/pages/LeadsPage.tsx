@@ -217,7 +217,7 @@ const LeadsPage = () => {
     }
     if (!list.length) {
       const meta =
-        activeSource === "funnels" ? { title: "No funnels yet", body: "Create a funnel to start collecting contacts.", to: "/funnels/create" } :
+        activeSource === "funnels" ? { title: "No funnels yet", body: "Create a funnel to start collecting contacts.", to: "/flows/create" } :
         activeSource === "pages" ? { title: "No landing pages yet", body: "Create a landing page to share your video.", to: "/landing-pages/create" } :
         { title: "No live sessions yet", body: "Go live to capture viewers in real time.", to: "/live" };
       const Icon = sourceTabs.find((t) => t.id === activeSource)!.icon;

@@ -6,7 +6,7 @@ export const DashboardContentRow = () => {
   const { config, counts } = usePlanLimits();
 
   const items = [
-    { icon: Layers, label: "Funnels", used: counts.funnels, limit: config.max_funnels, href: "/funnels" },
+    { icon: Layers, label: "Funnels", used: counts.funnels, limit: config.max_funnels, href: "/flows" },
     { icon: Video, label: "Videos", used: counts.videos, limit: config.max_videos ?? 0, href: "/videos" },
     { icon: FileText, label: "Landing Pages", used: counts.landing_pages, limit: config.max_landing_pages, href: "/landing-pages" },
     { icon: Radio, label: "Live Sessions", used: counts.live_sessions, limit: config.max_live_sessions, href: "/live" },

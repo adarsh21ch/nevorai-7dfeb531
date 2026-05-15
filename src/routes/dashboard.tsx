@@ -146,7 +146,7 @@ function DashboardPage() {
                 <p className="mt-1 text-sm text-muted-foreground">Here's what's happening on Nevorai today.</p>
               </div>
               <div className="flex gap-2">
-                <Link to="/funnels/create"><Button variant="hero" size="sm"><Plus size={14} /> Create Funnel</Button></Link>
+                <Link to="/flows/create"><Button variant="hero" size="sm"><Plus size={14} /> Create Funnel</Button></Link>
                 <Link to="/videos"><Button variant="outline" size="sm"><Eye size={14} /> Add Video</Button></Link>
               </div>
             </div>
@@ -221,13 +221,13 @@ function DashboardPage() {
             </div>
             <h3 className="mb-2 text-lg font-heading font-semibold">No funnels yet</h3>
             <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video funnel and start capturing leads on autopilot.</p>
-            <Link to="/funnels/create"><Button variant="hero" size="lg">Create Your First Funnel</Button></Link>
+            <Link to="/flows/create"><Button variant="hero" size="lg">Create Your First Funnel</Button></Link>
           </div>
         ) : (
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-heading font-semibold">Recent Funnels</h2>
-              <Link to="/funnels" className="flex items-center gap-1 text-xs text-primary hover:underline">View all <ArrowRight size={12} /></Link>
+              <Link to="/flows" className="flex items-center gap-1 text-xs text-primary hover:underline">View all <ArrowRight size={12} /></Link>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {(funnels as any[]).slice(0, 3).map((f) => (

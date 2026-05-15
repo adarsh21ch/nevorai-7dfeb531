@@ -50,7 +50,7 @@ export const MobileCreateAction = () => {
               icon={Layers}
               title="Create Funnel"
               desc={needsUpload ? "Upload a video first to start a funnel." : "Pick a video and turn it into a funnel."}
-              href={needsUpload ? "/onboarding-upload" : "/funnels/create"}
+              href={needsUpload ? "/onboarding-upload" : "/flows/create"}
               onClick={() => setOpen(false)}
             />
             <CreateRow

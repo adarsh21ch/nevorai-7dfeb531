@@ -138,7 +138,7 @@ const Dashboard = () => {
             </p>
           </div>
               <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto">
-                <Link to="/funnels/create" className="w-full sm:w-auto">
+                <Link to="/flows/create" className="w-full sm:w-auto">
                   <Button variant="hero" size="sm" className="h-11 w-full font-semibold sm:w-auto">
                     <Plus size={16} className="mr-1.5" /> Create Funnel
                   </Button>
@@ -186,13 +186,13 @@ const Dashboard = () => {
             </div>
             <h3 className="mb-2 text-lg font-heading font-semibold">No funnels yet</h3>
             <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video funnel and start capturing leads on autopilot.</p>
-            <Link to="/funnels/create"><Button variant="hero" size="lg">Create Your First Funnel</Button></Link>
+            <Link to="/flows/create"><Button variant="hero" size="lg">Create Your First Funnel</Button></Link>
           </div>
         ) : (
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-heading font-semibold">Recent Funnels</h2>
-              <Link to="/funnels" className="flex items-center gap-1 text-xs text-primary hover:underline">View all <ArrowRight size={12} /></Link>
+              <Link to="/flows" className="flex items-center gap-1 text-xs text-primary hover:underline">View all <ArrowRight size={12} /></Link>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {funnels.slice(0, 3).map((f) => (

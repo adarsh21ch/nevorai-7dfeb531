@@ -23,7 +23,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Video, label: "My Videos", path: "/videos" },
   { icon: BarChart2, label: "Insights", path: "/leads" },
-  { icon: Layers, label: "My Funnels", path: "/funnels" },
+  { icon: Layers, label: "My Funnels", path: "/flows" },
   { icon: FileText, label: "Landing Pages", path: "/landing-pages" },
   { icon: Radio, label: "Live", path: "/live" },
   { icon: Crown, label: "Upgrade to Pro", path: "/billing" },
