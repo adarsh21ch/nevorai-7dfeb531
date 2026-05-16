@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const {
       landing_page_id, name, phone, email, age, city, state,
-      occupation, custom_1_value, custom_2_value, honeypot, user_agent,
+      occupation, custom_1_value, custom_2_value, honeypot, user_agent, attribution,
     } = body
 
     // Honeypot check — fake success
