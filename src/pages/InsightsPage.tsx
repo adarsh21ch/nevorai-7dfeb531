@@ -75,6 +75,9 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
   const [tab, setTab] = useState<Tab>(getInitialTab);
   const [period, setPeriod] = useState<Period>(getInitialPeriod);
+  const [sort, setSort] = useState<SortKey>("recent");
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState<"grid" | "list">("grid");
 
   // Sync tab → URL
   useEffect(() => {
