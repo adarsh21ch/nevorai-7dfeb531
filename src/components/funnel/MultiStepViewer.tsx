@@ -601,8 +601,8 @@ export const MultiStepViewer = ({
                       <VideoPlayer
                         src={activeStep.video_url}
                         poster={activeStep.video_thumbnail || undefined}
-                        allowSeek={activeStep.video_allow_seek !== undefined ? activeStep.video_allow_seek !== false : funnel.allow_seek !== false}
-                        allowSpeed={activeStep.video_allow_playback_speed !== undefined ? activeStep.video_allow_playback_speed !== false : funnel.allow_speed_change !== false}
+                        allowSeek={funnel.allow_seek !== false && activeStep.video_allow_seek !== false}
+                        allowSpeed={funnel.allow_speed_change !== false && activeStep.video_allow_playback_speed !== false}
                         autoplay={true}
                         initialTime={activeProgress?.last_position_seconds || 0}
                         onTimeUpdate={(ct: number, dur: number) => handleVideoTimeUpdate(activeStepIndex, ct, dur)}
