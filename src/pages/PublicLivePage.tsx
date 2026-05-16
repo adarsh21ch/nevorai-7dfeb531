@@ -145,6 +145,12 @@ const PublicLivePage = () => {
     return () => clearInterval(i);
   }, [stateData?.state, stateData?.session?.id, stateData?.current_slot_start]);
 
+  useEffect(() => {
+    const id = stateData?.session?.id;
+    if (!id) return;
+    return trackEntityView("live_session", id);
+  }, [stateData?.session?.id]);
+
   const fetchState = useCallback(async () => {
     if (!slug) return;
     try {
