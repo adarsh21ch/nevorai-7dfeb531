@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "@/lib/router-compat";
+import { startVideoView, heartbeatVideoView } from "@/lib/videoTracking.functions";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import NFlowLogo from "@/components/brand/NFlowLogo";
@@ -255,15 +256,56 @@ const PublicVideoPage = () => {
                 if (!el) return;
                 const allowSeek = video.allow_seek !== false;
                 const allowSpeed = video.allow_playback_speed !== false;
-                const maxRef = { v: 0, warned: false };
-                el.ontimeupdate = () => {
-                  if (el.currentTime > maxRef.v) maxRef.v = el.currentTime;
+                const state: any = (el as any).__trackState || ((el as any).__trackState = {
+                  max: 0, warned: false, eventId: null as string | null,
+                  sessionId: (crypto as any).randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+                  skipAttempts: 0, lastBeat: 0, started: false,
+                });
+
+                const startIfNeeded = async () => {
+                  if (state.started) return;
+                  state.started = true;
+                  try {
+                    const ua = navigator.userAgent || "";
+                    const device = /Mobi|Android|iPhone|iPad/i.test(ua) ? "mobile" : "desktop";
+                    const res = await startVideoView({ data: {
+                      videoId: video.id,
+                      sessionId: state.sessionId,
+                      durationSeconds: isFinite(el.duration) ? el.duration : (video.duration_seconds ?? null),
+                      deviceType: device,
+                      referrerSource: (document.referrer || "direct").slice(0, 200),
+                    }});
+                    state.eventId = res?.eventId ?? null;
+                  } catch (e) { /* swallow */ }
                 };
+
+                const beat = (completed = false) => {
+                  if (!state.eventId) return;
+                  const now = Date.now();
+                  if (!completed && now - state.lastBeat < 10000) return;
+                  state.lastBeat = now;
+                  heartbeatVideoView({ data: {
+                    eventId: state.eventId,
+                    watchPosition: el.currentTime || 0,
+                    maxPosition: state.max,
+                    completed,
+                    skipAttempts: state.skipAttempts,
+                  }}).catch(() => {});
+                };
+
+                el.onplay = () => { startIfNeeded(); };
+                el.ontimeupdate = () => {
+                  if (el.currentTime > state.max) state.max = el.currentTime;
+                  beat();
+                };
+                el.onpause = () => beat();
+                el.onended = () => beat(true);
                 el.onseeking = () => {
-                  if (!allowSeek && el.currentTime > maxRef.v + 0.5) {
-                    el.currentTime = maxRef.v;
-                    if (!maxRef.warned) {
-                      maxRef.warned = true;
+                  if (!allowSeek && el.currentTime > state.max + 0.5) {
+                    el.currentTime = state.max;
+                    state.skipAttempts += 1;
+                    if (!state.warned) {
+                      state.warned = true;
                       toast("This video must be watched in order", { duration: 2500 });
                     }
                   }
