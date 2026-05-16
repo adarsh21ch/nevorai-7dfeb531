@@ -25,6 +25,7 @@ import {
   scrollToFirstError,
 } from "@/lib/leadInputs";
 import { PrivacyMicrocopy } from "@/components/funnel/PrivacyMicrocopy";
+import { trackEntityView } from "@/lib/tracking";
 
 type ViewerState = "waiting" | "live" | "ended" | "replay";
 
