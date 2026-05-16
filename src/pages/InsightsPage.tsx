@@ -365,7 +365,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             <p className="text-xs text-muted-foreground mt-0.5">{pageSubtitle}</p>
           </div>
         </div>
-        <div className="mt-3 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="mt-3 flex items-center gap-1.5 overflow-x-auto ">
           <PeriodChip p="today" />
           <PeriodChip p="7d" />
           <PeriodChip p="30d" />
@@ -374,7 +374,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
-        <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
+        <div className="overflow-x-auto  -mx-4 px-4">
           <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
