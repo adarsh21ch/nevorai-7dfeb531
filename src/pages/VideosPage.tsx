@@ -311,28 +311,45 @@ const VideosPage = () => {
                     </div>
                   </div>
 
-                  {/* Inline Share (always visible — quick action) */}
+                  {/* Inline actions */}
                   {isReady && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex-shrink-0 p-1.5 rounded-lg hover:bg-muted transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                          aria-label="Share video"
-                          title="Share"
-                        >
-                          <Share2 size={15} className="text-muted-foreground" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-52" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onSelect={() => copyLink(v)}>
-                          <Copy size={13} className="mr-2" /> Copy Link
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => shareWhatsApp(v)}>
-                          <Share2 size={13} className="mr-2" /> Share on WhatsApp
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                      {/* Desktop: visible buttons */}
+                      <button
+                        onClick={() => copyLink(v)}
+                        className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md border border-border hover:bg-muted transition-colors"
+                        title="Copy share link"
+                      >
+                        <Copy size={13} /> Copy Link
+                      </button>
+                      {v._source === "own" && (
+                        <>
+                          <button
+                            onClick={() => navigate({ to: "/insights" })}
+                            className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md border border-border hover:bg-muted transition-colors"
+                            title="View insights"
+                          >
+                            <Users size={13} /> Insights
+                          </button>
+                          <button
+                            onClick={() => useInFunnel(v.id)}
+                            className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md border border-border hover:bg-muted transition-colors"
+                            title="Use in a funnel"
+                          >
+                            <Rocket size={13} /> Use in Funnel
+                          </button>
+                        </>
+                      )}
+                      {/* Mobile: single Copy Link icon */}
+                      <button
+                        onClick={() => copyLink(v)}
+                        className="md:hidden p-1.5 rounded-lg hover:bg-muted transition-colors"
+                        aria-label="Copy share link"
+                        title="Copy link"
+                      >
+                        <Copy size={15} className="text-muted-foreground" />
+                      </button>
+                    </div>
                   )}
 
                   {/* Kebab menu */}

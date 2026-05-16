@@ -3,7 +3,7 @@ import { Logo } from "@/components/landing/Logo";
 import {
   LayoutDashboard, Layers, Video, IndianRupee, BarChart2,
   User, Bell, LogOut, ChevronLeft, ChevronRight, Shield,
-  Radio, FileText, Crown, HelpCircle, Home, Wrench, Activity,
+  Radio, FileText, Crown, HelpCircle, Home, Wrench,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ import { useRouter } from "@tanstack/react-router";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Video, label: "My Videos", path: "/videos" },
-  { icon: BarChart2, label: "Insights", path: "/leads" },
+  { icon: BarChart2, label: "Insights", path: "/insights" },
   { icon: Layers, label: "My Funnels", path: "/funnels" },
   { icon: FileText, label: "Landing Pages", path: "/landing-pages" },
   { icon: Radio, label: "Live", path: "/live" },
@@ -193,7 +193,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             {[
               { icon: Home, label: "Home", path: "/dashboard", match: "exact" as const },
               { icon: Video, label: "My Videos", path: "/videos", match: "prefix" as const },
-              { icon: Activity, label: "Activity", path: "/insights", match: "prefix" as const },
+              { icon: BarChart2, label: "Insights", path: "/insights", match: "prefix" as const },
               { icon: Wrench, label: "Tools", path: "/tools", match: "prefix" as const },
               { icon: User, label: "Profile", path: "/profile", match: "prefix" as const },
             ].map((item) => {
