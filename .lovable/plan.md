@@ -1,95 +1,102 @@
+# Activity / Insights v2
 
-# Insights Unification + My Videos Premium Upgrade
-
-This is a large spec. I'll ship it in **4 phases** so each is reviewable and works end‑to‑end before the next. Phase 1 unblocks everything else because real analytics depend on a new tracking table.
-
----
-
-## Phase 1 — Backend foundation (DB + tracking)
-
-**Goal:** capture real view data so KPIs/retention/live‑viewer aren't placeholders.
-
-New table `public.video_view_events`:
-```
-id uuid pk
-video_id uuid → video_assets(id) on delete cascade
-session_id text         -- anon localStorage id
-viewer_user_id uuid null -- if logged in
-ip_hash text            -- sha256(ip + daily_salt), never raw ip
-country text null       -- from cf-ipcountry header
-device_type text        -- mobile|desktop|tablet
-referrer_source text    -- whatsapp|instagram|direct|other
-watch_position_seconds int default 0
-max_position_seconds int default 0  -- furthest reached (retention)
-duration_seconds int null
-completed boolean default false
-skip_attempts int default 0
-started_at timestamptz default now()
-last_heartbeat_at timestamptz default now()
-```
-Indexes: `(video_id, started_at desc)`, `(video_id, last_heartbeat_at desc)`, `(session_id, video_id)`.
-RLS: owner of the video can SELECT; INSERT/UPDATE only via server fn (admin client, no public policy).
-
-New column `profiles.pref_default_allow_seek boolean default true`.
-
-New server functions in `src/lib/videoTracking.functions.ts`:
-- `trackVideoEvent({ slug, sessionId, event: 'play'|'heartbeat'|'end'|'skip_attempt', position, duration })` — upserts on `(session_id, video_id)`, increments counters; uses `supabaseAdmin`, validates slug exists.
-- `getVideoInsights({ videoId })` — returns KPI block, retention buckets (10 segments), daily views (30d), device split, source split, last 20 viewers.
-- `getLiveViewers({ videoId })` — count where `last_heartbeat_at > now() - 15s`.
-- `getRecentActivity({ days })` — feed for Insights Recent tab.
-
-Wire `trackVideoEvent` calls into `PublicVideoPage.tsx`: on play, every 5s heartbeat, on ended, on blocked seek.
+This is a large multi-part build. I'll ship it in **5 phases** so each ends in a working, reviewable state. Phase 1 is the small nav revert you asked for first; Phases 2–5 are the v2 upgrade.
 
 ---
 
-## Phase 2 — Insights unification
+## Phase 1 — Nav revert (small, ships first)
 
-- Rename mobile bottom nav `Activity → Insights`, icon `BarChart2`, route `/insights` (matches desktop). Edit `DashboardLayout.tsx`.
-- Rebuild `InsightsPage.tsx`:
-  - Sticky header with title + time filter chips (Today/Week/Month/All, default Week).
-  - KPI strip: Total Views, Unique Viewers, Avg Watch Time, Leads — each with trend chip vs previous period (↑/↓/→).
-  - Horizontal scrollable Tabs: **Recent / Videos / Funnels / Landing Pages / Live**.
-  - Recent: grouped feed (Today/Yesterday/This Week) of view bursts, new leads, live sessions, skip attempts.
-  - Videos: card grid with thumb, weekly views + trend, avg watch %, live dot if active.
-  - Funnels / Landing Pages / Live: same card pattern using existing tables.
-  - Skeleton loaders everywhere, empty states with simple SVG illustrations.
+- Mobile bottom nav: label back to **"Activity"**, icon `Zap` (lightning/pulse), route `/insights?tab=recent`.
+- Desktop sidebar: stays **"Insights"**, icon `BarChart2`, route `/insights?tab=overview`.
+- `InsightsPage` reads `?tab=` from URL, syncs to state, default = `overview` on desktop, `recent` on mobile (via `useIsMobile`).
+- Tab order: `Overview / Videos / Funnels / Landing Pages / Live` (Recent merges into Overview's activity feed; mobile just opens with the feed scrolled into view).
+
+Files: `DashboardLayout.tsx`, `InsightsPage.tsx`.
 
 ---
 
-## Phase 3 — Per‑video insights + My Videos overhaul
+## Phase 2 — Backend foundation (attribution + tracking)
 
-**Route** `src/routes/videos.$slug.insights.tsx` → page `VideoInsightsPage.tsx`:
-- Header: back link, title, Share / Edit Details / Use in Funnel.
-- KPI row (6 cards) incl. Live Now (pulse), Skip Attempts, Lead Conversions.
-- Retention curve (Recharts LineChart) — gated behind ≥10 viewers, else helper text.
-- Views over time (7/30 toggle), Traffic Sources (Pie), Devices (Donut), Recent Viewers table.
-- Empty state with Share button when 0 views.
+New columns on `funnel_leads` and `landing_page_registrations`:
+- `source_type text` (`'funnel' | 'landing_page' | 'video' | 'live_session'`)
+- `source_id uuid`
+- `referrer_url text`
+- `utm_source text`, `utm_medium text`, `utm_campaign text`
 
-**My Videos overhaul (`VideosPage.tsx`):**
-- Desktop ≥768px: visible inline buttons per row → `Copy Link`, `Insights`, `Use in Funnel`, then `⋮` (Edit Title, Edit Details, Delete). Hover elevation + live‑viewer pulse dot.
-- Mobile <768px: only `Copy Link` inline + `⋮` (Insights, Use in Funnel, Edit Details, Delete). Remove existing Share dropdown on mobile.
-- Number formatting via `formatCompact` already in `src/lib/format.ts`.
+New tables (mirroring `video_view_events`):
+- `funnel_view_events` — `funnel_id, session_id, referrer_source, device_type, country, started_at, last_heartbeat_at`
+- `landing_page_view_events` — same shape with `landing_page_id`
+- `live_session_view_events` — same shape with `live_session_id`
+
+RLS: owner SELECT only; writes via server fn with `supabaseAdmin`.
+
+Server fns in `src/lib/insights.functions.ts`:
+- `trackEntityView({ entityType, entityId, sessionId, referrer, device })`
+- `getOverviewInsights({ period })` → KPIs, trend %, sparklines, attribution split, recent activity feed, top videos/funnels.
+- `getVideoInsights({ slug })`, `getFunnelInsights({ slug })`, `getLandingPageInsights({ slug })`, `getLiveInsights({ slug })`
+- `getLiveViewers({ entityType, entityId })` for the red-dot pulse.
+
+Wire `trackEntityView` into `PublicFunnel`, `PublicLandingPage`, `PublicLivePage` (Video already tracks). Wire `source_type/source_id/referrer/utm` capture into the funnel/LP lead submit paths.
 
 ---
 
-## Phase 4 — Upload flow, Preview, polish
+## Phase 3 — Unified `/insights` page (Level 1)
 
-- **Smart Upload Content Protection step** in `VideoUploadModal.tsx`: after R2 confirm, show step with `Allow viewers to skip forward` (default = `profiles.pref_default_allow_seek`) and `Allow downloads`. On save, persist toggle + update profile pref. First‑time tooltip on the seek toggle.
-- **Preview modal** (desktop, on Edit Details and My Videos): iframe `/v/{slug}` in mobile‑frame (375px) with mobile/desktop switch, reflects live skip behavior.
-- **Polish:** TrendChip component, live pulse dot component, skeleton loaders across Insights + My Videos, sonner toast position (bottom‑right desktop, top‑center mobile) with success/error variants, empty‑state SVGs, keyboard shortcuts (`/`, `N`, `U`, `?`) on desktop, dark mode pass.
+Rebuild `InsightsPage.tsx`:
+- Sticky header: title (`Activity` mobile / `Insights` desktop), subtitle, time-filter chips `Today / 7d / 30d / All` persisted to `localStorage('insights:period')`.
+- Sticky horizontal scroll tabs with URL sync (`?tab=overview|videos|funnels|landing-pages|live`).
+- **Overview tab**: 4 hero KPI cards (Total Views, Unique Viewers, Total Leads, Live Viewers) with animated count-up, trend chip vs prev period, 7-day sparkline. Then Recent Activity feed (polls 30s, grouped Today/Yesterday/This Week). Then Top Videos + Top Funnels. Then Attribution stacked bar.
+- **Videos tab**: card grid (list/grid toggle desktop) with per-video mini stats + live pulse. Sort + status filter. Empty state with upload CTA.
+- **Funnels / Landing Pages / Live tabs**: same card pattern, entity-specific mini stats.
+
+Shared components: `KpiCard`, `TrendChip`, `Sparkline`, `LivePulseDot`, `ActivityFeedItem`, `EntityCard`, `EmptyStateIllustration`, skeleton variants. All numbers via `formatCompact`.
+
+---
+
+## Phase 4 — Drill-down pages (Level 2)
+
+New routes under `src/routes/insights.*`:
+- `insights.videos.$slug.tsx` → `VideoInsightsPage`
+- `insights.funnels.$slug.tsx` → `FunnelInsightsPage`
+- `insights.landing-pages.$slug.tsx` → `LandingPageInsightsPage`
+- `insights.live.$slug.tsx` → `LiveInsightsPage`
+
+Each shares a `<DrillHeader />` (back, thumbnail/icon, title, public link + actions) and a `<KpiStrip />` of 6 cards.
+
+Video-specific: retention curve (gated ≥10 viewers), views-over-time bar, traffic-source pie, device donut, recent viewers table, leads-from-this-video table.
+Funnel-specific: step-by-step drop-off diagram (biggest drop highlighted red), completion rate, time-to-conversion, leads table with full attribution, best video in funnel.
+Landing page: form submission rate, time on page, CTA CTR.
+Live: registered vs attended, peak concurrent, replay views.
+
+Cross-link from list cards → drill-down. Cross-link from existing My Videos / Funnels / LP rows → drill-down too.
+
+---
+
+## Phase 5 — Polish
+
+- Animated count-up (lightweight hook, no extra dep).
+- Skeleton loaders matched to each card/chart shape.
+- TrendChip + Sparkline applied everywhere KPIs render.
+- Live pulse dot (CSS keyframes) + 30s polling for live counts.
+- Empty states with simple SVG illustrations + primary CTA.
+- URL deep-linking for tabs + period.
+- Mobile: snap-scroll KPI row, swipeable tabs, tables → cards <768px.
+- Export CSV button (Pro-gated via `usePlan`), upgrade prompt for free users.
+- Notification bell on insights header (reuses existing `notifications` query).
 
 ---
 
 ## Out of scope / clarifications
 
-- Country comes from `cf-ipcountry` request header (Cloudflare Worker). No external GeoIP service.
-- IP hashing uses a daily‑rotating salt stored as env var — privacy preserving, still lets us dedupe within a day.
-- Keyboard shortcuts only registered on `md+` viewports.
+- No new edge functions — all writes go through `createServerFn` + `supabaseAdmin` (per project convention). The "unified track-event edge function" in the spec becomes `trackEntityView` server fn.
+- Geographic heatmap deferred — `country` is captured (`cf-ipcountry`) but the actual map UI is hidden until Phase 5+ if time allows; otherwise shown as a top-5 list.
+- Q&A engagement metric for Live is omitted (feature doesn't exist yet).
+- "Notification bell on insights" reuses the existing notifications system, not a new one.
 
 ---
 
 ## Confirm before I start
 
-1. **OK to create `video_view_events` table + `profiles.pref_default_allow_seek` column** via migration? (Required for everything real in Insights.)
-2. **Should I run all 4 phases in sequence in this single turn**, or stop after Phase 1 for you to verify tracking before I build the UI on top?
-3. **Live‑viewer polling interval — 5s OK?** (Heavier on requests; 10s is gentler.)
+1. **OK to add migration** for: `funnel_leads.{source_type,source_id,referrer_url,utm_*}`, `landing_page_registrations.{same}`, and the three new `*_view_events` tables (mirroring `video_view_events`)?
+2. **Ship Phase 1 (nav revert) immediately and stop for your verification**, then continue 2→5 in subsequent turns? Or run all 5 phases in one go?
+3. **Live polling interval — 30s OK** (spec says 30s for activity feed, but earlier you'd asked about 5s for live viewers). Confirm 30s for both, or 5s for live-viewer counts only?
