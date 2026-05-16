@@ -811,6 +811,11 @@ const PublicFunnel = () => {
   }, [funnel?.id, funnel?.owner_id]);
 
   useEffect(() => {
+    if (!funnel?.id) return;
+    return trackEntityView("funnel", funnel.id);
+  }, [funnel?.id]);
+
+  useEffect(() => {
     if (!funnel) return;
     const codeVerified = localStorage.getItem(`nf_code_verified_${funnel.id}`);
     if (codeVerified) setCodeGateUnlocked(true);
