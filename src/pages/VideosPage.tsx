@@ -408,7 +408,7 @@ const VideosPage = () => {
                       <span className="text-[11px] text-muted-foreground">{formatSize(v.file_size_bytes)}</span>
                     </div>
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                      <Button variant="ghost" size="sm" disabled={v.status !== "ready"} onClick={() => copyLink(v.id)}><Copy size={13} className="mr-1" /> Copy</Button>
+                      <Button variant="ghost" size="sm" disabled={v.status !== "ready"} onClick={() => copyLink(v)}><Copy size={13} className="mr-1" /> Copy</Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button className="p-1.5 rounded-lg hover:bg-muted"><MoreVertical size={15} className="text-muted-foreground" /></button>
@@ -416,8 +416,9 @@ const VideosPage = () => {
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuItem onSelect={() => setRenameVideo({ id: v.id, title: v.title })}><Pencil size={13} className="mr-2" /> Edit Title</DropdownMenuItem>
                           {v._source === "own" && v.status === "ready" && (
-                            <DropdownMenuItem onSelect={() => navigate({ to: "/videos/$id", params: { id: v.id } })}><Settings size={13} className="mr-2" /> Edit Details</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setDetailsVideo({ id: v.id })}><Settings size={13} className="mr-2" /> Edit Details</DropdownMenuItem>
                           )}
+                          <DropdownMenuItem disabled={v.status !== "ready"} onSelect={() => shareWhatsApp(v)}><Share2 size={13} className="mr-2" /> WhatsApp</DropdownMenuItem>
                           <DropdownMenuItem disabled={v.status !== "ready"} onSelect={() => setShareVideo({ id: v.id, title: v.title })}><Share2 size={13} className="mr-2" /> Share</DropdownMenuItem>
                           <DropdownMenuItem disabled={v.status !== "ready"} onSelect={() => useInFunnel(v.id)}><Rocket size={13} className="mr-2" /> Use in Funnel</DropdownMenuItem>
                           <DropdownMenuSeparator />
