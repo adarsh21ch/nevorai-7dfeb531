@@ -193,7 +193,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
             {[
               { icon: Home, label: "Home", path: "/dashboard", match: "exact" as const },
               { icon: Video, label: "My Videos", path: "/videos", match: "prefix" as const },
-              { icon: BarChart2, label: "Insights", path: "/insights", match: "prefix" as const },
+              { icon: Zap, label: "Activity", path: "/insights", match: "prefix" as const },
               { icon: Wrench, label: "Tools", path: "/tools", match: "prefix" as const },
               { icon: User, label: "Profile", path: "/profile", match: "prefix" as const },
             ].map((item) => {
