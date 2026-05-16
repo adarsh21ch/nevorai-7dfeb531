@@ -19,6 +19,7 @@ import { FunnelDailyLimitGate } from "@/components/funnel/FunnelDailyLimitGate";
 import { CreatorInactiveGate } from "@/components/funnel/CreatorInactiveGate";
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
 import { sanitizeText } from "@/lib/sanitize";
+import { trackEntityView, captureAttribution } from "@/lib/tracking";
 import {
   normalizePhone,
   trimSmart,
@@ -810,6 +811,11 @@ const PublicFunnel = () => {
   }, [funnel?.id, funnel?.owner_id]);
 
   useEffect(() => {
+    if (!funnel?.id) return;
+    return trackEntityView("funnel", funnel.id);
+  }, [funnel?.id]);
+
+  useEffect(() => {
     if (!funnel) return;
     const codeVerified = localStorage.getItem(`nf_code_verified_${funnel.id}`);
     if (codeVerified) setCodeGateUnlocked(true);
@@ -862,7 +868,7 @@ const PublicFunnel = () => {
     mutationFn: async () => {
       if (leadForm.website) return;
       const s = (v: string | null | undefined) => (v ? sanitizeText(v) : null);
-      await supabase.from("funnel_leads").insert({
+      await (supabase.from("funnel_leads") as any).insert({
         funnel_id: funnel!.id,
         name: s(leadForm.name), phone: leadForm.phone ? normalizePhone(leadForm.phone) : null,
         email: s(leadForm.email), city: s(leadForm.city),
@@ -870,6 +876,7 @@ const PublicFunnel = () => {
         watch_progress_at_submit: watchSeconds,
         device_type: /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop",
         user_agent: navigator.userAgent,
+        ...captureAttribution("funnel", funnel!.id, funnel!.slug),
       });
     },
     onSuccess: () => { setLeadSubmitted(true); toast.success("Thank you! Your details have been submitted."); },

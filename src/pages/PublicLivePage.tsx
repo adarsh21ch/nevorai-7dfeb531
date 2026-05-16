@@ -25,6 +25,7 @@ import {
   scrollToFirstError,
 } from "@/lib/leadInputs";
 import { PrivacyMicrocopy } from "@/components/funnel/PrivacyMicrocopy";
+import { trackEntityView } from "@/lib/tracking";
 
 type ViewerState = "waiting" | "live" | "ended" | "replay";
 
@@ -143,6 +144,12 @@ const PublicLivePage = () => {
     const i = setInterval(send, 15_000);
     return () => clearInterval(i);
   }, [stateData?.state, stateData?.session?.id, stateData?.current_slot_start]);
+
+  useEffect(() => {
+    const id = stateData?.session?.id;
+    if (!id) return;
+    return trackEntityView("live_session", id);
+  }, [stateData?.session?.id]);
 
   const fetchState = useCallback(async () => {
     if (!slug) return;

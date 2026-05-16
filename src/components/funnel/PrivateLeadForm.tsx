@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import logoImg from "@/assets/nevorai-flow-logo.png";
 import { sanitizeText } from "@/lib/sanitize";
+import { captureAttribution } from "@/lib/tracking";
 import {
   normalizePhone,
   trimSmart,
@@ -121,7 +122,7 @@ export const PrivateLeadForm = ({
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("funnel_leads").insert({
+      const { error } = await (supabase.from("funnel_leads") as any).insert({
         funnel_id: funnelId,
         name: cleanName,
         phone: cleanPhone,
@@ -131,6 +132,7 @@ export const PrivateLeadForm = ({
         device_type: /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop",
         user_agent: navigator.userAgent,
         status: "new",
+        ...captureAttribution("funnel", funnelId),
       });
 
       if (error) throw error;

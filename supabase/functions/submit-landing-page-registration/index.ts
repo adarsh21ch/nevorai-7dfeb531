@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const {
       landing_page_id, name, phone, email, age, city, state,
-      occupation, custom_1_value, custom_2_value, honeypot, user_agent,
+      occupation, custom_1_value, custom_2_value, honeypot, user_agent, attribution,
     } = body
 
     // Honeypot check — fake success
@@ -109,6 +109,14 @@ Deno.serve(async (req) => {
         ip_address: ip,
         device_type: deviceType,
         user_agent: user_agent || null,
+        source_type: attribution?.source_type ?? 'landing_page',
+        source_id: attribution?.source_id ?? landing_page_id,
+        source_slug: attribution?.source_slug ?? null,
+        referrer_url: attribution?.referrer_url ?? null,
+        utm_source: attribution?.utm_source ?? null,
+        utm_medium: attribution?.utm_medium ?? null,
+        utm_campaign: attribution?.utm_campaign ?? null,
+        captured_at: attribution?.captured_at ?? new Date().toISOString(),
       })
       .select('id')
       .single()

@@ -11,6 +11,7 @@ import {
 
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
 import { sanitizeText } from "@/lib/sanitize";
+import { captureAttribution } from "@/lib/tracking";
 import {
   normalizePhone,
   trimSmart,
@@ -325,7 +326,7 @@ export const MultiStepViewer = ({
     setLeadSubmitting(true);
     const s = (v: string | null | undefined) => (v ? sanitizeText(v) : null);
     try {
-      await supabase.from("funnel_leads").insert({
+      await (supabase.from("funnel_leads") as any).insert({
         funnel_id: funnel.id,
         name: s(trimSmart(leadForm.name)),
         phone: leadForm.phone ? normalizePhone(leadForm.phone) : null,
@@ -334,6 +335,7 @@ export const MultiStepViewer = ({
         custom_value: s(leadForm.custom_value),
         device_type: /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop",
         user_agent: navigator.userAgent,
+        ...captureAttribution("funnel", funnel.id, (funnel as any).slug),
       });
       setLeadSubmitted(true);
       await completeStep(stepIndex);

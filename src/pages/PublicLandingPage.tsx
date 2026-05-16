@@ -14,6 +14,7 @@ import { TestimonialsViewer } from "@/components/funnel/TestimonialsViewer";
 import { LandingPageCodeGate } from "@/components/funnel/LandingPageCodeGate";
 import { DateOfBirthInput } from "@/components/funnel/DateOfBirthInput";
 import { PostSubmitVideoPlayer } from "@/components/landing/PostSubmitVideoPlayer";
+import { trackEntityView, captureAttribution } from "@/lib/tracking";
 
 import {
   normalizePhone,
@@ -93,6 +94,11 @@ const PublicLandingPage = () => {
     setMeta("og:title", page.title || "Nevorai", true);
   }, [page]);
 
+  useEffect(() => {
+    if (!page?.id) return;
+    return trackEntityView("landing_page", page.id);
+  }, [page?.id]);
+
   const validateLeadFields = (): Record<string, string | null> => {
     const e: Record<string, string | null> = {};
     const fields = (page ? [
@@ -144,7 +150,13 @@ const PublicLandingPage = () => {
 
     setSubmitting(true);
     try {
-      const payload: any = { landing_page_id: page.id, honeypot: "", ...formData, user_agent: navigator.userAgent };
+      const payload: any = {
+        landing_page_id: page.id,
+        honeypot: "",
+        ...formData,
+        user_agent: navigator.userAgent,
+        attribution: captureAttribution("landing_page", page.id, page.slug),
+      };
       const { data, error } = await supabase.functions.invoke("submit-landing-page-registration", { body: payload });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
