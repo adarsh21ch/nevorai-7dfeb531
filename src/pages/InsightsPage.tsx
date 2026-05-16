@@ -129,6 +129,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     { icon: Target, label: "Funnel Conv.", value: `${funnelConvRate}%`, sub: "Leads / Views" },
     { icon: TrendingUp, label: "LP Conv.", value: `${lpConvRate}%`, sub: "Regs / Views" },
     { icon: BarChart3, label: "Unique Contacts", value: formatInt(allEmails.size), sub: "Across all sources" },
+    { icon: Video, label: "Video Views", value: formatCompact(totalVideoViews), sub: `${formatInt(videos.length)} videos` },
   ];
 
   // Lead status breakdown
