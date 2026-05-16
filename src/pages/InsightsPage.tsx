@@ -150,7 +150,6 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     .map((lp) => ({ name: lp.title.length > 15 ? lp.title.slice(0, 15) + "…" : lp.title, views: lp.total_views || 0, regs: lp.total_registrations || 0 }));
 
   // Top videos by view_count
-  const totalVideoViews = videos.reduce((a, v) => a + (v.view_count || 0), 0);
   const topVideos = [...videos]
     .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
     .slice(0, 6)
