@@ -66,6 +66,18 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     enabled: !!user?.id && funnels.length > 0,
   });
 
+  const { data: videos = [] } = useQuery({
+    queryKey: ["my-videos-insights", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("video_assets")
+        .select("id,title,view_count,duration_seconds,created_at")
+        .eq("owner_id", user!.id);
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
   const isLoading = authLoading || funnelsLoading || landingPagesLoading || registrationsLoading;
   const error = funnelsError || landingPagesError || registrationsError;
 
