@@ -668,14 +668,6 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
           ) : <InsightsEmptyState icon={Radio} title="No live sessions yet" hint="Schedule a live session to engage your audience in real time." ctaLabel="Create live session" ctaTo="/live" />}
         </TabsContent>
 
-        <TabsContent value="live">
-          <div className="premium-card p-5 text-center">
-            <Radio size={28} className="mx-auto text-primary mb-2" />
-            <h3 className="text-sm font-heading font-semibold">Live Sessions</h3>
-            <p className="text-xs text-muted-foreground mt-1">{liveViewers > 0 ? `${liveViewers} viewer${liveViewers === 1 ? "" : "s"} active right now.` : "No live sessions running."}</p>
-            <p className="text-[10px] text-muted-foreground mt-3">Registered vs attended, peak concurrent, and replay views land in the drill-down phase.</p>
-          </div>
-        </TabsContent>
       </Tabs>
     </div>
   );
