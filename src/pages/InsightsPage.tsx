@@ -393,7 +393,6 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     [...leads.map((l: any) => ({ at: l.submitted_at })), ...registrations.map((r: any) => ({ at: r.submitted_at }))],
     7,
   );
-  const uniqueViewerEstimate = totalEventViews; // proxy until session_id dedupe is added
   const viewerSpark = viewsSpark;
 
   const pageTitle = isMobile ? "Activity" : "Insights";
