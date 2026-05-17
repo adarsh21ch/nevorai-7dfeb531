@@ -196,8 +196,23 @@ const PublicVideoPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
+          <div className="h-0.5 w-full bg-primary" />
+          <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+            <Logo size="sm" />
+            <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />
+          </div>
+        </header>
+        <div className="max-w-3xl mx-auto w-full px-0 sm:px-4 mt-4">
+          <div className="aspect-video bg-muted sm:rounded-2xl overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted/60 to-muted animate-pulse" />
+          </div>
+        </div>
+        <div className="max-w-3xl mx-auto w-full px-4 py-4 space-y-3">
+          <div className="h-6 w-2/3 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-1/3 bg-muted rounded animate-pulse" />
+        </div>
       </div>
     );
   }
