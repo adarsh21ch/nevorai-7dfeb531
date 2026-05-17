@@ -341,54 +341,56 @@ const PublicVideoPage = () => {
           {video.title || "Untitled video"}
         </h1>
 
-        {/* Creator row — YouTube-style, always visible on mobile + desktop */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="w-10 h-10 rounded-full bg-muted overflow-hidden flex-shrink-0">
-              {creatorProfile?.avatar_url ? (
-                <img
-                  src={creatorProfile.avatar_url}
-                  alt={creatorProfile.full_name || "Creator"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
-                  {(creatorProfile?.full_name || "N")[0].toUpperCase()}
-                </div>
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="font-semibold text-foreground truncate text-sm sm:text-base">
-                  {creatorProfile?.full_name || "Nevorai creator"}
-                </span>
-                {showVerifiedBadge && (
-                  <span
-                    title="Verified creator"
-                    className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground flex-shrink-0"
-                  >
-                    <Check size={10} strokeWidth={3} />
-                  </span>
+        {/* Creator row — YouTube-style. Only render when we have a real name. */}
+        {creatorProfile?.full_name && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="w-10 h-10 rounded-full bg-muted overflow-hidden flex-shrink-0">
+                {creatorProfile.avatar_url ? (
+                  <img
+                    src={creatorProfile.avatar_url}
+                    alt={creatorProfile.full_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
+                    {creatorProfile.full_name[0].toUpperCase()}
+                  </div>
                 )}
               </div>
-              {creatorProfile?.username && (
-                <div className="text-xs text-muted-foreground truncate">
-                  @{creatorProfile.username}
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-semibold text-foreground truncate text-sm sm:text-base">
+                    {creatorProfile.full_name}
+                  </span>
+                  {showVerifiedBadge && (
+                    <span
+                      title="Verified creator"
+                      className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground flex-shrink-0"
+                    >
+                      <Check size={10} strokeWidth={3} />
+                    </span>
+                  )}
                 </div>
-              )}
+                {creatorProfile.username && (
+                  <div className="text-xs text-muted-foreground truncate">
+                    @{creatorProfile.username}
+                  </div>
+                )}
+              </div>
             </div>
+            {creatorProfile.cta_url && creatorProfile.cta_label && (
+              <a
+                href={creatorProfile.cta_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-4 h-9 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+              >
+                {creatorProfile.cta_label} →
+              </a>
+            )}
           </div>
-          {creatorProfile?.cta_url && creatorProfile?.cta_label && (
-            <a
-              href={creatorProfile.cta_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-4 h-9 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
-            >
-              {creatorProfile.cta_label} →
-            </a>
-          )}
-        </div>
+        )}
 
         {/* Secondary meta row */}
         <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
