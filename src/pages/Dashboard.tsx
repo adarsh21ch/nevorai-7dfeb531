@@ -175,18 +175,6 @@ const Dashboard = () => {
   }
 
   const totalViews = funnels.reduce((a, f) => a + (f.total_views || 0), 0);
-  const publishedCount = funnels.filter((f) => f.is_published).length;
-  const convRate = totalViews > 0 ? ((leadCount / totalViews) * 100).toFixed(1) : "0";
-  const remainingToday = daily.isUnlimited ? "∞" : Math.max(0, daily.limit - daily.used);
-
-  const stats: Array<{ icon: any; label: string; value: string; sub: string; color: StatColor; href: string }> = [
-    { icon: BarChart3, label: "Views Today", value: fmt(daily.used), sub: `${remainingToday} remaining`, color: "purple", href: "/insights" },
-    { icon: Calendar, label: "Views This Month", value: fmt(monthly.used), sub: `of ${monthly.isUnlimited ? "∞" : fmt(monthly.limit)}`, color: "teal", href: "/insights" },
-    { icon: IndianRupee, label: "Revenue", value: "₹0", sub: "This month", color: "green", href: "/payments" },
-    { icon: Users, label: "Total Leads", value: fmt(leadCount), sub: "All time", color: "blue", href: "/leads" },
-    { icon: TrendingUp, label: "Conversion Rate", value: `${convRate}%`, sub: "Leads / Views", color: "amber", href: "/insights" },
-    { icon: Eye, label: "Video Plays", value: fmt(totalViews), sub: "All time", color: "gray", href: "/videos" },
-  ];
 
   return (
     <DashboardLayout>
@@ -207,69 +195,84 @@ const Dashboard = () => {
           </div>
         )}
 
-        <UpgradeBanner />
         <MonthlyViewsBanner />
 
-        {/* Header + actions */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
-            <div className="page-header-accent" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Here's your Nevorai overview.
-            </p>
-          </div>
-              <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto">
-                <Link to="/funnels/create" className="w-full sm:w-auto">
-                  <Button variant="hero" size="sm" className="h-11 w-full font-semibold sm:w-auto">
-                    <Plus size={16} className="mr-1.5" /> Create Funnel
-                  </Button>
-                </Link>
-                <Link to="/videos" className="w-full sm:w-auto">
-                  <Button variant="outline" size="sm" className="h-11 w-full font-semibold sm:w-auto">
-                    <Eye size={16} className="mr-1.5" /> Add Video
-                  </Button>
-                </Link>
-              </div>
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
+          <div className="page-header-accent" />
+          <p className="mt-2 text-sm text-muted-foreground">
+            Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Here's your Nevorai overview.
+          </p>
         </div>
+
+        {/* Primary action — one clear CTA */}
+        <input
+          ref={uploadInputRef}
+          type="file"
+          accept=".mp4,.mov,.webm,.m4v,.mkv,.avi,video/*"
+          className="hidden"
+          onChange={handleUploadPicked}
+        />
+        <Button
+          variant="hero"
+          size="lg"
+          onClick={openUploadFlow}
+          className="h-14 w-full rounded-2xl text-base font-semibold sm:w-auto sm:px-8"
+        >
+          <Upload size={18} className="mr-2" /> Upload Video
+        </Button>
 
         {/* Latest video — share-first spotlight */}
         {latestVideo && <LatestVideoShareCard video={latestVideo} />}
 
-        {/* Plan + view limits strip */}
+        {/* Plan + view limits strip (Today's Views + Monthly Views) */}
         <DashboardKpiStrip />
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-          {stats.map((s) => (
-            <Link
-              key={s.label}
-              to={s.href}
-              className={`group flex flex-col gap-1.5 rounded-2xl border border-border bg-card/40 p-4 transition-all hover:-translate-y-0.5 hover:border-border/80 hover:bg-card/70 ${accentClass[s.color]}`}
-            >
-              <div className="flex items-center gap-2">
-                <s.icon size={14} className={iconClass[s.color]} />
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</span>
-              </div>
-              <div className="text-2xl font-heading font-extrabold leading-none">{s.value}</div>
-              <p className="text-[11px] text-muted-foreground">{s.sub}</p>
-            </Link>
-          ))}
+        {/* View more insights link */}
+        <div className="flex justify-end">
+          <Link to="/insights" className="flex items-center gap-1 text-xs text-primary hover:underline">
+            View more insights <ArrowRight size={12} />
+          </Link>
         </div>
 
         {/* Content row */}
         <DashboardContentRow />
 
-        {/* Recent funnels */}
+        {/* Recent funnels — gated for free users */}
         {funnels.length === 0 ? (
-          <div className="premium-card p-10 text-center">
-            <div className="stat-icon mx-auto mb-3 h-14 w-14 rounded-2xl">
-              <Layers size={26} className="text-primary" />
+          isFree ? (
+            <div className="premium-card p-10 text-center">
+              <div className="stat-icon mx-auto mb-3 h-14 w-14 rounded-2xl">
+                <VideoIcon size={26} className="text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-heading font-semibold">No videos yet</h3>
+              <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">
+                Upload your first video and share it with anyone via a short link.
+              </p>
+              <Button
+                variant="hero"
+                size="lg"
+                onClick={openUploadFlow}
+                className="h-12 w-full rounded-2xl font-semibold sm:w-auto sm:px-8"
+              >
+                <Upload size={16} className="mr-2" /> Upload Your First Video
+              </Button>
             </div>
-            <h3 className="mb-2 text-lg font-heading font-semibold">No funnels yet</h3>
-            <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video funnel and start capturing leads on autopilot.</p>
-            <Link to="/funnels/create"><Button variant="hero" size="lg">Create Your First Funnel</Button></Link>
-          </div>
+          ) : (
+            <div className="premium-card p-10 text-center">
+              <div className="stat-icon mx-auto mb-3 h-14 w-14 rounded-2xl">
+                <Layers size={26} className="text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-heading font-semibold">No funnels yet</h3>
+              <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video funnel and start capturing leads on autopilot.</p>
+              <Link to="/funnels/create">
+                <Button variant="hero" size="lg" className="h-12 w-full rounded-2xl font-semibold sm:w-auto sm:px-8">
+                  Create Your First Funnel
+                </Button>
+              </Link>
+            </div>
+          )
         ) : (
           <div>
             <div className="mb-3 flex items-center justify-between">
@@ -296,6 +299,13 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+        <VideoUploadModal
+          open={uploadOpen}
+          onClose={() => { setUploadOpen(false); setPendingFile(null); }}
+          onSuccess={() => { /* handled inside modal's "Video ready" step */ }}
+          initialFile={pendingFile}
+        />
       </div>
     </DashboardLayout>
   );
