@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Play,
   Pause,
   Volume2,
+  Volume1,
   VolumeX,
   Maximize,
   Minimize,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface VideoPlayerProps {
   src: string;
@@ -35,8 +37,14 @@ export interface VideoPlayerProps {
   allowDownload?: boolean;
   title?: string;
   shareUrl?: string;
+  autoplay?: boolean;
+  initialTime?: number;
+  live?: boolean;
+  viewerCount?: number;
   onVideoRef?: (el: HTMLVideoElement | null) => void;
   onError?: () => void;
+  onPlay?: () => void;
+  onTimeUpdate?: (currentTime: number, duration: number) => void;
 }
 
 function fmt(t: number) {
@@ -44,6 +52,50 @@ function fmt(t: number) {
   const m = Math.floor(t / 60);
   const s = Math.floor(t % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+/** 44x44 button wrapper for control bar */
+function ControlButton({
+  onClick,
+  ariaLabel,
+  children,
+  className,
+  hideOnMobile,
+}: {
+  onClick?: (e: React.MouseEvent) => void;
+  ariaLabel: string;
+  children: React.ReactNode;
+  className?: string;
+  hideOnMobile?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className={cn(
+        "h-11 w-11 flex items-center justify-center rounded-md text-white",
+        "hover:bg-white/10 active:scale-90 transition-transform",
+        hideOnMobile && "hidden sm:inline-flex",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Skip 10s icon with "10" text overlay */
+function SkipIcon({ dir }: { dir: "back" | "forward" }) {
+  const Icon = dir === "back" ? RotateCcw : RotateCw;
+  return (
+    <span className="relative inline-flex items-center justify-center">
+      <Icon className="h-5 w-5 sm:h-5 sm:w-5" />
+      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold leading-none pt-[1px] select-none pointer-events-none">
+        10
+      </span>
+    </span>
+  );
 }
 
 export function VideoPlayer({
@@ -55,15 +107,24 @@ export function VideoPlayer({
   allowDownload = false,
   title,
   shareUrl,
+  autoplay = true,
+  initialTime,
+  live = false,
+  viewerCount,
   onVideoRef,
   onError,
+  onPlay,
+  onTimeUpdate,
 }: VideoPlayerProps) {
+  const isMobile = useIsMobile();
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<number | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
   const lastTapRef = useRef<{ t: number; x: number } | null>(null);
   const prevRateRef = useRef(1);
+  const maxWatchedRef = useRef(0);
 
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -75,34 +136,34 @@ export function VideoPlayer({
   const [controlsVisible, setControlsVisible] = useState(true);
   const [canPiP, setCanPiP] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
+  const [hoverFrac, setHoverFrac] = useState<number | null>(null);
+  const [seekFlash, setSeekFlash] = useState<{ dir: "back" | "forward"; key: number } | null>(null);
 
   useEffect(() => {
-    setCanPiP(typeof document !== "undefined" && (document as any).pictureInPictureEnabled);
+    setCanPiP(typeof document !== "undefined" && !!(document as any).pictureInPictureEnabled);
     setCanNativeShare(typeof navigator !== "undefined" && !!(navigator as any).share);
   }, []);
 
-  // Expose video ref
   useEffect(() => {
     onVideoRef?.(videoRef.current);
   }, [onVideoRef]);
 
   // Fullscreen change listener
   useEffect(() => {
-    const onChange = () => {
-      const fs = document.fullscreenElement === wrapRef.current;
-      setIsFs(fs);
-    };
+    const onChange = () => setIsFs(document.fullscreenElement === wrapRef.current);
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
+
+  const hideDelay = isMobile ? 3000 : 2000;
 
   const showControls = useCallback(() => {
     setControlsVisible(true);
     if (hideTimerRef.current) window.clearTimeout(hideTimerRef.current);
     if (!videoRef.current?.paused) {
-      hideTimerRef.current = window.setTimeout(() => setControlsVisible(false), 2000);
+      hideTimerRef.current = window.setTimeout(() => setControlsVisible(false), hideDelay);
     }
-  }, []);
+  }, [hideDelay]);
 
   const cancelHide = useCallback(() => {
     if (hideTimerRef.current) {
@@ -111,7 +172,6 @@ export function VideoPlayer({
     }
   }, []);
 
-  // Play/pause
   const togglePlay = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -124,7 +184,10 @@ export function VideoPlayer({
       if (!allowSeek) return;
       const v = videoRef.current;
       if (!v) return;
-      v.currentTime = Math.max(0, Math.min((v.duration || 0), v.currentTime + delta));
+      let target = Math.max(0, Math.min(v.duration || 0, v.currentTime + delta));
+      v.currentTime = target;
+      setSeekFlash({ dir: delta < 0 ? "back" : "forward", key: Date.now() });
+      window.setTimeout(() => setSeekFlash(null), 500);
     },
     [allowSeek],
   );
@@ -151,7 +214,8 @@ export function VideoPlayer({
       if (!allowSeek) return;
       const v = videoRef.current;
       if (!v || !isFinite(v.duration)) return;
-      v.currentTime = Math.max(0, Math.min(v.duration, frac * v.duration));
+      let target = Math.max(0, Math.min(v.duration, frac * v.duration));
+      v.currentTime = target;
     },
     [allowSeek],
   );
@@ -164,6 +228,18 @@ export function VideoPlayer({
         await document.exitFullscreen();
       } else {
         await el.requestFullscreen();
+        // Try landscape lock on mobile landscape videos
+        try {
+          const v = videoRef.current;
+          if (v && v.videoWidth > v.videoHeight) {
+            const so: any = (screen as any).orientation;
+            if (so && typeof so.lock === "function") {
+              so.lock("landscape").catch(() => {});
+            }
+          }
+        } catch {
+          /* ignore */
+        }
       }
     } catch {
       /* ignore */
@@ -189,10 +265,8 @@ export function VideoPlayer({
     const el = wrapRef.current;
     if (!el) return;
     const onKey = (e: KeyboardEvent) => {
-      // ignore when typing in inputs
       const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
       if (tag === "input" || tag === "textarea") return;
-
       const key = e.key;
       const v = videoRef.current;
       if (!v) return;
@@ -259,7 +333,6 @@ export function VideoPlayer({
     return () => el.removeEventListener("keydown", onKey);
   }, [togglePlay, toggleMute, toggleFullscreen, skip, setVol, seekToFraction, allowSeek, showControls]);
 
-  // Copy / share / download
   const url = shareUrl ?? (typeof window !== "undefined" ? window.location.href : "");
   const handleCopy = useCallback(() => {
     try {
@@ -313,7 +386,6 @@ export function VideoPlayer({
       if (v && v.playbackRate !== prevRateRef.current) {
         v.playbackRate = prevRateRef.current;
       }
-      // Detect tap / double-tap
       const touch = e.changedTouches[0];
       if (!touch) return;
       const now = Date.now();
@@ -330,7 +402,6 @@ export function VideoPlayer({
         lastTapRef.current = null;
       } else {
         lastTapRef.current = { t: now, x };
-        // Single tap toggles controls after delay
         window.setTimeout(() => {
           if (lastTapRef.current && lastTapRef.current.t === now) {
             setControlsVisible((vis) => !vis);
@@ -344,6 +415,18 @@ export function VideoPlayer({
 
   const bufferedPct = duration > 0 ? (buffered / duration) * 100 : 0;
   const progressPct = duration > 0 ? (current / duration) * 100 : 0;
+  const hoverPct = hoverFrac != null ? hoverFrac * 100 : 0;
+  const hoverTime = hoverFrac != null ? hoverFrac * duration : 0;
+
+  const VolumeIcon = useMemo(() => {
+    if (muted || volume === 0) return VolumeX;
+    if (volume < 0.5) return Volume1;
+    return Volume2;
+  }, [muted, volume]);
+
+  // Sizes scale up in fullscreen
+  const barH = isFs ? "h-16" : isMobile ? "h-16" : "h-14";
+  const gradH = isFs ? "h-40" : "h-28 sm:h-32";
 
   return (
     <div
@@ -369,21 +452,20 @@ export function VideoPlayer({
         ref={videoRef}
         src={src}
         poster={poster}
-        autoPlay
-        muted
+        autoPlay={autoplay}
+        muted={autoplay}
         playsInline
         preload="auto"
         controls={false}
         controlsList="nodownload"
-        disablePictureInPicture={false}
         className="w-full h-full object-contain"
         onClick={(e) => {
-          // Desktop click to play/pause (ignore on touch)
           if ((e as any).pointerType === "touch") return;
           togglePlay();
         }}
         onPlay={() => {
           setPlaying(true);
+          onPlay?.();
           showControls();
         }}
         onPause={() => {
@@ -401,9 +483,25 @@ export function VideoPlayer({
           setDuration(v.duration || 0);
           setVolume(v.volume);
           setMuted(v.muted);
+          if (initialTime && initialTime > 0 && isFinite(initialTime)) {
+            try {
+              v.currentTime = Math.min(initialTime, v.duration || initialTime);
+            } catch {
+              /* ignore */
+            }
+          }
         }}
         onTimeUpdate={(e) => {
-          setCurrent(e.currentTarget.currentTime);
+          const v = e.currentTarget;
+          setCurrent(v.currentTime);
+          if (v.currentTime > maxWatchedRef.current) maxWatchedRef.current = v.currentTime;
+          onTimeUpdate?.(v.currentTime, v.duration || 0);
+        }}
+        onSeeking={(e) => {
+          const v = e.currentTarget;
+          if (!allowSeek && v.currentTime > maxWatchedRef.current + 0.5) {
+            v.currentTime = maxWatchedRef.current;
+          }
         }}
         onProgress={(e) => {
           const v = e.currentTarget;
@@ -418,21 +516,49 @@ export function VideoPlayer({
             e.currentTarget.playbackRate = 1;
           }
         }}
-        onSeeking={(e) => {
-          if (!allowSeek) {
-            // FunnelPage parent may also enforce; here we just prevent forward
-            // by snapping back if needed — parent ref handles max tracking.
-          }
-        }}
         onError={onError}
       />
 
-      {/* Center play overlay when paused */}
-      {!playing && controlsVisible && (
+      {/* Mobile centered controls cluster (skip-back / play / skip-fwd) */}
+      {isMobile && controlsVisible && (
+        <div className="absolute inset-0 flex items-center justify-center gap-6 pointer-events-none z-10">
+          {allowSeek && !live && (
+            <button
+              type="button"
+              onClick={() => skip(-10)}
+              aria-label="Skip back 10s"
+              className="pointer-events-auto h-12 w-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
+            >
+              <SkipIcon dir="back" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={togglePlay}
+            aria-label={playing ? "Pause" : "Play"}
+            className="pointer-events-auto h-16 w-16 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
+          >
+            {playing ? <Pause size={32} fill="white" /> : <Play size={32} fill="white" className="ml-1" />}
+          </button>
+          {allowSeek && !live && (
+            <button
+              type="button"
+              onClick={() => skip(10)}
+              aria-label="Skip forward 10s"
+              className="pointer-events-auto h-12 w-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
+            >
+              <SkipIcon dir="forward" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Desktop center play overlay when paused */}
+      {!isMobile && !playing && controlsVisible && (
         <button
           type="button"
           onClick={togglePlay}
-          className="absolute inset-0 flex items-center justify-center bg-black/20"
+          className="absolute inset-0 flex items-center justify-center bg-black/20 z-10"
           aria-label="Play"
         >
           <span className="rounded-full bg-black/60 p-5">
@@ -441,96 +567,158 @@ export function VideoPlayer({
         </button>
       )}
 
-      {/* Bottom control bar */}
+      {/* Double-tap +/-10s flash */}
+      {seekFlash && (
+        <div
+          key={seekFlash.key}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 px-4 py-2 rounded-full bg-black/70 text-white text-sm font-semibold pointer-events-none animate-in fade-in zoom-in duration-200",
+            seekFlash.dir === "back" ? "left-8" : "right-8",
+          )}
+        >
+          {seekFlash.dir === "back" ? "−10s" : "+10s"}
+        </div>
+      )}
+
+      {/* Bottom gradient + controls */}
       <div
         className={cn(
-          "absolute inset-x-0 bottom-0 px-3 sm:px-4 pt-10 pb-2 bg-gradient-to-t from-black/80 via-black/50 to-transparent transition-opacity duration-200",
+          "absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent transition-opacity duration-200 pointer-events-none",
+          gradH,
+          controlsVisible ? "opacity-100" : "opacity-0",
+        )}
+      />
+
+      <div
+        className={cn(
+          "absolute inset-x-0 bottom-0 px-3 sm:px-4 transition-opacity duration-200",
           controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onMouseEnter={cancelHide}
       >
-        {/* Progress bar */}
-        <div
-          className="relative h-1 w-full mb-2 group/seek cursor-pointer"
-          onClick={(e) => {
-            if (!allowSeek) return;
-            const r = e.currentTarget.getBoundingClientRect();
-            seekToFraction((e.clientX - r.left) / r.width);
-          }}
-        >
-          <div className="absolute inset-0 bg-white/25 rounded-full" />
+        {/* Progress bar (hidden for live) */}
+        {!live && (
           <div
-            className="absolute top-0 left-0 h-full bg-white/40 rounded-full"
-            style={{ width: `${bufferedPct}%` }}
-          />
-          <div
-            className="absolute top-0 left-0 h-full bg-primary rounded-full"
-            style={{ width: `${progressPct}%` }}
-          />
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full -ml-1.5 opacity-0 group-hover/seek:opacity-100 transition-opacity"
-            style={{ left: `${progressPct}%` }}
-          />
-        </div>
-
-        {/* Buttons row */}
-        <div className="flex items-center gap-1 text-white">
-          <button
-            type="button"
-            onClick={togglePlay}
-            className="p-2 hover:bg-white/10 rounded"
-            aria-label={playing ? "Pause" : "Play"}
+            ref={progressRef}
+            className={cn(
+              "relative w-full mb-1.5 group/seek py-2",
+              allowSeek ? "cursor-pointer" : "cursor-default",
+            )}
+            onClick={(e) => {
+              if (!allowSeek) return;
+              const r = e.currentTarget.getBoundingClientRect();
+              seekToFraction((e.clientX - r.left) / r.width);
+            }}
+            onMouseMove={(e) => {
+              if (!allowSeek) return;
+              const r = e.currentTarget.getBoundingClientRect();
+              setHoverFrac(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)));
+            }}
+            onMouseLeave={() => setHoverFrac(null)}
           >
-            {playing ? <Pause size={20} fill="white" /> : <Play size={20} fill="white" />}
-          </button>
+            {/* Time tooltip */}
+            {allowSeek && hoverFrac != null && duration > 0 && (
+              <div
+                className="absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded bg-black/90 text-white text-xs font-medium tabular-nums pointer-events-none"
+                style={{ left: `${hoverPct}%` }}
+              >
+                {fmt(hoverTime)}
+              </div>
+            )}
+            <div
+              className={cn(
+                "relative w-full rounded-full transition-[height] duration-150 bg-white/25",
+                allowSeek
+                  ? isFs
+                    ? "h-1 group-hover/seek:h-2"
+                    : "h-[3px] group-hover/seek:h-1.5"
+                  : isFs
+                    ? "h-1"
+                    : "h-[3px]",
+              )}
+            >
+              <div
+                className="absolute top-0 left-0 h-full bg-white/40 rounded-full"
+                style={{ width: `${bufferedPct}%` }}
+              />
+              <div
+                className="absolute top-0 left-0 h-full bg-primary rounded-full"
+                style={{ width: `${progressPct}%` }}
+              />
+              {allowSeek && (
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full -ml-1 opacity-0 group-hover/seek:opacity-100 transition-opacity"
+                  style={{ left: `${progressPct}%` }}
+                />
+              )}
+            </div>
+          </div>
+        )}
 
-          {allowSeek && (
+        {/* Control bar */}
+        <div className={cn("flex items-center text-white gap-1 sm:gap-1", barH)}>
+          <ControlButton onClick={togglePlay} ariaLabel={playing ? "Pause" : "Play"}>
+            {playing ? <Pause size={isFs ? 22 : 20} fill="white" /> : <Play size={isFs ? 22 : 20} fill="white" />}
+          </ControlButton>
+
+          {allowSeek && !live && (
             <>
-              <button
-                type="button"
-                onClick={() => skip(-10)}
-                className="p-2 hover:bg-white/10 rounded hidden sm:inline-flex"
-                aria-label="Skip back 10s"
-              >
-                <RotateCcw size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={() => skip(10)}
-                className="p-2 hover:bg-white/10 rounded hidden sm:inline-flex"
-                aria-label="Skip forward 10s"
-              >
-                <RotateCw size={18} />
-              </button>
+              <ControlButton onClick={() => skip(-10)} ariaLabel="Skip back 10 seconds" hideOnMobile>
+                <SkipIcon dir="back" />
+              </ControlButton>
+              <ControlButton onClick={() => skip(10)} ariaLabel="Skip forward 10 seconds" hideOnMobile>
+                <SkipIcon dir="forward" />
+              </ControlButton>
             </>
           )}
 
-          {/* Volume */}
+          {/* Volume — icon only, slider expands on hover (desktop) */}
           <div className="flex items-center group/vol">
-            <button
-              type="button"
-              onClick={toggleMute}
-              className="p-2 hover:bg-white/10 rounded"
-              aria-label={muted ? "Unmute" : "Mute"}
-            >
-              {muted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
-            </button>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={muted ? 0 : volume}
-              onChange={(e) => setVol(parseFloat(e.target.value))}
-              className="w-0 group-hover/vol:w-20 transition-all duration-200 accent-primary cursor-pointer"
-              aria-label="Volume"
-            />
+            <ControlButton onClick={toggleMute} ariaLabel={muted ? "Unmute" : "Mute"}>
+              <VolumeIcon size={isFs ? 22 : 20} />
+            </ControlButton>
+            {!isMobile && (
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={muted ? 0 : volume}
+                onChange={(e) => setVol(parseFloat(e.target.value))}
+                className={cn(
+                  "w-0 group-hover/vol:w-20 focus:w-20 transition-all duration-200 accent-primary cursor-pointer",
+                  isFs && "group-hover/vol:w-[100px]",
+                )}
+                aria-label="Volume"
+              />
+            )}
           </div>
 
-          {/* Time */}
-          <div className="text-xs tabular-nums px-2 select-none">
-            {fmt(current)} / {fmt(duration)}
-          </div>
+          {/* Time display (fixed width, tabular) — or LIVE badge */}
+          {live ? (
+            <div className="flex items-center gap-2 px-2">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-600 text-white text-xs font-bold tracking-wide">
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                LIVE
+              </span>
+              {typeof viewerCount === "number" && (
+                <span className="text-xs text-white/80 tabular-nums">
+                  {viewerCount.toLocaleString()} watching
+                </span>
+              )}
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "text-sm text-white/80 px-2 select-none tabular-nums",
+                "min-w-[88px]",
+                isFs && "text-base min-w-[120px]",
+              )}
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
+              {fmt(current)} / {fmt(duration)}
+            </div>
+          )}
 
           <div className="flex-1" />
 
@@ -539,13 +727,13 @@ export function VideoPlayer({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="p-2 hover:bg-white/10 rounded"
+                className="h-11 w-11 flex items-center justify-center rounded-md text-white hover:bg-white/10 active:scale-90 transition-transform"
                 aria-label="More options"
               >
-                <MoreVertical size={18} />
+                <MoreVertical size={isFs ? 22 : 20} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="w-44">
+            <DropdownMenuContent align="end" side="top" className="w-48">
               {allowCopyLink && (
                 <DropdownMenuItem onSelect={handleCopy}>
                   <Copy size={14} className="mr-2" /> Copy link
@@ -592,25 +780,15 @@ export function VideoPlayer({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {canPiP && (
-            <button
-              type="button"
-              onClick={togglePiP}
-              className="p-2 hover:bg-white/10 rounded hidden sm:inline-flex"
-              aria-label="Picture in picture"
-            >
-              <PictureInPicture2 size={18} />
-            </button>
+          {canPiP && !isMobile && (
+            <ControlButton onClick={togglePiP} ariaLabel="Picture in picture" hideOnMobile>
+              <PictureInPicture2 size={isFs ? 22 : 20} />
+            </ControlButton>
           )}
 
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="p-2 hover:bg-white/10 rounded"
-            aria-label={isFs ? "Exit fullscreen" : "Fullscreen"}
-          >
-            {isFs ? <Minimize size={18} /> : <Maximize size={18} />}
-          </button>
+          <ControlButton onClick={toggleFullscreen} ariaLabel={isFs ? "Exit fullscreen" : "Fullscreen"}>
+            {isFs ? <Minimize size={isFs ? 22 : 20} /> : <Maximize size={isFs ? 22 : 20} />}
+          </ControlButton>
         </div>
       </div>
     </div>
