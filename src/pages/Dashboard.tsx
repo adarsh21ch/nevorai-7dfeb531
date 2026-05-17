@@ -1,19 +1,20 @@
+import { useRef } from "react";
 import { Navigate, Link, useNavigate } from "@/lib/router-compat";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { MonthlyViewsBanner } from "@/components/MonthlyViewsBanner";
 import { DashboardKpiStrip } from "@/components/dashboard/DashboardKpiStrip";
 import { DashboardContentRow } from "@/components/dashboard/DashboardContentRow";
 import { LatestVideoShareCard } from "@/components/dashboard/LatestVideoShareCard";
 import { useHasVideos } from "@/hooks/useHasVideos";
-import { Layers, Users, Eye, IndianRupee, TrendingUp, BarChart3, Calendar, Plus, ArrowRight, Radio } from "lucide-react";
+import { Layers, Users, Eye, IndianRupee, ArrowRight, Upload, Video as VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMonthlyViews } from "@/hooks/useMonthlyViews";
-import { useDailyViews } from "@/hooks/useDailyViews";
+import { usePlan } from "@/hooks/usePlan";
+import { VideoUploadModal } from "@/components/VideoUploadModal";
+import { useState } from "react";
 
 const fmt = (n: number) => n.toLocaleString("en-IN");
 
