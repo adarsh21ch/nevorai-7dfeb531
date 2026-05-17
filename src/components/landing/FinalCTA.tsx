@@ -44,12 +44,9 @@ export const FinalCTA = () => {
           </div>
 
           <Link to="/auth?tab=signup" className="block sm:inline-block">
-            <Button
-              size="xl"
-              className="w-full sm:w-auto rounded-full font-bold border-0 hover:scale-105 transition-transform bg-white text-base sm:text-lg px-10 sm:px-14 py-4 min-h-11 shadow-elegant"
-            >
-              <span className="text-gradient-brand">Start Free →</span>
-            </Button>
+            <button className="btn-saffron-premium w-full sm:w-auto text-base sm:text-lg">
+              Start Free →
+            </button>
           </Link>
 
           <div className="mt-5 text-sm text-white/80">
