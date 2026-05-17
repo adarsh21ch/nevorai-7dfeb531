@@ -1323,7 +1323,7 @@ const FunnelEditor = () => {
   );
 
   return (
-    <DashboardLayout>
+    <DashboardLayout editorMode>
       <EditorScrollLayout
         sections={editorSections}
         header={headerNode}
