@@ -371,14 +371,90 @@ const PublicVideoPage = () => {
             </div>
           )}
           {!videoError && video.public_url && (
-            <button
-              type="button"
-              onClick={requestWrapperFullscreen}
-              aria-label="Toggle fullscreen"
-              className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-black/40 hover:bg-black/60 text-white/90 backdrop-blur-sm transition-colors"
-            >
-              <Maximize size={16} />
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={requestWrapperFullscreen}
+                aria-label="Toggle fullscreen"
+                className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-black/40 hover:bg-black/60 text-white/90 backdrop-blur-sm transition-colors"
+              >
+                <Maximize size={16} />
+              </button>
+              {/* YouTube-style Copy/Share overlay — bottom-right */}
+              <div
+                className={
+                  "absolute bottom-3 right-3 z-10 flex items-center gap-1 px-2 py-1 rounded-full bg-black/55 backdrop-blur-sm " +
+                  "opacity-100 md:opacity-0 md:group-hover/player:opacity-100 transition-opacity"
+                }
+              >
+                {video.allow_copy_link !== false && (
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="p-1.5 rounded-full hover:bg-white/15 text-white/90"
+                    aria-label="Copy link"
+                    title="Copy link"
+                  >
+                    {copied ? <Check size={15} /> : <Copy size={15} />}
+                  </button>
+                )}
+                {canNativeShare ? (
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="p-1.5 rounded-full hover:bg-white/15 text-white/90"
+                    aria-label="Share"
+                    title="Share"
+                  >
+                    <Share2 size={15} />
+                  </button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="p-1.5 rounded-full hover:bg-white/15 text-white/90"
+                        aria-label="Share"
+                        title="Share"
+                      >
+                        <Share2 size={15} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuItem onSelect={handleCopyLink}>
+                        <Copy size={13} className="mr-2" /> Copy link
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() =>
+                          window.open(
+                            `https://wa.me/?text=${encodeURIComponent(
+                              `${video?.title ?? "Watch this"}\n${window.location.href}`,
+                            )}`,
+                            "_blank",
+                            "noopener,noreferrer",
+                          )
+                        }
+                      >
+                        <MessageCircle size={13} className="mr-2" /> WhatsApp
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onSelect={() =>
+                          window.open(
+                            `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                              window.location.href,
+                            )}&text=${encodeURIComponent(video?.title ?? "")}`,
+                            "_blank",
+                            "noopener,noreferrer",
+                          )
+                        }
+                      >
+                        <Twitter size={13} className="mr-2" /> Twitter
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
