@@ -266,7 +266,7 @@ export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = 
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent className="bg-card border-border max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-6 sm:p-7 shadow-2xl">
+      <DialogContent className="bg-card border-border max-w-md max-h-[85svh] overflow-y-auto rounded-2xl p-6 sm:p-7 shadow-2xl">
         <DialogHeader className="space-y-1">
           <DialogTitle className="font-heading text-center text-xl">{doneVideoId ? "Video ready 🎉" : "Upload video"}</DialogTitle>
           {!doneVideoId && (
