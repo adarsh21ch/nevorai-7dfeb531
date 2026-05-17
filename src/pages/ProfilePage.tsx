@@ -222,7 +222,7 @@ const ProfilePage = () => {
             onClose={() => setCropFile(null)}
             imageSrc={cropFile}
             userId={user.id}
-            onSaved={(url) => { setAvatarUrl(url); refreshProfile(); }}
+            onSaved={(url: string) => { setAvatarUrl(url); refreshProfile(); }}
           />
         )}
 
