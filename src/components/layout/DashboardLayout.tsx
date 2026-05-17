@@ -204,10 +204,10 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
               return (
                 <Link
                   key={item.path}
-                  to={item.path}
-                  onMouseEnter={() => preloadRoute(item.path)}
+                  to={item.path as any}
+                  preload="intent"
                   className={cn(
-                    "flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[10px] font-medium transition-colors",
+                    "flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-[10px] font-medium transition-transform duration-100 active:scale-95",
                     active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
