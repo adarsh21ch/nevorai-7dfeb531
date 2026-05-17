@@ -41,7 +41,9 @@ function getInitialTab(): Tab {
 
 function getInitialPeriod(): Period {
   if (typeof window === "undefined") return "7d";
-  const stored = window.localStorage.getItem("insights:period") as Period | null;
+  // v2 key — old "insights:period" may persist "today" which makes the page
+  // look broken for low-traffic creators on first open.
+  const stored = window.localStorage.getItem("insights:period:v2") as Period | null;
   if (stored && ["today", "7d", "30d", "all"].includes(stored)) return stored;
   return "7d";
 }
@@ -93,7 +95,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
   // Persist period
   useEffect(() => {
-    try { window.localStorage.setItem("insights:period", period); } catch {/* ignore */}
+    try { window.localStorage.setItem("insights:period:v2", period); } catch {/* ignore */}
   }, [period]);
 
   const start = periodStart(period);
@@ -151,7 +153,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     },
     enabled: !!user?.id,
     staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   const { data: leadsPrev = [] } = useQuery({
@@ -175,7 +177,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     },
     enabled: !!user?.id,
     staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   const { data: regsPrev = [] } = useQuery({
@@ -194,39 +196,39 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     queryKey: ["video-views", user?.id, period, videoIds.length],
     queryFn: async () => {
       if (!videoIds.length) return [] as any[];
-      let q = (supabase as any).from("video_view_events").select("started_at,video_id").in("video_id", videoIds);
+      let q = (supabase as any).from("video_view_events").select("started_at,video_id,session_id").in("video_id", videoIds);
       if (startIso) q = q.gte("started_at", startIso);
       return (await q.limit(2000)).data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    staleTime: 15_000,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   const { data: funnelViews = [] } = useQuery({
     queryKey: ["funnel-views", user?.id, period, funnelIds.length],
     queryFn: async () => {
       if (!funnelIds.length) return [] as any[];
-      let q = (supabase as any).from("funnel_view_events").select("started_at,funnel_id").in("funnel_id", funnelIds);
+      let q = (supabase as any).from("funnel_view_events").select("started_at,funnel_id,session_id").in("funnel_id", funnelIds);
       if (startIso) q = q.gte("started_at", startIso);
       return (await q.limit(2000)).data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    staleTime: 15_000,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   const { data: lpViews = [] } = useQuery({
     queryKey: ["lp-views", user?.id, period, lpIds.length],
     queryFn: async () => {
       if (!lpIds.length) return [] as any[];
-      let q = (supabase as any).from("landing_page_view_events").select("started_at,landing_page_id").in("landing_page_id", lpIds);
+      let q = (supabase as any).from("landing_page_view_events").select("started_at,landing_page_id,session_id").in("landing_page_id", lpIds);
       if (startIso) q = q.gte("started_at", startIso);
       return (await q.limit(2000)).data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    staleTime: 15_000,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   // === Live viewer counts per entity (15s polling) ===
@@ -257,16 +259,21 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const liveViewers = liveMap.total;
 
 
-  // === Recent activity feed (30s polling) ===
+  // === Recent activity feed (30s polling) — leads, registrations AND views ===
   const { data: feedItems = [] } = useQuery<ActivityItem[]>({
-    queryKey: ["activity-feed", user?.id, funnelIds.length, lpIds.length],
+    queryKey: ["activity-feed", user?.id, period, funnelIds.length, lpIds.length, videoViews.length, funnelViews.length, lpViews.length],
     queryFn: async () => {
       const items: ActivityItem[] = [];
+      const funnelMap = new Map(funnels.map((f) => [f.id, { title: f.title, slug: f.slug }]));
+      const lpMap = new Map(landingPages.map((l) => [l.id, { title: l.title, slug: l.slug }]));
+      const videoMap = new Map(videos.map((v) => [v.id, { title: v.title }]));
+
       if (funnelIds.length) {
-        const { data: rows } = await supabase.from("funnel_leads").select("id,name,email,submitted_at,funnel_id,source_type,utm_source").in("funnel_id", funnelIds).order("submitted_at", { ascending: false }).limit(20);
-        const titleMap = new Map(funnels.map((f) => [f.id, { title: f.title, slug: f.slug }]));
+        let lq = supabase.from("funnel_leads").select("id,name,email,submitted_at,funnel_id,source_type,utm_source").in("funnel_id", funnelIds).order("submitted_at", { ascending: false }).limit(20);
+        if (startIso) lq = lq.gte("submitted_at", startIso);
+        const { data: rows } = await lq;
         (rows || []).forEach((r: any) => {
-          const f = titleMap.get(r.funnel_id);
+          const f = funnelMap.get(r.funnel_id);
           items.push({
             id: `lead-${r.id}`,
             kind: "lead",
@@ -279,10 +286,12 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
           });
         });
       }
-      const { data: regs } = await supabase.from("landing_page_registrations").select("id,name,email,submitted_at,landing_page_id,utm_source").eq("owner_id", user!.id).order("submitted_at", { ascending: false }).limit(20);
-      const lpTitleMap = new Map(landingPages.map((l) => [l.id, { title: l.title, slug: l.slug }]));
+
+      let rq = supabase.from("landing_page_registrations").select("id,name,email,submitted_at,landing_page_id,utm_source").eq("owner_id", user!.id).order("submitted_at", { ascending: false }).limit(20);
+      if (startIso) rq = rq.gte("submitted_at", startIso);
+      const { data: regs } = await rq;
       (regs || []).forEach((r: any) => {
-        const lp = lpTitleMap.get(r.landing_page_id);
+        const lp = lpMap.get(r.landing_page_id);
         items.push({
           id: `reg-${r.id}`,
           kind: "registration",
@@ -294,8 +303,47 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
           meta: r.utm_source ? `via ${r.utm_source}` : undefined,
         });
       });
+
+      // Add view events (already period-scoped from upstream queries)
+      videoViews.slice(0, 20).forEach((v: any) => {
+        const vid = videoMap.get(v.video_id);
+        items.push({
+          id: `vview-${v.video_id}-${v.started_at}`,
+          kind: "view",
+          entityType: "video",
+          entityTitle: vid?.title ?? "Video",
+          entityHref: `/insights/videos/${v.video_id}`,
+          who: null,
+          at: v.started_at,
+        });
+      });
+      funnelViews.slice(0, 20).forEach((v: any) => {
+        const f = funnelMap.get(v.funnel_id);
+        items.push({
+          id: `fview-${v.funnel_id}-${v.started_at}`,
+          kind: "view",
+          entityType: "funnel",
+          entityTitle: f?.title ?? "Funnel",
+          entityHref: f ? `/funnels/${v.funnel_id}` : undefined,
+          who: null,
+          at: v.started_at,
+        });
+      });
+      lpViews.slice(0, 20).forEach((v: any) => {
+        const lp = lpMap.get(v.landing_page_id);
+        items.push({
+          id: `lpview-${v.landing_page_id}-${v.started_at}`,
+          kind: "view",
+          entityType: "landing_page",
+          entityTitle: lp?.title ?? "Landing page",
+          entityHref: lp ? `/landing-pages/${v.landing_page_id}` : undefined,
+          who: null,
+          at: v.started_at,
+        });
+      });
+
       items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
-      return items.slice(0, 30);
+      return items.slice(0, 40);
     },
     enabled: !!user?.id,
     refetchInterval: visible ? 30_000 : false,
@@ -325,6 +373,15 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const uniqueLeads = leads.length + registrations.length;
   const prevLeads = leadsPrev.length + regsPrev.length;
 
+  // True unique viewers across all entity types (dedup by session_id when present)
+  const uniqueSessionSet = new Set<string>();
+  let anonViewFallback = 0;
+  [...videoViews, ...funnelViews, ...lpViews].forEach((v: any) => {
+    if (v.session_id) uniqueSessionSet.add(v.session_id);
+    else anonViewFallback += 1;
+  });
+  const uniqueViewerEstimate = uniqueSessionSet.size + anonViewFallback;
+
   // Sparklines (last 7 days regardless of period for hero KPIs)
   const allViewRows = [
     ...videoViews.map((v: any) => ({ at: v.started_at })),
@@ -336,18 +393,12 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     [...leads.map((l: any) => ({ at: l.submitted_at })), ...registrations.map((r: any) => ({ at: r.submitted_at }))],
     7,
   );
-  const uniqueViewerEstimate = totalEventViews; // proxy until session_id dedupe is added
   const viewerSpark = viewsSpark;
 
   const pageTitle = isMobile ? "Activity" : "Insights";
   const pageSubtitle = isMobile ? "Live pulse of what's happening." : "Track your numbers, grow your business.";
 
-  // Top performers
-  const topVideos = [...videos].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 5);
-  const topFunnels = [...funnels].sort((a, b) => (b.total_views || 0) - (a.total_views || 0)).slice(0, 5);
-  const topLPs = [...landingPages].sort((a, b) => (b.total_views || 0) - (a.total_views || 0)).slice(0, 5);
-
-  // Per-entity event view & lead counts (period-scoped)
+  // Per-entity event view & lead counts (period-scoped) — built FIRST so Top performers can use them
   const videoViewCount: Record<string, number> = {};
   videoViews.forEach((v: any) => { videoViewCount[v.video_id] = (videoViewCount[v.video_id] || 0) + 1; });
   const funnelViewCount: Record<string, number> = {};
@@ -358,6 +409,34 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   leads.forEach((l: any) => { if (l.funnel_id) funnelLeadCount[l.funnel_id] = (funnelLeadCount[l.funnel_id] || 0) + 1; });
   const lpRegCount: Record<string, number> = {};
   registrations.forEach((r: any) => { if (r.landing_page_id) lpRegCount[r.landing_page_id] = (lpRegCount[r.landing_page_id] || 0) + 1; });
+
+  // Top performers — for "All time" use denormalised counters; for narrower
+  // ranges, sort by period-scoped event counts so the section honours the
+  // selected time filter and stays consistent with the KPI cards above.
+  const isAllTime = period === "all";
+  const topVideos = [...videos]
+    .map((v) => ({ ...v, _periodViews: isAllTime ? (v.view_count || 0) : (videoViewCount[v.id] || 0) }))
+    .sort((a, b) => b._periodViews - a._periodViews)
+    .filter((v) => isAllTime ? true : v._periodViews > 0)
+    .slice(0, 5);
+  const topFunnels = [...funnels]
+    .map((f) => ({
+      ...f,
+      _periodViews: isAllTime ? (f.total_views || 0) : (funnelViewCount[f.id] || 0),
+      _periodLeads: isAllTime ? (f.total_leads || 0) : (funnelLeadCount[f.id] || 0),
+    }))
+    .sort((a, b) => b._periodViews - a._periodViews)
+    .filter((f) => isAllTime ? true : (f._periodViews > 0 || f._periodLeads > 0))
+    .slice(0, 5);
+  const topLPs = [...landingPages]
+    .map((l) => ({
+      ...l,
+      _periodViews: isAllTime ? (l.total_views || 0) : (lpViewCount[l.id] || 0),
+      _periodLeads: isAllTime ? (l.total_registrations || 0) : (lpRegCount[l.id] || 0),
+    }))
+    .sort((a, b) => b._periodViews - a._periodViews)
+    .filter((l) => isAllTime ? true : (l._periodViews > 0 || l._periodLeads > 0))
+    .slice(0, 5);
 
   const sortFn = (a: any, b: any, vA: number, vB: number, lA: number, lB: number) => {
     if (sort === "alpha") return (a.title || "").localeCompare(b.title || "");
@@ -477,33 +556,39 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             <ActivityFeed items={feedItems} />
           </div>
 
-          {/* Top entities */}
+          {/* Top entities — period-scoped so they stay consistent with KPI cards above */}
           <div className="grid lg:grid-cols-2 gap-4">
             <div className="premium-card p-5">
-              <h3 className="text-sm font-heading font-semibold mb-3 flex items-center gap-2"><Video size={14} className="text-primary" /> Top Videos</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-heading font-semibold flex items-center gap-2"><Video size={14} className="text-primary" /> Top Videos</h3>
+                <span className="text-[10px] text-muted-foreground">{PERIOD_LABELS[period]}</span>
+              </div>
               {topVideos.length ? (
                 <ul className="space-y-2">
                   {topVideos.map((v) => (
                     <li key={v.id} className="flex items-center justify-between gap-3 text-xs">
                       <span className="truncate">{v.title}</span>
-                      <span className="text-muted-foreground tabular-nums">{formatCompact(v.view_count || 0)} views</span>
+                      <span className="text-muted-foreground tabular-nums">{formatCompact(v._periodViews)} views</span>
                     </li>
                   ))}
                 </ul>
-              ) : <p className="text-xs text-muted-foreground text-center py-6">No videos yet</p>}
+              ) : <p className="text-xs text-muted-foreground text-center py-6">No views in this period</p>}
             </div>
             <div className="premium-card p-5">
-              <h3 className="text-sm font-heading font-semibold mb-3 flex items-center gap-2"><Layers size={14} className="text-primary" /> Top Funnels</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-heading font-semibold flex items-center gap-2"><Layers size={14} className="text-primary" /> Top Funnels</h3>
+                <span className="text-[10px] text-muted-foreground">{PERIOD_LABELS[period]}</span>
+              </div>
               {topFunnels.length ? (
                 <ul className="space-y-2">
                   {topFunnels.map((f) => (
                     <li key={f.id} className="flex items-center justify-between gap-3 text-xs">
                       <span className="truncate">{f.title}</span>
-                      <span className="text-muted-foreground tabular-nums">{formatCompact(f.total_views || 0)} views · {formatInt(f.total_leads || 0)} leads</span>
+                      <span className="text-muted-foreground tabular-nums">{formatCompact(f._periodViews)} views · {formatInt(f._periodLeads)} leads</span>
                     </li>
                   ))}
                 </ul>
-              ) : <p className="text-xs text-muted-foreground text-center py-6">No funnels yet</p>}
+              ) : <p className="text-xs text-muted-foreground text-center py-6">No activity in this period</p>}
             </div>
           </div>
 
