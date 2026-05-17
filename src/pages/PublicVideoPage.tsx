@@ -1,29 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "@/lib/router-compat";
 import { startVideoView, heartbeatVideoView } from "@/lib/videoTracking.functions";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/landing/Logo";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import {
   Video,
   AlertTriangle,
   Eye,
   Clock,
   Calendar,
-  Share2,
   Check,
   Sun,
   Moon,
-  Copy,
   X,
-  MessageCircle,
-  Twitter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -44,14 +35,20 @@ const PublicVideoPage = () => {
   const [videoError, setVideoError] = useState(false);
   const [reuploadOpen, setReuploadOpen] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [openedByApp, setOpenedByApp] = useState(false);
-  const [canNativeShare, setCanNativeShare] = useState(false);
+  const trackingRef = useRef<{
+    max: number;
+    warned: boolean;
+    eventId: string | null;
+    sessionId: string;
+    skipAttempts: number;
+    lastBeat: number;
+    started: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     setOpenedByApp(Boolean(window.opener));
-    setCanNativeShare(typeof navigator !== "undefined" && !!(navigator as any).share);
   }, []);
 
   const { data: video, isLoading, error, refetch } = useQuery({
@@ -77,7 +74,6 @@ const PublicVideoPage = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Creator profile (owner of the video)
   const { data: creatorProfile } = useQuery({
     queryKey: ["public-video-creator", video?.owner_id],
     queryFn: async () => {
@@ -106,8 +102,6 @@ const PublicVideoPage = () => {
     gcTime: 30 * 60 * 1000,
   });
 
-  // Global verified-badge enabled flag (admin-controlled).
-  // If the row is missing or the column doesn't exist yet, default to true.
   const { data: verifiedBadgeEnabled = true } = useQuery({
     queryKey: ["app-setting", "verified_badge_enabled"],
     queryFn: async () => {
@@ -151,32 +145,84 @@ const PublicVideoPage = () => {
     })();
   }, [id]);
 
-  const handleCopyLink = () => {
-    try {
-      navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      toast.success("Link copied");
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      toast.error("Could not copy link");
-    }
-  };
+  // Attach tracking to the custom player's video element.
+  const handleVideoRef = (el: HTMLVideoElement | null) => {
+    if (!el || !video) return;
+    if ((el as any).__nflowAttached) return;
+    (el as any).__nflowAttached = true;
+    const allowSeek = video.allow_seek !== false;
+    const allowSpeed = video.allow_playback_speed !== false;
 
-  const handleShare = async () => {
-    const shareData = {
-      title: video?.title ?? "Nevorai video",
-      text: "Watch this video on Nevorai",
-      url: typeof window !== "undefined" ? window.location.href : "",
-    };
-    if (typeof navigator !== "undefined" && (navigator as any).share) {
-      try {
-        await (navigator as any).share(shareData);
-        return;
-      } catch {
-        /* user dismissed */
-      }
+    if (!trackingRef.current) {
+      trackingRef.current = {
+        max: 0,
+        warned: false,
+        eventId: null,
+        sessionId: (crypto as any).randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+        skipAttempts: 0,
+        lastBeat: 0,
+        started: false,
+      };
     }
-    handleCopyLink();
+    const state = trackingRef.current!;
+
+    const startIfNeeded = async () => {
+      if (state.started) return;
+      state.started = true;
+      try {
+        const ua = navigator.userAgent || "";
+        const device = /Mobi|Android|iPhone|iPad/i.test(ua) ? "mobile" : "desktop";
+        const res = await startVideoView({
+          data: {
+            videoId: video.id,
+            sessionId: state.sessionId,
+            durationSeconds: isFinite(el.duration) ? el.duration : (video.duration_seconds ?? null),
+            deviceType: device,
+            referrerSource: (document.referrer || "direct").slice(0, 200),
+          },
+        });
+        state.eventId = res?.eventId ?? null;
+      } catch {
+        /* swallow */
+      }
+    };
+
+    const beat = (completed = false) => {
+      if (!state.eventId) return;
+      const now = Date.now();
+      if (!completed && now - state.lastBeat < 10000) return;
+      state.lastBeat = now;
+      heartbeatVideoView({
+        data: {
+          eventId: state.eventId,
+          watchPosition: el.currentTime || 0,
+          maxPosition: state.max,
+          completed,
+          skipAttempts: state.skipAttempts,
+        },
+      }).catch(() => {});
+    };
+
+    el.addEventListener("play", () => startIfNeeded());
+    el.addEventListener("timeupdate", () => {
+      if (el.currentTime > state.max) state.max = el.currentTime;
+      beat();
+    });
+    el.addEventListener("pause", () => beat());
+    el.addEventListener("ended", () => beat(true));
+    el.addEventListener("seeking", () => {
+      if (!allowSeek && el.currentTime > state.max + 0.5) {
+        el.currentTime = state.max;
+        state.skipAttempts += 1;
+        if (!state.warned) {
+          state.warned = true;
+          toast("This video must be watched in order", { duration: 2500 });
+        }
+      }
+    });
+    el.addEventListener("ratechange", () => {
+      if (!allowSpeed && el.playbackRate !== 1) el.playbackRate = 1;
+    });
   };
 
   if (isLoading) {
@@ -217,18 +263,13 @@ const PublicVideoPage = () => {
   }
 
   const isOwner = !!user && user.id === video.owner_id;
-  const showDescToggle =
-    !!video.description && video.description.length > 200;
-  const showVerifiedBadge =
-    verifiedBadgeEnabled && !!creatorProfile?.is_verified;
+  const showDescToggle = !!video.description && video.description.length > 200;
+  const showVerifiedBadge = verifiedBadgeEnabled && !!creatorProfile?.is_verified;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Top header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        {/* 2px brand accent line at top */}
         <div className="h-0.5 w-full bg-primary" />
-
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {openedByApp && (
@@ -241,7 +282,12 @@ const PublicVideoPage = () => {
                 <X size={18} />
               </button>
             )}
-            <a href="https://nevorai.com" target="_blank" rel="noopener noreferrer" className="min-w-0">
+            <a
+              href="https://nevorai.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-w-0"
+            >
               <Logo size="sm" />
             </a>
           </div>
@@ -257,7 +303,7 @@ const PublicVideoPage = () => {
 
       {/* Player */}
       <div className="max-w-3xl mx-auto w-full px-0 sm:px-4 mt-4">
-        <div className="aspect-video bg-black sm:rounded-2xl overflow-hidden relative">
+        <div className="aspect-video bg-black sm:rounded-2xl overflow-hidden">
           {videoError ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-center px-4 gap-3 bg-card">
               <AlertTriangle size={36} className="text-destructive" />
@@ -272,83 +318,16 @@ const PublicVideoPage = () => {
               )}
             </div>
           ) : video.public_url ? (
-            <video
+            <VideoPlayer
               src={video.public_url}
-              controls
-              controlsList={
-                `${video.allow_seek === false ? "nodownload noplaybackrate " : ""}${
-                  video.allow_playback_speed === false ? "noplaybackrate" : ""
-                }`.trim() || undefined
-              }
-              autoPlay
-              muted
-              preload="auto"
-              playsInline
-              className="w-full h-full"
               poster={video.thumbnail_url || undefined}
+              allowSeek={video.allow_seek !== false}
+              allowPlaybackSpeed={video.allow_playback_speed !== false}
+              allowCopyLink={video.allow_copy_link !== false}
+              allowDownload={false}
+              title={video.title || undefined}
+              onVideoRef={handleVideoRef}
               onError={() => setVideoError(true)}
-              ref={(el) => {
-                if (!el) return;
-                const allowSeek = video.allow_seek !== false;
-                const allowSpeed = video.allow_playback_speed !== false;
-                const state: any = (el as any).__trackState || ((el as any).__trackState = {
-                  max: 0, warned: false, eventId: null as string | null,
-                  sessionId: (crypto as any).randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-                  skipAttempts: 0, lastBeat: 0, started: false,
-                });
-
-                const startIfNeeded = async () => {
-                  if (state.started) return;
-                  state.started = true;
-                  try {
-                    const ua = navigator.userAgent || "";
-                    const device = /Mobi|Android|iPhone|iPad/i.test(ua) ? "mobile" : "desktop";
-                    const res = await startVideoView({ data: {
-                      videoId: video.id,
-                      sessionId: state.sessionId,
-                      durationSeconds: isFinite(el.duration) ? el.duration : (video.duration_seconds ?? null),
-                      deviceType: device,
-                      referrerSource: (document.referrer || "direct").slice(0, 200),
-                    }});
-                    state.eventId = res?.eventId ?? null;
-                  } catch (e) { /* swallow */ }
-                };
-
-                const beat = (completed = false) => {
-                  if (!state.eventId) return;
-                  const now = Date.now();
-                  if (!completed && now - state.lastBeat < 10000) return;
-                  state.lastBeat = now;
-                  heartbeatVideoView({ data: {
-                    eventId: state.eventId,
-                    watchPosition: el.currentTime || 0,
-                    maxPosition: state.max,
-                    completed,
-                    skipAttempts: state.skipAttempts,
-                  }}).catch(() => {});
-                };
-
-                el.onplay = () => { startIfNeeded(); };
-                el.ontimeupdate = () => {
-                  if (el.currentTime > state.max) state.max = el.currentTime;
-                  beat();
-                };
-                el.onpause = () => beat();
-                el.onended = () => beat(true);
-                el.onseeking = () => {
-                  if (!allowSeek && el.currentTime > state.max + 0.5) {
-                    el.currentTime = state.max;
-                    state.skipAttempts += 1;
-                    if (!state.warned) {
-                      state.warned = true;
-                      toast("This video must be watched in order", { duration: 2500 });
-                    }
-                  }
-                };
-                el.onratechange = () => {
-                  if (!allowSpeed && el.playbackRate !== 1) el.playbackRate = 1;
-                };
-              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -356,168 +335,92 @@ const PublicVideoPage = () => {
             </div>
           )}
         </div>
-        {!videoError && video.public_url && (
-          <div className="flex items-center justify-end gap-2 px-4 sm:px-0 pt-3">
-            {video.allow_copy_link !== false && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCopyLink}
-                className="gap-1.5"
-              >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                <span className="text-xs">{copied ? "Copied" : "Copy link"}</span>
-              </Button>
-            )}
-            {canNativeShare ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                className="gap-1.5"
-              >
-                <Share2 size={14} />
-                <span className="text-xs">Share</span>
-              </Button>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button type="button" variant="outline" size="sm" className="gap-1.5">
-                    <Share2 size={14} />
-                    <span className="text-xs">Share</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuItem onSelect={handleCopyLink}>
-                    <Copy size={13} className="mr-2" /> Copy link
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      window.open(
-                        `https://wa.me/?text=${encodeURIComponent(
-                          `${video?.title ?? "Watch this"}\n${window.location.href}`,
-                        )}`,
-                        "_blank",
-                        "noopener,noreferrer",
-                      )
-                    }
-                  >
-                    <MessageCircle size={13} className="mr-2" /> WhatsApp
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      window.open(
-                        `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                          window.location.href,
-                        )}&text=${encodeURIComponent(video?.title ?? "")}`,
-                        "_blank",
-                        "noopener,noreferrer",
-                      )
-                    }
-                  >
-                    <Twitter size={13} className="mr-2" /> Twitter
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* Title + meta */}
-      <div className="max-w-3xl mx-auto w-full px-4 py-4 space-y-3">
-        <h1 className="text-xl sm:text-2xl font-heading font-bold leading-tight tracking-tight">
+      {/* Title + single meta row, tight under video */}
+      <div className="max-w-3xl mx-auto w-full px-4 mt-4 space-y-2">
+        <h1 className="text-xl sm:text-2xl font-heading font-semibold leading-tight tracking-tight">
           {video.title || "Untitled video"}
         </h1>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          {typeof video.view_count === "number" && video.view_count > 0 && (
-            <span className="flex items-center gap-1">
-              <Eye size={12} />
-              {formatViewCount(video.view_count)} views
-            </span>
-          )}
-          {!!video.duration_seconds && (
-            <span className="flex items-center gap-1">
-              <Clock size={12} />
-              {formatDuration(video.duration_seconds)}
-            </span>
-          )}
-          {video.created_at && (
-            <span className="flex items-center gap-1">
-              <Calendar size={12} />
-              {formatRelativeDate(video.created_at)}
-            </span>
-          )}
-        </div>
-
-        {/* Copy/Share now live in the player overlay (bottom-right) */}
-      </div>
-
-      {/* Creator card */}
-      {creatorProfile && (
-        <div className="max-w-3xl mx-auto w-full px-4 mb-2">
-          <div className="flex items-center gap-3 py-3 border-t border-border">
-            <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0 overflow-hidden">
-              {creatorProfile.avatar_url ? (
-                <img
-                  src={creatorProfile.avatar_url}
-                  alt={creatorProfile.full_name || "Creator"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
-                  {(creatorProfile.full_name || "?")[0].toUpperCase()}
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-sm truncate">
-                  {creatorProfile.full_name || "Creator"}
-                </span>
-                {showVerifiedBadge && (
-                  <span
-                    title="Verified creator"
-                    className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground flex-shrink-0"
-                  >
-                    <Check size={10} strokeWidth={3} />
-                  </span>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+          {creatorProfile && (
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-muted overflow-hidden flex-shrink-0">
+                {creatorProfile.avatar_url ? (
+                  <img
+                    src={creatorProfile.avatar_url}
+                    alt={creatorProfile.full_name || "Creator"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-xs font-bold">
+                    {(creatorProfile.full_name || "?")[0].toUpperCase()}
+                  </div>
                 )}
               </div>
-              {creatorProfile.username && (
-                <p className="text-[11px] text-muted-foreground">@{creatorProfile.username}</p>
-              )}
-              {creatorProfile.bio && (
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
-                  {creatorProfile.bio}
-                </p>
+              <span className="font-medium text-foreground truncate">
+                {creatorProfile.full_name || "Creator"}
+              </span>
+              {showVerifiedBadge && (
+                <span
+                  title="Verified creator"
+                  className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground flex-shrink-0"
+                >
+                  <Check size={10} strokeWidth={3} />
+                </span>
               )}
             </div>
-            {creatorProfile.cta_url && creatorProfile.cta_label && (
-              <a
-                href={creatorProfile.cta_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-shrink-0 inline-flex items-center gap-1 px-3 h-9 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
-              >
-                {creatorProfile.cta_label} →
-              </a>
-            )}
-          </div>
-          <div className="pb-3 -mt-1">
-            <span className="text-[11px] text-muted-foreground">
-              {video.allow_seek === false ? "🛡️ Skip-protection enabled" : "▶ Standard playback"}
+          )}
+          {video.created_at && (
+            <>
+              <span aria-hidden>·</span>
+              <span className="flex items-center gap-1">
+                <Calendar size={12} />
+                {formatRelativeDate(video.created_at)}
+              </span>
+            </>
+          )}
+          {typeof video.view_count === "number" && video.view_count > 0 && (
+            <>
+              <span aria-hidden>·</span>
+              <span className="flex items-center gap-1">
+                <Eye size={12} />
+                {formatViewCount(video.view_count)} views
+              </span>
+            </>
+          )}
+          {!!video.duration_seconds && (
+            <>
+              <span aria-hidden>·</span>
+              <span className="flex items-center gap-1">
+                <Clock size={12} />
+                {formatDuration(video.duration_seconds)}
+              </span>
+            </>
+          )}
+          <>
+            <span aria-hidden>·</span>
+            <span>
+              {video.allow_seek === false ? "🛡️ Skip-protection" : "▶ Standard playback"}
             </span>
-          </div>
+          </>
+          {creatorProfile?.cta_url && creatorProfile?.cta_label && (
+            <a
+              href={creatorProfile.cta_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto inline-flex items-center gap-1 px-3 h-8 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+            >
+              {creatorProfile.cta_label} →
+            </a>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Description */}
       {video.description && (
-        <div className="max-w-3xl mx-auto w-full px-4 mb-10">
+        <div className="max-w-3xl mx-auto w-full px-4 mt-4 mb-10">
           <div className="rounded-xl bg-muted/50 p-4">
             <div
               className={`text-sm leading-relaxed whitespace-pre-wrap ${
@@ -550,8 +453,16 @@ const PublicVideoPage = () => {
         />
       )}
 
-      {/* Footer */}
-      <footer style={{ textAlign: "center", padding: "24px 16px", color: "#9ca3af", fontSize: 13, borderTop: "1px solid hsl(var(--border))", marginTop: "auto" }}>
+      <footer
+        style={{
+          textAlign: "center",
+          padding: "24px 16px",
+          color: "#9ca3af",
+          fontSize: 13,
+          borderTop: "1px solid hsl(var(--border))",
+          marginTop: "auto",
+        }}
+      >
         © 2026 Nevorai · All Rights Reserved · India
       </footer>
     </div>
