@@ -202,7 +202,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                 ? location.pathname === item.path
                 : location.pathname.startsWith(item.path);
               return (
-                <Link
+                <TLink
                   key={item.path}
                   to={item.path as any}
                   preload="intent"
@@ -213,7 +213,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                 >
                   <item.icon size={20} strokeWidth={active ? 2.5 : 1.8} />
                   <span className="truncate">{item.label}</span>
-                </Link>
+                </TLink>
               );
             })}
           </div>
