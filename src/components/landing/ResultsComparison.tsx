@@ -1,36 +1,58 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLandingContent } from "@/hooks/useLandingContent";
 import { AnimatedImage, type AnimationKind } from "./AnimatedImage";
-import combinedRoutes from "@/assets/landing/section-8-combined-routes.png";
+import youtubeFlow from "@/assets/landing/section-8-youtube-flow.jpg";
+import nevoraiFlow from "@/assets/landing/section-8-nevorai-flow.jpg";
 
-const SLOT_ID = "compare.combined";
+type RouteKey = "youtube" | "nevorai";
 
 export const ResultsComparison = () => {
   const { data } = useLandingContent();
-  const row = data?.map?.[SLOT_ID];
+  const [active, setActive] = useState<RouteKey>("youtube");
 
-  const heading = row?.title || "Same prospect. 2x the conversion.";
-  const sub =
-    row?.subtitle ||
-    "Here's the side-by-side: same link, two journeys, two completely different outcomes.";
-  const image = row?.image_url || combinedRoutes;
-  const animation = (row?.animation as AnimationKind) || "fade-up";
+  const yt = data?.map?.["compare.youtube"];
+  const nv = data?.map?.["compare.nevorai"];
 
-  // Split bullets into two columns: first half = YouTube weaknesses, rest = Nevorai wins.
-  // Admins can edit them in /admin/settings#landing.
-  const bullets = row?.bullets ?? [
-    "Viewers see 5+ suggested videos",
-    "Comments distract them",
-    "Autoplay confuses them",
-    "Most leave before your pitch ends",
-    "Can't skip, so they watch",
-    "Zero distractions, stays focused",
-    "Automatic lead capture",
-    "Follow-up scheduled instantly",
-  ];
-  const half = Math.ceil(bullets.length / 2);
-  const ytBullets = bullets.slice(0, half);
-  const nvBullets = bullets.slice(half);
+  const routes = {
+    youtube: {
+      title: yt?.title || "YouTube Route → 6–8% conversion",
+      subtitle:
+        yt?.subtitle ||
+        "Share link → opens YouTube → distractions → leaves without buying.",
+      image: yt?.image_url || youtubeFlow,
+      animation: (yt?.animation as AnimationKind) || "fade-up",
+      bullets:
+        yt?.bullets?.length
+          ? yt.bullets
+          : [
+              "Viewers see 5+ suggested videos",
+              "Comments distract them",
+              "Autoplay confuses them",
+              "Most leave before your pitch ends",
+            ],
+    },
+    nevorai: {
+      title: nv?.title || "Nevorai Route → 16–18% conversion",
+      subtitle:
+        nv?.subtitle ||
+        "Share link → opens Nevorai → watches full video → captures lead → converts.",
+      image: nv?.image_url || nevoraiFlow,
+      animation: (nv?.animation as AnimationKind) || "ken-burns",
+      bullets:
+        nv?.bullets?.length
+          ? nv.bullets
+          : [
+              "Can't skip, so they watch",
+              "Zero distractions, stays focused",
+              "Automatic lead capture",
+              "Follow-up scheduled instantly",
+            ],
+    },
+  } as const;
+
+  const current = routes[active];
+  const isNev = active === "nevorai";
 
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden bg-hero-bg">
@@ -43,67 +65,119 @@ export const ResultsComparison = () => {
           transition={{ duration: 0.5 }}
         >
           <h2 className="font-heading font-extrabold text-white text-3xl md:text-5xl leading-[1.1] mb-4">
-            {heading.includes("2x") ? (
-              <>
-                Same prospect.{" "}
-                <span className="text-gradient-brand">2x the conversion.</span>
-              </>
-            ) : (
-              heading
-            )}
+            Same prospect.{" "}
+            <span className="text-gradient-brand">2x the conversion.</span>
           </h2>
-          <p className="text-hero-muted text-base md:text-lg">{sub}</p>
+          <p className="text-hero-muted text-base md:text-lg">
+            Here's the side-by-side: same link, two journeys, two completely
+            different outcomes.
+          </p>
         </motion.div>
 
         <div className="max-w-5xl mx-auto">
+          {/* Toggle */}
+          <div className="flex justify-center mb-6">
+            <div
+              role="tablist"
+              aria-label="Compare routes"
+              className="inline-flex p-1 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md"
+            >
+              {(["youtube", "nevorai"] as RouteKey[]).map((key) => {
+                const isActive = active === key;
+                const label =
+                  key === "youtube" ? "YouTube Route" : "Nevorai Route";
+                return (
+                  <button
+                    key={key}
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActive(key)}
+                    className={[
+                      "relative px-4 sm:px-6 py-2 text-xs sm:text-sm font-semibold rounded-full transition-colors",
+                      isActive
+                        ? key === "youtube"
+                          ? "text-white"
+                          : "text-white"
+                        : "text-white/60 hover:text-white/90",
+                    ].join(" ")}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="routePillBg"
+                        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                        className={[
+                          "absolute inset-0 rounded-full",
+                          key === "youtube"
+                            ? "bg-destructive/90 shadow-[0_6px_20px_-6px_hsl(var(--destructive)/0.6)]"
+                            : "bg-gradient-brand shadow-glow-brand-lg",
+                        ].join(" ")}
+                      />
+                    )}
+                    <span className="relative">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5 }}
-            className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-8 backdrop-blur-md"
+            className={[
+              "rounded-2xl border p-4 md:p-8 backdrop-blur-md transition-colors duration-500",
+              isNev
+                ? "border-brand-emerald/30 bg-brand-emerald/[0.04]"
+                : "border-destructive/30 bg-destructive/[0.04]",
+            ].join(" ")}
           >
-            <AnimatedImage
-              src={image}
-              alt="YouTube Route vs Nevorai Route — side-by-side conversion flow"
-              animation={animation}
-              className="!aspect-[3/2]"
-            />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p
+                  className={[
+                    "text-[11px] font-bold uppercase tracking-widest mb-3",
+                    isNev ? "text-brand-emerald" : "text-destructive",
+                  ].join(" ")}
+                >
+                  {isNev ? "✅ " : "❌ "}
+                  {current.title}
+                </p>
+                <p className="text-white/80 text-sm md:text-base mb-5">
+                  {current.subtitle}
+                </p>
 
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-8">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-destructive mb-3">
-                  ❌ YouTube Route — 6–8%
-                </p>
-                <ul className="space-y-2">
-                  {ytBullets.map((b) => (
+                <AnimatedImage
+                  src={current.image}
+                  alt={current.title}
+                  animation={current.animation}
+                  className="!aspect-[3/2]"
+                />
+
+                <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-6">
+                  {current.bullets.map((b) => (
                     <li
                       key={b}
                       className="flex items-start gap-2 text-sm md:text-base text-white/85"
                     >
-                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 bg-destructive" />
+                      <span
+                        className={[
+                          "mt-1.5 h-1.5 w-1.5 rounded-full shrink-0",
+                          isNev ? "bg-brand-emerald" : "bg-destructive",
+                        ].join(" ")}
+                      />
                       {b}
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-emerald mb-3">
-                  ✅ Nevorai Route — 16–18%
-                </p>
-                <ul className="space-y-2">
-                  {nvBullets.map((b) => (
-                    <li
-                      key={b}
-                      className="flex items-start gap-2 text-sm md:text-base text-white/85"
-                    >
-                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 bg-brand-emerald" />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
