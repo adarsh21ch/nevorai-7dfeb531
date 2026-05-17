@@ -55,32 +55,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       staleTime: 60_000,
     });
 
-    // My Funnels list
-    queryClient.prefetchQuery({
-      queryKey: ["my-funnels", uid],
-      queryFn: async () => {
-        const { data } = await supabase
-          .from("funnels").select("*")
-          .eq("owner_id", uid)
-          .order("created_at", { ascending: false });
-        return data || [];
-      },
-      staleTime: 60_000,
-    });
+    // Aggressive parallel prefetch of every primary tab. Each .catch() swallows
+    // failures so a single 4xx (e.g. table not yet seeded) doesn't break login.
+    const sb = supabase as any;
+    const prefetch = (key: any[], queryFn: () => Promise<any>, staleTime = 60_000) =>
+      queryClient.prefetchQuery({ queryKey: key, queryFn, staleTime }).catch(() => {});
 
-    // Unread notifications count
-    queryClient.prefetchQuery({
-      queryKey: ["unread-notifications", uid],
-      queryFn: async () => {
-        const { count } = await (supabase as any)
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", uid)
-          .eq("is_read", false);
-        return count ?? 0;
-      },
-      staleTime: 30_000,
+    prefetch(["my-funnels", uid], async () => {
+      const { data } = await supabase.from("funnels").select("*")
+        .eq("owner_id", uid).order("created_at", { ascending: false });
+      return data || [];
     });
+    prefetch(["videos", uid], async () => {
+      const { data } = await sb.from("video_assets").select("*")
+        .eq("owner_id", uid).order("created_at", { ascending: false });
+      return data || [];
+    });
+    prefetch(["landing-pages", uid], async () => {
+      const { data } = await sb.from("landing_pages").select("*")
+        .eq("owner_id", uid).order("created_at", { ascending: false });
+      return data || [];
+    });
+    prefetch(["live-sessions", uid], async () => {
+      const { data } = await sb.from("live_sessions").select("*")
+        .eq("owner_id", uid).order("created_at", { ascending: false });
+      return data || [];
+    });
+    prefetch(["all-funnel-leads", uid], async () => {
+      const { data } = await sb.from("funnel_leads").select("*, funnels!inner(owner_id)")
+        .eq("funnels.owner_id", uid).order("created_at", { ascending: false }).limit(500);
+      return data || [];
+    });
+    prefetch(["unread-notifications", uid], async () => {
+      const { count } = await sb.from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", uid).eq("is_read", false);
+      return count ?? 0;
+    }, 30_000);
   }, [user?.id, queryClient]);
 
   const fetchProfile = useCallback(async (userId: string) => {
