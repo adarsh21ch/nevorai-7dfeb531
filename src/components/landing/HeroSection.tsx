@@ -26,9 +26,8 @@ export const HeroSection = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold tracking-wide uppercase text-brand-emerald"
+            className="mb-6 badge-pill badge-pill-cyan"
           >
-            <span className="flex h-2 w-2 rounded-full bg-brand-emerald animate-pulse" />
             Built for Creators Who Sell
           </motion.div>
 
