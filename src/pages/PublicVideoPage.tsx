@@ -59,9 +59,7 @@ const PublicVideoPage = () => {
       const column = looksLikeUuid ? "id" : "slug";
       const { data, error } = await (supabase as any)
         .from("video_assets")
-        .select(
-          "id, slug, title, description, public_url, thumbnail_url, duration_seconds, is_shared, owner_id, allow_copy_link, allow_seek, allow_playback_speed, show_upload_date, view_count, created_at",
-        )
+        .select("*")
         .eq(column, id!)
         .eq("is_shared", true)
         .single();
