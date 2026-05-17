@@ -3,22 +3,22 @@ import { usePlan } from "@/hooks/usePlan";
 import { useWhatsAppSupport } from "@/hooks/useWhatsAppSupport";
 import { useAuth } from "@/hooks/useAuth";
 import { useNevoraiMember } from "@/hooks/useNevoraiMember";
+import { useStorageUsage } from "@/hooks/useStorageUsage";
 import { NevoraiMemberBadge } from "@/components/NevoraiMemberBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/router-compat";
 import {
   CreditCard, Crown, ArrowRight, MessageCircle,
-  CheckCircle2, XCircle, Clock, AlertTriangle, RefreshCw, Eye, Sparkles,
+  CheckCircle2, XCircle, Clock, AlertTriangle, RefreshCw, HardDrive, Check,
 } from "lucide-react";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { RefundRequestModal } from "@/components/RefundRequestModal";
-import { TopUpViewsCard } from "@/components/TopUpViewsCard";
-import { ViewCapacityCard } from "@/components/billing/ViewCapacityCard";
 import { StorageUsageCard } from "@/components/StorageUsageCard";
+import { cn } from "@/lib/utils";
 
 const statusConfig: Record<string, { label: string; icon: any; color: string; bg: string }> = {
   active:        { label: "Active",         icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
@@ -31,17 +31,58 @@ const statusConfig: Record<string, { label: string; icon: any; color: string; bg
 
 const PLAN_LABEL: Record<string, string> = { free: "Free", basic: "Basic", pro: "Individual", trial: "Trial" };
 
+interface PlanRow {
+  plan_name: string;
+  price_monthly: number | null;
+  max_storage_mb: number | null;
+  max_funnels: number | null;
+  max_landing_pages: number | null;
+  max_live_sessions: number | null;
+  feature_lead_capture?: boolean | null;
+  feature_whatsapp_automation?: boolean | null;
+  feature_landing_pages?: boolean | null;
+  feature_go_live?: boolean | null;
+  feature_speaker_profile?: boolean | null;
+  feature_advanced_analytics?: boolean | null;
+  feature_analytics?: boolean | null;
+}
+
+const fmtStorage = (mb: number | null) => {
+  if (!mb || mb <= 0) return "—";
+  if (mb >= 1024) return `${(mb / 1024).toFixed(mb % 1024 === 0 ? 0 : 1)} GB`;
+  return `${mb} MB`;
+};
+const fmtFunnels = (n: number | null) => (n === -1 ? "Unlimited" : n ?? "—");
+
+const buildFeatures = (p: PlanRow): string[] => {
+  const items: string[] = [];
+  items.push(`${fmtStorage(p.max_storage_mb)} storage`);
+  items.push(p.max_funnels === -1 ? "Unlimited funnels" : `${p.max_funnels ?? 0} funnels`);
+  if (p.feature_landing_pages) {
+    items.push(p.max_landing_pages === -1 ? "Unlimited landing pages" : `${p.max_landing_pages ?? 0} landing pages`);
+  }
+  if (p.feature_go_live) {
+    items.push(p.max_live_sessions === -1 ? "Unlimited live sessions" : `${p.max_live_sessions ?? 0} live sessions`);
+  }
+  if (p.feature_lead_capture) items.push("Lead capture");
+  if (p.feature_whatsapp_automation) items.push("WhatsApp share & automation");
+  if (p.feature_speaker_profile) items.push("Speaker profile");
+  if (p.feature_advanced_analytics) items.push("Advanced analytics");
+  else if (p.feature_analytics) items.push("Analytics");
+  return items;
+};
+
 const BillingPage = () => {
   const { plan, isLoading } = usePlan();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { isMember } = useNevoraiMember();
   const { openSupport } = useWhatsAppSupport();
+  const storage = useStorageUsage();
   const [refundModalOpen, setRefundModalOpen] = useState(false);
 
   const status = statusConfig[plan.status] || statusConfig.active;
   const StatusIcon = status.icon;
   const planLabel = PLAN_LABEL[plan.tier] || plan.tier;
-  const dailyViews = (profile as any)?.selected_daily_views ?? null;
 
   const { data: existingRefund, refetch: refetchRefund } = useQuery({
     queryKey: ["refund-request", user?.id],
@@ -60,22 +101,20 @@ const BillingPage = () => {
     enabled: !!user,
   });
 
-  // Pricing for Pro upgrade recommendation card
-  const { data: proPrice } = useQuery({
-    queryKey: ["pro-base-price"],
+  const { data: tierPlans } = useQuery({
+    queryKey: ["billing-tier-plans"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("plan_view_tiers" as any)
-        .select("monthly_price")
-        .eq("plan_name", "pro")
-        .eq("is_active", true)
-        .order("display_order", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      return (data as any)?.monthly_price ?? null;
+      const { data } = await (supabase as any)
+        .from("plan_config")
+        .select("*")
+        .in("plan_name", ["basic", "pro"]);
+      return (data ?? []) as PlanRow[];
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  const basicPlan = tierPlans?.find(p => p.plan_name === "basic");
+  const proPlan = tierPlans?.find(p => p.plan_name === "pro");
 
   const startedAt = plan.startedAt ? new Date(plan.startedAt) : null;
   const guaranteeExpiresAt = startedAt ? new Date(startedAt.getTime() + 7 * 86400_000) : null;
@@ -89,8 +128,6 @@ const BillingPage = () => {
     now < guaranteeExpiresAt &&
     !existingRefund;
 
-  const showProUpgradeCard = plan.isPaid && plan.tier === "basic" && !plan.isExpired && !isMember;
-
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -103,6 +140,60 @@ const BillingPage = () => {
       </DashboardLayout>
     );
   }
+
+  const currentTier = plan.tier; // free | basic | pro | trial
+
+  const renderTierCard = (p: PlanRow | undefined, label: string, accent: boolean) => {
+    if (!p) return null;
+    const isCurrent =
+      (p.plan_name === "basic" && currentTier === "basic") ||
+      (p.plan_name === "pro" && (currentTier === "pro" || currentTier === "trial"));
+    const features = buildFeatures(p);
+
+    return (
+      <div
+        className={cn(
+          "glass-card p-6 flex flex-col gap-4 relative",
+          accent && "border-primary/30 bg-gradient-to-br from-primary/[0.04] to-transparent",
+        )}
+      >
+        {accent && (
+          <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            Recommended
+          </span>
+        )}
+        <div>
+          <h3 className="font-heading font-bold text-lg">{label}</h3>
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-3xl font-heading font-bold">₹{p.price_monthly ?? "—"}</span>
+            <span className="text-sm text-muted-foreground">/ month</span>
+          </div>
+        </div>
+
+        <ul className="space-y-2 text-sm flex-1">
+          {features.map((f, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <Check size={15} className="text-emerald-500 mt-0.5 shrink-0" />
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+
+        {isCurrent ? (
+          <Badge variant="outline" className="w-full justify-center py-2 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
+            <CheckCircle2 size={13} className="mr-1.5" /> Current Plan
+          </Badge>
+        ) : currentTier === "pro" && p.plan_name === "basic" ? null : (
+          <Link to="/upgrade">
+            <Button className="w-full gap-1.5" variant={accent ? "default" : "outline"}>
+              {currentTier === "basic" && p.plan_name === "pro" ? "Upgrade to Pro" : `Upgrade to ${label}`}
+              <ArrowRight size={14} />
+            </Button>
+          </Link>
+        )}
+      </div>
+    );
+  };
 
   return (
     <DashboardLayout>
@@ -126,7 +217,7 @@ const BillingPage = () => {
         {/* Storage usage */}
         <StorageUsageCard />
 
-        {/* Existing refund-request status banner */}
+        {/* Refund-request status banner */}
         {existingRefund && (
           <div className="rounded-xl p-3 border border-border bg-muted/20 flex items-start gap-3 text-sm">
             <Clock className="text-amber-500 shrink-0 mt-0.5" size={16} />
@@ -143,7 +234,7 @@ const BillingPage = () => {
           </div>
         )}
 
-        {/* Compact current plan summary */}
+        {/* Plan summary card */}
         <div className="glass-card p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${plan.isPaid ? "bg-primary/10" : "bg-muted"}`}>
@@ -188,72 +279,41 @@ const BillingPage = () => {
               </p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Daily views</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Storage</p>
               <p className="font-medium mt-0.5 flex items-center gap-1.5">
-                <Eye size={12} className="text-muted-foreground" />
-                {dailyViews === -1 ? "Unlimited" : dailyViews ?? "—"}
+                <HardDrive size={12} className="text-muted-foreground" />
+                {storage.isLoading
+                  ? "—"
+                  : `${storage.usedGB.toFixed(2)} / ${storage.limitGB >= 1 ? storage.limitGB + " GB" : storage.limitMB + " MB"}`}
               </p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Funnels</p>
-              <p className="font-medium mt-0.5">
-                {plan.limits.funnel_limit === null || plan.limits.funnel_limit === -1 ? "Unlimited" : plan.limits.funnel_limit}
-              </p>
+              <p className="font-medium mt-0.5">{fmtFunnels(plan.limits.funnel_limit)}</p>
             </div>
           </div>
-
-          {(!plan.isPaid || plan.isExpired || plan.isExpiringSoon) && !isMember && (
-            <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-              <Link to="/upgrade" className="flex-1 sm:flex-none">
-                <Button size="sm" className="w-full gap-1.5">
-                  {plan.isExpired ? "Renew Plan" : plan.isExpiringSoon ? "Renew Now" : "Upgrade Plan"}
-                  <ArrowRight size={13} />
-                </Button>
-              </Link>
-            </div>
-          )}
         </div>
 
-        {/* Recommended: Basic → Pro upgrade */}
-        {showProUpgradeCard && (
-          <div className="glass-card p-5 border border-primary/20 bg-gradient-to-br from-primary/[0.04] to-transparent">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div className="flex items-start gap-3 flex-1 min-w-[200px]">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Sparkles size={16} className="text-primary" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">Upgrade to Individual (Pro)</h3>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Recommended</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Unlock higher view limits, multi-step funnels, live sessions, advanced analytics & priority support.
-                  </p>
-                  <div className="text-xs text-muted-foreground mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span>Current: <span className="font-semibold text-foreground">Basic ₹{plan.amountPaid ?? "—"}/mo</span></span>
-                    <ArrowRight size={11} />
-                    <span>New: <span className="font-semibold text-foreground">Pro {proPrice ? `₹${proPrice}/mo` : ""}</span></span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/80 mt-1">
-                    You'll only pay the prorated difference today. Final amount shown at checkout.
-                  </p>
-                </div>
-              </div>
-              <Link to="/upgrade">
-                <Button className="gap-1.5 whitespace-nowrap">
-                  Upgrade to Pro <ArrowRight size={14} />
-                </Button>
-              </Link>
-            </div>
+        {/* Choose Your Plan — two tier cards */}
+        <div className="space-y-3">
+          <div>
+            <h2 className="text-lg font-heading font-bold">Choose your plan</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Storage-based pricing. No view limits. Cancel anytime.
+            </p>
           </div>
-        )}
 
-        {/* Increase view limit (within current plan) */}
-        <ViewCapacityCard />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderTierCard(basicPlan, "Basic", false)}
+            {renderTierCard(proPlan, "Pro", true)}
+          </div>
 
-        {/* One-time extra views top-up */}
-        <TopUpViewsCard />
+          {currentTier === "pro" && (
+            <p className="text-xs text-center text-muted-foreground pt-1">
+              You're on our highest tier. 🎉 Thanks for being a Pro member.
+            </p>
+          )}
+        </div>
 
         {/* Payment failure prompt */}
         {plan.status === "payment_failed" && (
@@ -272,7 +332,7 @@ const BillingPage = () => {
           </div>
         )}
 
-        {/* Subtle support line at the bottom */}
+        {/* Support footer */}
         <div className="text-xs text-muted-foreground text-center pt-2 pb-4 border-t border-border/40">
           Need to change, cancel,{" "}
           {inGuaranteeWindow ? (
