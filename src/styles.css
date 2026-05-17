@@ -346,3 +346,34 @@ img, video, iframe { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   .hero-marquee-track { animation: none; }
 }
+
+/* === Tactile click feedback (Instagram/WhatsApp feel) === */
+button, a, [role="button"], .tappable {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button:not(:disabled):active,
+a:active,
+[role="button"]:active,
+.tappable:active {
+  transform: scale(0.97);
+  transition: transform 0.08s ease-out;
+}
+.tappable {
+  transition: transform 0.12s ease-out, opacity 0.12s ease-out;
+}
+.tappable:active { opacity: 0.85; }
+
+/* Safe-area padding for fixed bottom nav (iPhone home indicator) */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pb-safe-nav {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 5rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:active, a:active, [role="button"]:active, .tappable:active {
+    transform: none;
+  }
+}
