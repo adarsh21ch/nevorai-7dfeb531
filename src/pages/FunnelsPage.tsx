@@ -140,7 +140,10 @@ const FunnelsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             )}
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+          <div
+            className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
+            style={{ contain: "layout style paint" }}
+          >
             {filtered.map((f: any) => {
               const status = f.is_published ? "published" : "draft";
               const statusCfg: Record<string, string> = {

@@ -288,7 +288,10 @@ const VideosPage = () => {
           </div>
         ) : (isMobile || view === "list") ? (
           /* COMPACT LIST — YouTube Studio style */
-          <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+          <div
+            className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border"
+            style={{ contain: "layout style paint" }}
+          >
             {filtered.map((v) => {
               const title = getDisplayTitle(v.title);
               const isReady = v.status === "ready";
@@ -432,7 +435,10 @@ const VideosPage = () => {
           </div>
         ) : (
           /* GRID — desktop opt-in */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            style={{ contain: "layout style paint" }}
+          >
             {filtered.map((v) => {
               const title = getDisplayTitle(v.title);
               const previewUrl = `/v/${(v as any).slug || v.id}`;
