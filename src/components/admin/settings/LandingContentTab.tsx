@@ -190,7 +190,11 @@ export const LandingContentTab = () => {
         .order("section", { ascending: true })
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as LandingSlot[];
+      // compare.combined is legacy/unused — the comparison section now uses
+      // compare.youtube + compare.nevorai with a toggle.
+      return ((data ?? []) as LandingSlot[]).filter(
+        (s) => s.id !== "compare.combined",
+      );
     },
   });
 
