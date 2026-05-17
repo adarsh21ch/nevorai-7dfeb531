@@ -296,10 +296,19 @@ const VideosPage = () => {
               const dur = formatDuration(v.duration_seconds);
               const dateLabel = v.created_at ? new Date(v.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : null;
               const goEdit = () => isReady && v._source === "own" && setDetailsVideo({ id: v.id });
+              const goPreview = () => {
+                if (!isReady) return;
+                const url = `/v/${(v as any).slug || v.id}`;
+                if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) {
+                  window.open(url, "_blank", "noopener,noreferrer");
+                } else {
+                  window.location.href = url;
+                }
+              };
               return (
                 <div
                   key={v.id}
-                  onClick={() => isReady && v._source === "own" && goEdit()}
+                  onClick={goPreview}
                   className="flex items-center gap-3 px-3 sm:px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer"
                 >
                   {/* Thumbnail */}
@@ -430,10 +439,22 @@ const VideosPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((v) => {
               const title = getDisplayTitle(v.title);
+              const previewUrl = `/v/${(v as any).slug || v.id}`;
+              const openPreview = () => {
+                if (v.status !== "ready") return;
+                if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) {
+                  window.open(previewUrl, "_blank", "noopener,noreferrer");
+                } else {
+                  window.location.href = previewUrl;
+                }
+              };
               return (
                 <div key={v.id} className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors">
-                  <div className="relative">
+                  <div className="relative cursor-pointer group" onClick={openPreview}>
                     <VideoThumbnail thumbnailUrl={v.thumbnail_url} videoUrl={v.public_url} title={title} className="rounded-none" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
+                      <Play size={36} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                    </div>
                     {formatDuration(v.duration_seconds) && (
                       <span className="absolute bottom-1.5 right-1.5 bg-black/75 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">{formatDuration(v.duration_seconds)}</span>
                     )}
