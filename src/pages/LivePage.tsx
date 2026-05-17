@@ -917,12 +917,21 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between p-3 bg-muted/40 rounded-xl">
-                    <div>
-                      <Label className="text-sm font-medium">Publish this session</Label>
-                      <p className="text-[11px] text-muted-foreground">Unpublished sessions show "Not available" to viewers</p>
+                  <div className="rounded-xl p-4 bg-gradient-to-br from-emerald-500/10 via-primary/10 to-blue-500/10 border-2 border-emerald-500/30 shadow-[0_0_24px_-8px_rgba(0,200,150,0.45)]">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <Label className="text-sm font-semibold flex items-center gap-1.5">
+                          <span className={`h-2 w-2 rounded-full ${form.is_published ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
+                          {form.is_published ? "Published — Live" : "Publish this session"}
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground mt-1">
+                          {form.is_published
+                            ? "Anyone with the link can join."
+                            : "Unpublished sessions show \"Not available\" to viewers."}
+                        </p>
+                      </div>
+                      <Switch checked={form.is_published} onCheckedChange={(v) => upd("is_published", v)} />
                     </div>
-                    <Switch checked={form.is_published} onCheckedChange={(v) => upd("is_published", v)} />
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-muted/40 rounded-xl">
