@@ -481,18 +481,6 @@ export function VideoPlayer({
         </button>
       )}
 
-      {/* Double-tap +/-10s flash */}
-      {seekFlash && (
-        <div
-          key={seekFlash.key}
-          className={cn(
-            "absolute top-1/2 -translate-y-1/2 px-4 py-2 rounded-full bg-black/70 text-white text-sm font-semibold pointer-events-none animate-in fade-in zoom-in duration-200",
-            seekFlash.dir === "back" ? "left-8" : "right-8",
-          )}
-        >
-          {seekFlash.dir === "back" ? "−10s" : "+10s"}
-        </div>
-      )}
 
       {/* Bottom gradient + controls */}
       <div
