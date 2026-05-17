@@ -42,10 +42,13 @@ const Index = () => {
     <div data-theme="dark" className="min-h-screen landing-page overflow-x-clip bg-hero-bg text-white">
       <Navbar />
       <HeroSection />
-      <StorySections />
+      <StorySections ids={["story.skip", "story.no-skip"]} />
+      <WhoIsItFor />
+      <StorySections ids={["story.unknown", "story.realtime", "story.clutter", "story.clean"]} />
       <ResultsComparison />
       <ConversionCalculator />
       <FeaturesSection />
+      <EarlyAccess />
       <Testimonials />
       <PricingSection />
       <FAQSection />
