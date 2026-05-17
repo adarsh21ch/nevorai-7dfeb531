@@ -7,12 +7,14 @@ import { useNavigate } from "@/lib/router-compat";
 import FunnelsPage from "@/pages/FunnelsPage";
 import LandingPagesPage from "@/pages/LandingPagesPage";
 import LivePage from "@/pages/LivePage";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 
-const TOOL_TABS = [
-  { key: "funnels", label: "Funnels", icon: GitBranch, Component: FunnelsPage },
-  { key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage },
-  { key: "live", label: "Live", icon: Radio, Component: LivePage },
+const ALL_TOOL_TABS = [
+  { key: "funnels", label: "Funnels", icon: GitBranch, Component: FunnelsPage, enabled: true },
+  { key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage, enabled: FEATURE_FLAGS.LANDING_PAGES_ENABLED },
+  { key: "live", label: "Live", icon: Radio, Component: LivePage, enabled: FEATURE_FLAGS.LIVE_ENABLED },
 ] as const;
+const TOOL_TABS = ALL_TOOL_TABS.filter((t) => t.enabled);
 
 const getInitialTab = (): string => {
   if (typeof window === "undefined") return "funnels";
