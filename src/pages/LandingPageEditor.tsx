@@ -909,7 +909,7 @@ const LandingPageEditor = () => {
 
   const headerNode = (
     <div
-      className="sticky top-0 z-30 bg-background/95 backdrop-blur px-3 sm:px-4 md:px-8 py-3 mb-4 border-b border-border flex items-center justify-between gap-2"
+      className="px-3 sm:px-4 md:px-8 py-3 border-b border-border flex items-center justify-between gap-2"
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
