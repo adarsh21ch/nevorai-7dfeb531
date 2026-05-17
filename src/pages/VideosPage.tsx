@@ -296,10 +296,19 @@ const VideosPage = () => {
               const dur = formatDuration(v.duration_seconds);
               const dateLabel = v.created_at ? new Date(v.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : null;
               const goEdit = () => isReady && v._source === "own" && setDetailsVideo({ id: v.id });
+              const goPreview = () => {
+                if (!isReady) return;
+                const url = `/v/${v.slug || v.id}`;
+                if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) {
+                  window.open(url, "_blank", "noopener,noreferrer");
+                } else {
+                  window.location.href = url;
+                }
+              };
               return (
                 <div
                   key={v.id}
-                  onClick={() => isReady && v._source === "own" && goEdit()}
+                  onClick={goPreview}
                   className="flex items-center gap-3 px-3 sm:px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer"
                 >
                   {/* Thumbnail */}
