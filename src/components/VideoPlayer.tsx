@@ -503,7 +503,7 @@ export function VideoPlayer({
           <div
             ref={progressRef}
             className={cn(
-              "relative w-full group/seek py-1.5 sm:py-2",
+              "relative w-full group/seek py-1 sm:py-1",
               allowSeek ? "cursor-pointer" : "cursor-default",
             )}
             onClick={(e) => {
