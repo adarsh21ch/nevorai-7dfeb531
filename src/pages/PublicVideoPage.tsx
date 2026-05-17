@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "@/lib/router-compat";
 import { startVideoView, heartbeatVideoView } from "@/lib/videoTracking.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -20,7 +20,6 @@ import {
   Check,
   Sun,
   Moon,
-  Maximize,
   Copy,
   X,
   MessageCircle,
@@ -46,7 +45,6 @@ const PublicVideoPage = () => {
   const [reuploadOpen, setReuploadOpen] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
-  const playerWrapRef = useRef<HTMLDivElement | null>(null);
   const [openedByApp, setOpenedByApp] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
 
@@ -55,18 +53,6 @@ const PublicVideoPage = () => {
     setOpenedByApp(Boolean(window.opener));
     setCanNativeShare(typeof navigator !== "undefined" && !!(navigator as any).share);
   }, []);
-
-  const requestWrapperFullscreen = () => {
-    const w: any = playerWrapRef.current;
-    const doc: any = document;
-    const isFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
-    if (isFs) {
-      (doc.exitFullscreen || doc.webkitExitFullscreen)?.call(doc);
-      return;
-    }
-    if (w?.requestFullscreen) w.requestFullscreen().catch(() => {});
-    else if (w?.webkitRequestFullscreen) w.webkitRequestFullscreen();
-  };
 
   const { data: video, isLoading, error, refetch } = useQuery({
     queryKey: ["public-video", id],
@@ -271,7 +257,7 @@ const PublicVideoPage = () => {
 
       {/* Player */}
       <div className="max-w-3xl mx-auto w-full px-0 sm:px-4 mt-4">
-        <div ref={playerWrapRef} className="group/player aspect-video bg-black sm:rounded-2xl overflow-hidden relative">
+        <div className="aspect-video bg-black sm:rounded-2xl overflow-hidden relative">
           {videoError ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-center px-4 gap-3 bg-card">
               <AlertTriangle size={36} className="text-destructive" />
@@ -290,9 +276,9 @@ const PublicVideoPage = () => {
               src={video.public_url}
               controls
               controlsList={
-                `nofullscreen ${video.allow_seek === false ? "nodownload noplaybackrate " : ""}${
+                `${video.allow_seek === false ? "nodownload noplaybackrate " : ""}${
                   video.allow_playback_speed === false ? "noplaybackrate" : ""
-                }`.trim()
+                }`.trim() || undefined
               }
               autoPlay
               muted
@@ -369,93 +355,75 @@ const PublicVideoPage = () => {
               <Video size={48} className="text-muted-foreground" />
             </div>
           )}
-          {!videoError && video.public_url && (
-            <>
-              <button
-                type="button"
-                onClick={requestWrapperFullscreen}
-                aria-label="Toggle fullscreen"
-                className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-black/40 hover:bg-black/60 text-white/90 backdrop-blur-sm transition-colors"
-              >
-                <Maximize size={16} />
-              </button>
-              {/* YouTube-style Copy/Share overlay — bottom-right */}
-              <div
-                className={
-                  "absolute bottom-3 right-3 z-10 flex items-center gap-1 px-2 py-1 rounded-full bg-black/55 backdrop-blur-sm " +
-                  "opacity-100 md:opacity-0 md:group-hover/player:opacity-100 transition-opacity"
-                }
-              >
-                {video.allow_copy_link !== false && (
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="p-1.5 rounded-full hover:bg-white/15 text-white/90"
-                    aria-label="Copy link"
-                    title="Copy link"
-                  >
-                    {copied ? <Check size={15} /> : <Copy size={15} />}
-                  </button>
-                )}
-                {canNativeShare ? (
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="p-1.5 rounded-full hover:bg-white/15 text-white/90"
-                    aria-label="Share"
-                    title="Share"
-                  >
-                    <Share2 size={15} />
-                  </button>
-                ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="p-1.5 rounded-full hover:bg-white/15 text-white/90"
-                        aria-label="Share"
-                        title="Share"
-                      >
-                        <Share2 size={15} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem onSelect={handleCopyLink}>
-                        <Copy size={13} className="mr-2" /> Copy link
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() =>
-                          window.open(
-                            `https://wa.me/?text=${encodeURIComponent(
-                              `${video?.title ?? "Watch this"}\n${window.location.href}`,
-                            )}`,
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                      >
-                        <MessageCircle size={13} className="mr-2" /> WhatsApp
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() =>
-                          window.open(
-                            `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                              window.location.href,
-                            )}&text=${encodeURIComponent(video?.title ?? "")}`,
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                      >
-                        <Twitter size={13} className="mr-2" /> Twitter
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            </>
-          )}
         </div>
+        {!videoError && video.public_url && (
+          <div className="flex items-center justify-end gap-2 px-4 sm:px-0 pt-3">
+            {video.allow_copy_link !== false && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCopyLink}
+                className="gap-1.5"
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                <span className="text-xs">{copied ? "Copied" : "Copy link"}</span>
+              </Button>
+            )}
+            {canNativeShare ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="gap-1.5"
+              >
+                <Share2 size={14} />
+                <span className="text-xs">Share</span>
+              </Button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button type="button" variant="outline" size="sm" className="gap-1.5">
+                    <Share2 size={14} />
+                    <span className="text-xs">Share</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuItem onSelect={handleCopyLink}>
+                    <Copy size={13} className="mr-2" /> Copy link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      window.open(
+                        `https://wa.me/?text=${encodeURIComponent(
+                          `${video?.title ?? "Watch this"}\n${window.location.href}`,
+                        )}`,
+                        "_blank",
+                        "noopener,noreferrer",
+                      )
+                    }
+                  >
+                    <MessageCircle size={13} className="mr-2" /> WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      window.open(
+                        `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                          window.location.href,
+                        )}&text=${encodeURIComponent(video?.title ?? "")}`,
+                        "_blank",
+                        "noopener,noreferrer",
+                      )
+                    }
+                  >
+                    <Twitter size={13} className="mr-2" /> Twitter
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Title + meta */}
