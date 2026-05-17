@@ -196,39 +196,39 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     queryKey: ["video-views", user?.id, period, videoIds.length],
     queryFn: async () => {
       if (!videoIds.length) return [] as any[];
-      let q = (supabase as any).from("video_view_events").select("started_at,video_id").in("video_id", videoIds);
+      let q = (supabase as any).from("video_view_events").select("started_at,video_id,session_id").in("video_id", videoIds);
       if (startIso) q = q.gte("started_at", startIso);
       return (await q.limit(2000)).data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    staleTime: 15_000,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   const { data: funnelViews = [] } = useQuery({
     queryKey: ["funnel-views", user?.id, period, funnelIds.length],
     queryFn: async () => {
       if (!funnelIds.length) return [] as any[];
-      let q = (supabase as any).from("funnel_view_events").select("started_at,funnel_id").in("funnel_id", funnelIds);
+      let q = (supabase as any).from("funnel_view_events").select("started_at,funnel_id,session_id").in("funnel_id", funnelIds);
       if (startIso) q = q.gte("started_at", startIso);
       return (await q.limit(2000)).data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    staleTime: 15_000,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   const { data: lpViews = [] } = useQuery({
     queryKey: ["lp-views", user?.id, period, lpIds.length],
     queryFn: async () => {
       if (!lpIds.length) return [] as any[];
-      let q = (supabase as any).from("landing_page_view_events").select("started_at,landing_page_id").in("landing_page_id", lpIds);
+      let q = (supabase as any).from("landing_page_view_events").select("started_at,landing_page_id,session_id").in("landing_page_id", lpIds);
       if (startIso) q = q.gte("started_at", startIso);
       return (await q.limit(2000)).data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30_000,
-    refetchInterval: visible ? 60_000 : false,
+    staleTime: 15_000,
+    refetchInterval: visible ? 30_000 : false,
   });
 
   // === Live viewer counts per entity (15s polling) ===
