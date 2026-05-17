@@ -1290,17 +1290,25 @@ const FunnelEditor = () => {
   }
 
   const headerNode = (
-    <div className="sticky top-0 z-30 bg-background/95 backdrop-blur -mx-3 sm:-mx-4 md:-mx-8 -mt-3 sm:-mt-4 md:-mt-8 px-3 sm:px-4 md:px-8 py-3 mb-4 border-b border-border flex items-center justify-between gap-2">
-      <div className="flex-1 min-w-0">
-        <h1 className="text-lg sm:text-xl font-heading font-bold truncate">{funnel.title || "New Funnel"}</h1>
-        {isAutoSaving ? (
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Saving…
-          </p>
-        ) : lastSavedAt ? (
-          <p className="text-xs text-muted-foreground">Auto-saved {lastSavedAt.toLocaleTimeString()}</p>
-        ) : null}
+    <div
+      className="sticky top-0 z-30 bg-background/95 backdrop-blur px-3 sm:px-4 md:px-8 py-3 mb-4 border-b border-border flex items-center justify-between gap-2"
+      style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+    >
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate("/tools")}>
+          <ChevronDown className="rotate-90" size={18} />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-xl font-heading font-bold truncate">{funnel.title || "New Funnel"}</h1>
+          {isAutoSaving ? (
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              Saving…
+            </p>
+          ) : lastSavedAt ? (
+            <p className="text-xs text-muted-foreground">Auto-saved {lastSavedAt.toLocaleTimeString()}</p>
+          ) : null}
+        </div>
       </div>
       <Button
         variant="hero"
