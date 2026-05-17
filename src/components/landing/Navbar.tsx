@@ -100,7 +100,7 @@ export const Navbar = () => {
             <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 min-h-11">Log in</Button>
           </Link>
           <Link to="/auth?tab=signup">
-            <Button size="sm" className="text-white border-0 bg-gradient-brand min-h-11">Start Free</Button>
+            <button className="btn-saffron-premium btn-sm">Start Free</button>
           </Link>
         </div>
 
