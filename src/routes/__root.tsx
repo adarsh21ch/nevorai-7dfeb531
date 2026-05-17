@@ -79,8 +79,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
-      { title: "Nevorai — Share videos that get watched" },
-      { name: "description", content: "The smarter way to share business videos. Know exactly who watched, when, and how much. Nevorai." },
+      { title: "Nevorai — Same effort. Twice the conversion." },
+      { name: "description", content: "Share videos that get watched. Nevorai is the video sales platform built for Indian creators who convert." },
       { name: "author", content: "Nevorai" },
       { name: "keywords", content: "Nevorai, business video, unskippable video, video sharing, video tracking, see who watched" },
       { property: "og:title", content: "Nevorai — Share videos that get watched" },
@@ -112,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
       { rel: "stylesheet", href: appCss },
     ],
