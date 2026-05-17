@@ -24,13 +24,7 @@ export const useSubscription = () => {
 
   const tier = subscription?.tier || "free";
 
-  const useFeatureAccess = (feature: string): boolean => {
-    if (tier === "pro") return true;
-    if (tier === "basic") {
-      return !["live_broadcast", "video_sharing"].includes(feature);
-    }
-    return !["whatsapp_auto", "live_broadcast", "video_sharing", "advanced_analytics"].includes(feature);
-  };
+  // useFeatureAccess removed — call `usePlanLimits().features.<key>` instead.
 
   const { data: planLimits } = useQuery({
     queryKey: ["plan-limits", subscription?.plan_key],
@@ -46,5 +40,5 @@ export const useSubscription = () => {
     enabled: !!subscription,
   });
 
-  return { subscription, tier, isLoading, useFeatureAccess, planLimits };
+  return { subscription, tier, isLoading, planLimits };
 };

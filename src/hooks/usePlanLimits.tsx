@@ -27,6 +27,7 @@ export interface PlanConfig {
   feature_video_upload?: boolean;
   feature_insights?: boolean;
   feature_funnel_creation?: boolean;
+  feature_speaker_profile?: boolean;
   feature_youtube_import?: boolean;
   feature_smart_reminders?: boolean;
   feature_custom_branding?: boolean;
@@ -116,6 +117,7 @@ export const usePlanLimits = () => {
     smartReminders: config.feature_smart_reminders === true,
     customBranding: config.feature_custom_branding === true,
     prospectAnalytics: config.feature_prospect_analytics === true,
+    speakerProfile: config.feature_speaker_profile === true,
   };
 
   return {

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "@/lib/router-compat";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { UpgradeBanner } from "@/components/UpgradeBanner";
+// UpgradeBanner removed from Home — upgrade prompts now live only in Profile/Billing.
 import { MonthlyViewsBanner } from "@/components/MonthlyViewsBanner";
 import { DashboardKpiStrip } from "@/components/dashboard/DashboardKpiStrip";
 import { DashboardContentRow } from "@/components/dashboard/DashboardContentRow";
@@ -122,7 +122,6 @@ function DashboardPage() {
           </div>
         )}
 
-        <UpgradeBanner />
         <MonthlyViewsBanner />
         <GettingStartedChecklist />
 

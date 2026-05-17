@@ -86,6 +86,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
 
   // ─── FEATURES ─────────────────────────────────────────────
   { key: "feature_funnel_creation", label: "Funnel Creation", type: "boolean", category: "Features", dbField: "feature_funnel_creation" },
+  { key: "feature_speaker_profile", label: "Speaker Profile", type: "boolean", category: "Features", hint: "Show speaker bio/photo section inside funnels", dbField: "feature_speaker_profile" },
   { key: "feature_lead_capture", label: "Lead Capture", type: "boolean", category: "Features", dbField: "feature_lead_capture" },
   { key: "feature_video_upload", label: "Video Upload", type: "boolean", category: "Features", dbField: "feature_video_upload" },
   { key: "feature_youtube_import", label: "YouTube Video Import", type: "boolean", category: "Features", dbField: "feature_youtube_import" },

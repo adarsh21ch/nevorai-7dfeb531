@@ -1,70 +1,99 @@
 import { ReactNode } from "react";
-import { usePlan } from "@/hooks/usePlan";
-import { Lock, Crown, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Lock, Sparkles } from "lucide-react";
 import { Link } from "@/lib/router-compat";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+
+/**
+ * Admin-driven feature gate. Reads boolean flags directly from `plan_config`
+ * via `usePlanLimits().features`. No hardcoded tier checks.
+ *
+ *   <FeatureGate feature="speakerProfile" requiredPlan="Basic">
+ *     <SpeakerProfileSection />
+ *   </FeatureGate>
+ *
+ * If the user's plan does NOT include the feature, the children render dimmed
+ * and non-interactive with a lock badge in the corner. Tapping anywhere opens
+ * a small popover linking to /upgrade — never a full-screen modal.
+ */
+
+type FeatureKey = keyof ReturnType<typeof usePlanLimits>["features"];
 
 interface FeatureGateProps {
-  feature: string;
+  feature: FeatureKey;
+  requiredPlan?: "Basic" | "Pro";
   children: ReactNode;
+  /** Optional custom fallback overrides the dimmed inline preview. */
   fallback?: ReactNode;
-  title?: string;
-  description?: string;
+  /** Friendly label shown in the popover. */
+  label?: string;
 }
 
-const defaultMessages: Record<string, { title: string; desc: string }> = {
-  video_upload: { title: "Upload Videos", desc: "Upload and manage your own video content with a paid plan." },
-  video_link: { title: "Add Video by Link", desc: "Add videos from YouTube, Vimeo, or any URL with a paid plan." },
-  video_sharing: { title: "Video Sharing", desc: "Share videos with your audience as a Pro member." },
-  live_broadcast: { title: "Live Broadcasts", desc: "Go live with your audience — available on the Pro plan." },
-  advanced_analytics: { title: "Advanced Analytics", desc: "Get deep insights into your funnels and leads." },
-  premium_templates: { title: "Premium Templates", desc: "Access premium funnel templates to convert faster." },
-  premium_automation: { title: "Automation", desc: "Automate WhatsApp messages and lead workflows." },
-};
+export const FeatureGate = ({
+  feature,
+  requiredPlan = "Basic",
+  children,
+  fallback,
+  label,
+}: FeatureGateProps) => {
+  const { features } = usePlanLimits();
+  const unlocked = features[feature];
 
-export const FeatureGate = ({ feature, children, fallback, title, description }: FeatureGateProps) => {
-  const { canAccess, plan } = usePlan();
-
-  if (canAccess(feature)) {
-    return <>{children}</>;
-  }
-
+  if (unlocked) return <>{children}</>;
   if (fallback) return <>{fallback}</>;
 
-  const msg = defaultMessages[feature] || { title: title || "Premium Feature", desc: description || "Upgrade to access this feature." };
+  const displayName = label || String(feature);
 
   return (
-    <div className="relative">
-      <div className="glass-card p-8 text-center space-y-4 border-dashed border-2 border-primary/20">
-        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-          <Lock className="text-primary" size={24} />
+    <Popover>
+      <div className="relative rounded-xl">
+        <div aria-hidden className="pointer-events-none select-none opacity-50">
+          {children}
         </div>
-        <h3 className="text-lg font-heading font-semibold">{msg.title}</h3>
-        <p className="text-sm text-muted-foreground max-w-sm mx-auto">{msg.desc}</p>
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Crown size={14} className="text-amber-500" />
-          <span>Available on {
-            feature.includes("sharing") || feature.includes("live") ? "Pro" :
-            "Basic & Pro"
-          } plans</span>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            aria-label={`${displayName} is locked — tap to upgrade`}
+            className="absolute inset-0 z-10 cursor-pointer rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+          />
+        </PopoverTrigger>
+        <div className="pointer-events-none absolute right-3 top-3 z-20 flex items-center gap-1.5 rounded-full border border-border bg-card/95 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground shadow-sm backdrop-blur-sm">
+          <Lock size={11} className="text-primary" />
+          {requiredPlan}
         </div>
-        <Link to="/upgrade">
-          <Button variant="default" className="gap-2">
-            Upgrade Now <ArrowRight size={16} />
-          </Button>
-        </Link>
+        <PopoverContent
+          side="top"
+          align="center"
+          className="w-72 p-4 text-center"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+            <Lock size={15} className="text-primary" />
+          </div>
+          <h4 className="font-heading text-sm font-semibold">Upgrade to unlock {displayName}</h4>
+          <p className="mt-1 text-[12px] text-muted-foreground">
+            Available on the {requiredPlan} plan and above.
+          </p>
+          <Link to="/upgrade" className="mt-3 block">
+            <Button variant="hero" size="sm" className="w-full gap-1.5">
+              <Sparkles size={12} />
+              Upgrade to {requiredPlan}
+            </Button>
+          </Link>
+        </PopoverContent>
       </div>
-    </div>
+    </Popover>
   );
 };
 
-/** Inline lock badge for buttons */
-export const FeatureLockBadge = ({ feature }: { feature: string }) => {
-  const { canAccess } = usePlan();
-  if (canAccess(feature)) return null;
+/** Small "Pro" badge for inline buttons; reads admin-driven feature flags. */
+export const FeatureLockBadge = ({ feature }: { feature: FeatureKey }) => {
+  const { features } = usePlanLimits();
+  if (features[feature]) return null;
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 px-2 py-0.5 rounded-full">
-      <Crown size={10} /> Pro
+    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
+      <Lock size={10} /> Locked
     </span>
   );
 };

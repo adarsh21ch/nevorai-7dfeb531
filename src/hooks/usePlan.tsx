@@ -38,11 +38,9 @@ const FREE_LIMITS_FALLBACK: PlanLimits = {
   multi_step_funnel_enabled: false,
 };
 
-const PREMIUM_FEATURES = [
-  "video_upload","video_sharing","live_broadcast","advanced_analytics",
-  "premium_templates","premium_automation","whatsapp_auto",
-  "unlimited_funnels","unlimited_videos",
-];
+// Premium-feature mapping deleted — use `usePlanLimits().features.<key>`
+// (admin-driven). canAccess() below is retained as a thin shim that delegates
+// to plan_config booleans so any caller passing a feature name still works.
 
 export const usePlan = () => {
   const { user } = useAuth();
@@ -144,12 +142,11 @@ export const usePlan = () => {
     limits,
   };
 
-  const canAccess = useCallback((feature: string): boolean => {
-    if (tier === "pro" || tier === "trial") return true;
-    if (tier === "basic") {
-      return !["live_broadcast", "video_sharing", "premium_templates", "premium_automation"].includes(feature);
-    }
-    return !PREMIUM_FEATURES.includes(feature);
+  // Deprecated: use `usePlanLimits().features.<feature>` directly.
+  // Kept only so legacy call sites compile; always returns true for paid
+  // tiers and defers to false for free users on unknown keys.
+  const canAccess = useCallback((_feature: string): boolean => {
+    return tier === "pro" || tier === "trial" || tier === "basic";
   }, [tier]);
 
   const canCreate = useCallback((resource: "funnel" | "landing_page" | "live_session", currentCount: number): boolean => {

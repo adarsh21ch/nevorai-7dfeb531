@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { GitBranch, Layout, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -7,14 +7,7 @@ import { useNavigate } from "@/lib/router-compat";
 import FunnelsPage from "@/pages/FunnelsPage";
 import LandingPagesPage from "@/pages/LandingPagesPage";
 import LivePage from "@/pages/LivePage";
-import { FEATURE_FLAGS } from "@/config/featureFlags";
-
-const ALL_TOOL_TABS = [
-  { key: "funnels", label: "Funnels", icon: GitBranch, Component: FunnelsPage, enabled: true },
-  { key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage, enabled: FEATURE_FLAGS.LANDING_PAGES_ENABLED },
-  { key: "live", label: "Live", icon: Radio, Component: LivePage, enabled: FEATURE_FLAGS.LIVE_ENABLED },
-] as const;
-const TOOL_TABS = ALL_TOOL_TABS.filter((t) => t.enabled);
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 const getInitialTab = (): string => {
   if (typeof window === "undefined") return "funnels";
@@ -25,6 +18,12 @@ const getInitialTab = (): string => {
 const ToolsPage = () => {
   useDocumentTitle("Tools");
   const navigate = useNavigate();
+  const { features } = usePlanLimits();
+  const TOOL_TABS = useMemo(() => [
+    { key: "funnels", label: "Funnels", icon: GitBranch, Component: FunnelsPage },
+    ...(features.landingPages ? [{ key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage }] : []),
+    ...(features.goLive ? [{ key: "live", label: "Live", icon: Radio, Component: LivePage }] : []),
+  ], [features.landingPages, features.goLive]);
   const [activeTab, setActiveTab] = useState<string>(getInitialTab);
 
   const handleTabChange = (key: string) => {

@@ -17,18 +17,17 @@ import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { TrialExpiredGate } from "@/components/TrialExpiredGate";
 import { TrialBanner } from "@/components/TrialBanner";
 import { usePlan } from "@/hooks/usePlan";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 // SupportFAB removed from global mount — moved to Profile page
 import { useRouter } from "@tanstack/react-router";
 
-import { FEATURE_FLAGS } from "@/config/featureFlags";
-
-const navItems = [
+const baseNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Video, label: "My Videos", path: "/videos" },
   { icon: Zap, label: "Activity", path: "/insights" },
   { icon: Layers, label: "My Funnels", path: "/funnels" },
-  ...(FEATURE_FLAGS.LANDING_PAGES_ENABLED ? [{ icon: FileText, label: "Landing Pages", path: "/landing-pages" }] : []),
-  ...(FEATURE_FLAGS.LIVE_ENABLED ? [{ icon: Radio, label: "Live", path: "/live" }] : []),
+];
+const tailNavItems = [
   { icon: Crown, label: "Upgrade to Pro", path: "/billing" },
   { icon: IndianRupee, label: "Payments", path: "/payments" },
 ];
@@ -49,6 +48,13 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   // theme toggle moved to Profile page
   const { isTrialExpired, trialDays } = useTrialStatus();
   const { plan } = usePlan();
+  const { features } = usePlanLimits();
+  const navItems = [
+    ...baseNavItems,
+    ...(features.landingPages ? [{ icon: FileText, label: "Landing Pages", path: "/landing-pages" }] : []),
+    ...(features.goLive ? [{ icon: Radio, label: "Live", path: "/live" }] : []),
+    ...tailNavItems,
+  ];
   const isAdminUser = isAdmin;
   const showTrialGate = isTrialExpired && !plan.isPaid && !isAdminUser && !location.pathname.startsWith("/pricing") && !location.pathname.startsWith("/billing") && !location.pathname.startsWith("/admin");
 
