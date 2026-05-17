@@ -373,6 +373,15 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const uniqueLeads = leads.length + registrations.length;
   const prevLeads = leadsPrev.length + regsPrev.length;
 
+  // True unique viewers across all entity types (dedup by session_id when present)
+  const uniqueSessionSet = new Set<string>();
+  let anonViewFallback = 0;
+  [...videoViews, ...funnelViews, ...lpViews].forEach((v: any) => {
+    if (v.session_id) uniqueSessionSet.add(v.session_id);
+    else anonViewFallback += 1;
+  });
+  const uniqueViewerEstimate = uniqueSessionSet.size + anonViewFallback;
+
   // Sparklines (last 7 days regardless of period for hero KPIs)
   const allViewRows = [
     ...videoViews.map((v: any) => ({ at: v.started_at })),
