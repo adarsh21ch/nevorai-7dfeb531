@@ -86,7 +86,7 @@ const FunnelsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             </div>
             {limitBadge}
           </div>
-          <Button variant="hero" onClick={handleCreate}>
+          <Button variant="hero" onClick={handleCreate} className="w-full sm:w-auto">
             <Plus size={16} /> Create Funnel
           </Button>
         </div>
