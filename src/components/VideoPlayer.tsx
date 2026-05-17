@@ -519,19 +519,9 @@ export function VideoPlayer({
         onError={onError}
       />
 
-      {/* Mobile centered controls cluster (skip-back / play / skip-fwd) */}
+      {/* Mobile centered play button */}
       {isMobile && controlsVisible && (
-        <div className="absolute inset-0 flex items-center justify-center gap-6 pointer-events-none z-10">
-          {allowSeek && !live && (
-            <button
-              type="button"
-              onClick={() => skip(-10)}
-              aria-label="Skip back 10s"
-              className="pointer-events-auto h-12 w-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
-            >
-              <SkipIcon dir="back" />
-            </button>
-          )}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <button
             type="button"
             onClick={togglePlay}
@@ -540,16 +530,6 @@ export function VideoPlayer({
           >
             {playing ? <Pause size={32} fill="white" /> : <Play size={32} fill="white" className="ml-1" />}
           </button>
-          {allowSeek && !live && (
-            <button
-              type="button"
-              onClick={() => skip(10)}
-              aria-label="Skip forward 10s"
-              className="pointer-events-auto h-12 w-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
-            >
-              <SkipIcon dir="forward" />
-            </button>
-          )}
         </div>
       )}
 
@@ -661,38 +641,10 @@ export function VideoPlayer({
             {playing ? <Pause size={isFs ? 22 : 20} fill="white" /> : <Play size={isFs ? 22 : 20} fill="white" />}
           </ControlButton>
 
-          {allowSeek && !live && (
-            <>
-              <ControlButton onClick={() => skip(-10)} ariaLabel="Skip back 10 seconds" hideOnMobile>
-                <SkipIcon dir="back" />
-              </ControlButton>
-              <ControlButton onClick={() => skip(10)} ariaLabel="Skip forward 10 seconds" hideOnMobile>
-                <SkipIcon dir="forward" />
-              </ControlButton>
-            </>
-          )}
-
-          {/* Volume — icon only, slider expands on hover (desktop) */}
-          <div className="flex items-center group/vol">
-            <ControlButton onClick={toggleMute} ariaLabel={muted ? "Unmute" : "Mute"}>
-              <VolumeIcon size={isFs ? 22 : 20} />
-            </ControlButton>
-            {!isMobile && (
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={muted ? 0 : volume}
-                onChange={(e) => setVol(parseFloat(e.target.value))}
-                className={cn(
-                  "w-0 group-hover/vol:w-20 focus:w-20 transition-all duration-200 accent-primary cursor-pointer",
-                  isFs && "group-hover/vol:w-[100px]",
-                )}
-                aria-label="Volume"
-              />
-            )}
-          </div>
+          {/* Volume — simple icon toggle */}
+          <ControlButton onClick={toggleMute} ariaLabel={muted ? "Unmute" : "Mute"}>
+            <VolumeIcon size={isFs ? 22 : 20} />
+          </ControlButton>
 
           {/* Time display (fixed width, tabular) — or LIVE badge */}
           {live ? (
