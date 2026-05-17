@@ -20,7 +20,6 @@ import {
   Check,
   Sun,
   Moon,
-  Maximize,
   Copy,
   X,
   MessageCircle,
