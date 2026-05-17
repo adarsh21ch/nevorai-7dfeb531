@@ -10,8 +10,23 @@ import { DashboardContentRow } from "@/components/dashboard/DashboardContentRow"
 import { Layers, Users, Eye, IndianRupee, TrendingUp, BarChart3, Calendar, Plus, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+type DashboardSummary = {
+  funnels: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    is_published: boolean;
+    total_views: number | null;
+    total_leads: number | null;
+    total_payments: number | null;
+    created_at: string;
+  }>;
+  total_leads: number;
+  active_live_session: { id: string; title: string } | null;
+};
 import { useMonthlyViews } from "@/hooks/useMonthlyViews";
 import { useDailyViews } from "@/hooks/useDailyViews";
 import { GettingStartedChecklist } from "@/components/dashboard/GettingStartedChecklist";
