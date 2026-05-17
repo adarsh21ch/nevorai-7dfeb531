@@ -75,9 +75,37 @@ export function EditorScrollLayout({ sections, children, rightPane, header }: Pr
 
   const jumpTo = (id: string) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActive(id);
+    if (!el) return;
+    setActive(id);
+
+    // Find the nearest scrollable ancestor (DashboardLayout wraps content in
+    // <main><div class="overflow-y-auto"> on mobile so window doesn't scroll).
+    let scroller: HTMLElement | null = el.parentElement;
+    while (scroller && scroller !== document.body) {
+      const style = getComputedStyle(scroller);
+      const oy = style.overflowY;
+      if ((oy === "auto" || oy === "scroll") && scroller.scrollHeight > scroller.clientHeight + 1) {
+        break;
+      }
+      scroller = scroller.parentElement;
+    }
+
+    // Measure the sticky header group so we land below it, not behind it.
+    const stickyEl = containerRef.current?.querySelector<HTMLElement>(".sticky");
+    const stickyHeight = stickyEl?.offsetHeight ?? 0;
+    const gap = 12;
+
+    if (scroller && scroller !== document.body) {
+      const top =
+        el.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top +
+        scroller.scrollTop -
+        stickyHeight -
+        gap;
+      scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    } else {
+      const top = el.getBoundingClientRect().top + window.scrollY - stickyHeight - gap;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     }
   };
 
