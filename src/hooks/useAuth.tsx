@@ -38,6 +38,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  // Fix E: warm common queries in background so first tab click is instant.
+  useEffect(() => {
+    const uid = user?.id;
+    if (!uid) return;
+
+    // Dashboard summary (RPC) — funnels + total leads + active live
+    queryClient.prefetchQuery({
+      queryKey: ["dashboard-summary", uid],
+      queryFn: async () => {
+        const { data } = await (supabase as any).rpc("dashboard_summary", { p_user_id: uid });
+        return data ?? { funnels: [], total_leads: 0, active_live_session: null };
+      },
+      staleTime: 60_000,
+    });
+
+    // My Funnels list
+    queryClient.prefetchQuery({
+      queryKey: ["my-funnels", uid],
+      queryFn: async () => {
+        const { data } = await supabase
+          .from("funnels").select("*")
+          .eq("owner_id", uid)
+          .order("created_at", { ascending: false });
+        return data || [];
+      },
+      staleTime: 60_000,
+    });
+
+    // Unread notifications count
+    queryClient.prefetchQuery({
+      queryKey: ["unread-notifications", uid],
+      queryFn: async () => {
+        const { count } = await (supabase as any)
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", uid)
+          .eq("is_read", false);
+        return count ?? 0;
+      },
+      staleTime: 30_000,
+    });
+  }, [user?.id, queryClient]);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
