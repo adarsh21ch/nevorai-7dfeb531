@@ -81,7 +81,7 @@ const PublicVideoPage = () => {
       if (!video?.owner_id) return null;
       const { data, error } = await (supabase as any)
         .from("profiles")
-        .select("id, full_name, avatar_url, bio, is_verified")
+        .select("id, full_name, avatar_url, bio, is_verified, username, cta_label, cta_url")
         .eq("id", video.owner_id)
         .maybeSingle();
       if (error) return null;
@@ -92,6 +92,9 @@ const PublicVideoPage = () => {
             avatar_url: string | null;
             bio: string | null;
             is_verified: boolean | null;
+            username: string | null;
+            cta_label: string | null;
+            cta_url: string | null;
           }
         | null;
     },
@@ -418,12 +421,30 @@ const PublicVideoPage = () => {
                   </span>
                 )}
               </div>
+              {creatorProfile.username && (
+                <p className="text-[11px] text-muted-foreground">@{creatorProfile.username}</p>
+              )}
               {creatorProfile.bio && (
                 <p className="text-xs text-muted-foreground truncate mt-0.5">
                   {creatorProfile.bio}
                 </p>
               )}
             </div>
+            {creatorProfile.cta_url && creatorProfile.cta_label && (
+              <a
+                href={creatorProfile.cta_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 inline-flex items-center gap-1 px-3 h-9 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+              >
+                {creatorProfile.cta_label} →
+              </a>
+            )}
+          </div>
+          <div className="pb-3 -mt-1">
+            <span className="text-[11px] text-muted-foreground">
+              {video.allow_seek === false ? "🛡️ Skip-protection enabled" : "▶ Standard playback"}
+            </span>
           </div>
         </div>
       )}
