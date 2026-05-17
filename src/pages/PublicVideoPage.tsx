@@ -48,6 +48,14 @@ const PublicVideoPage = () => {
   const [descExpanded, setDescExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const playerWrapRef = useRef<HTMLDivElement | null>(null);
+  const [openedByApp, setOpenedByApp] = useState(false);
+  const [canNativeShare, setCanNativeShare] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setOpenedByApp(Boolean(window.opener));
+    setCanNativeShare(typeof navigator !== "undefined" && !!(navigator as any).share);
+  }, []);
 
   const requestWrapperFullscreen = () => {
     const w: any = playerWrapRef.current;
