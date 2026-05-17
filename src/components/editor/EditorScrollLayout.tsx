@@ -47,6 +47,17 @@ export function EditorScrollLayout({ sections, children, rightPane, header }: Pr
       .filter((el): el is HTMLElement => !!el);
     if (els.length === 0) return;
 
+    // Use the actual scroll container as the IO root so active-section
+    // detection works inside DashboardLayout's scrollable main pane.
+    let root: HTMLElement | null = els[0].parentElement;
+    while (root && root !== document.body) {
+      const style = getComputedStyle(root);
+      const oy = style.overflowY;
+      if ((oy === "auto" || oy === "scroll") && root.scrollHeight > root.clientHeight + 1) break;
+      root = root.parentElement;
+    }
+    if (root === document.body) root = null;
+
     const visible = new Map<string, number>();
     const io = new IntersectionObserver(
       (entries) => {
@@ -54,7 +65,6 @@ export function EditorScrollLayout({ sections, children, rightPane, header }: Pr
           if (e.isIntersecting) visible.set(e.target.id, e.intersectionRatio);
           else visible.delete(e.target.id);
         }
-        // Pick the highest-ratio visible section; otherwise topmost above viewport.
         if (visible.size > 0) {
           let best = "";
           let bestRatio = -1;
@@ -67,7 +77,7 @@ export function EditorScrollLayout({ sections, children, rightPane, header }: Pr
           if (best) setActive(best);
         }
       },
-      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+      { root, rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
