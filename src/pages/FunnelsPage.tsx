@@ -37,6 +37,7 @@ const FunnelsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       const { data } = await supabase.from("funnels").select("*").eq("owner_id", user!.id).order("created_at", { ascending: false });
       return data || [];
     },
+    placeholderData: keepPreviousData,
     enabled: !!user?.id,
   });
 
