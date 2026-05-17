@@ -484,20 +484,22 @@ const FunnelEditor = () => {
   const proPrice = `from ₹599/mo`;
 
   const getStepLock = (label: string): StepLock => {
-    if (tier === "pro" || tier === "enterprise") return null;
     switch (label) {
       case "Speaker":
-        return tier === "basic" ? null : { featureName: "Speaker Profile", requiredPlan: "Basic", priceLabel: basicPrice };
+        return features.speakerProfile ? null : { featureName: "Speaker Profile", requiredPlan: "Basic", priceLabel: basicPrice };
       case "Video Topics":
-        return tier === "basic" ? null : { featureName: "Video Topics", requiredPlan: "Basic", priceLabel: basicPrice };
+        // Topics piggybacks on speaker-profile feature flag for now.
+        return features.speakerProfile ? null : { featureName: "Video Topics", requiredPlan: "Basic", priceLabel: basicPrice };
       case "Lead Capture":
         return features.leadCapture ? null : { featureName: "Lead Capture", requiredPlan: "Basic", priceLabel: basicPrice };
       case "Contact Info":
-        return tier === "basic" ? null : { featureName: "Contact & WhatsApp", requiredPlan: "Basic", priceLabel: basicPrice };
+        return features.whatsappAutomation ? null : { featureName: "Contact & WhatsApp", requiredPlan: "Basic", priceLabel: basicPrice };
       case "Payment":
-        return { featureName: "Payment Collection", requiredPlan: "Pro", priceLabel: proPrice };
+        // Payment is Pro-only; gated by advanced analytics flag as proxy until a
+        // dedicated `feature_payment_collection` column is added.
+        return features.advancedAnalytics ? null : { featureName: "Payment Collection", requiredPlan: "Pro", priceLabel: proPrice };
       case "Privacy":
-        return tier === "basic" ? null : { featureName: "Privacy & Access Codes", requiredPlan: "Basic", priceLabel: basicPrice };
+        return features.customBranding ? null : { featureName: "Privacy & Access Codes", requiredPlan: "Basic", priceLabel: basicPrice };
       default:
         return null;
     }
