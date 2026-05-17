@@ -147,6 +147,9 @@ function RootComponent() {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
 
+    // Silently unregister any leftover SWs and clear their caches.
+    // The kill-switch SWs in public/sw.js self-unregister anyway; avoid a
+    // hard reload that adds ~1s to every returning user's cold start.
     navigator.serviceWorker.getRegistrations().then((registrations) => {
       if (registrations.length === 0) return;
       Promise.all(registrations.map((r) => r.unregister()))
@@ -155,12 +158,6 @@ function RootComponent() {
             return caches.keys().then((keys) =>
               Promise.all(keys.map((k) => caches.delete(k)))
             );
-          }
-        })
-        .then(() => {
-          if (!sessionStorage.getItem("sw_cleared")) {
-            sessionStorage.setItem("sw_cleared", "1");
-            window.location.reload();
           }
         })
         .catch(() => {});

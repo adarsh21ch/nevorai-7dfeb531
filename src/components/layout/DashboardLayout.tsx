@@ -6,7 +6,7 @@ import {
   User, Bell, LogOut, ChevronLeft, ChevronRight, Shield,
   Radio, FileText, Crown, HelpCircle, Home, Wrench, Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -75,6 +75,20 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
   const preloadRoute = (path: string) => {
     void router.preloadRoute({ to: path as any });
   };
+
+  // Mobile users never hover — proactively preload all primary tab chunks
+  // once the shell mounts so bottom-nav taps are instant.
+  useEffect(() => {
+    const paths = [
+      "/dashboard", "/videos", "/insights", "/funnels", "/landing-pages",
+      "/live", "/tools", "/profile", "/billing", "/payments", "/notifications",
+      "/help",
+    ];
+    const run = () => paths.forEach((p) => { try { void router.preloadRoute({ to: p as any }); } catch {} });
+    const ric = (typeof window !== "undefined" ? (window as any).requestIdleCallback : null) as
+      | ((cb: () => void, opts?: { timeout: number }) => number) | null;
+    if (ric) ric(run, { timeout: 2000 }); else setTimeout(run, 250);
+  }, [router]);
 
   const renderNavItem = (item: typeof navItems[0], matchExact = false) => {
     const active = matchExact ? location.pathname === item.path : location.pathname.startsWith(item.path);
