@@ -29,6 +29,16 @@ interface Props {
 export function EditorScrollLayout({ sections, children, rightPane, header }: Props) {
   const [active, setActive] = useState<string>(sections[0]?.id ?? "");
   const containerRef = useRef<HTMLDivElement>(null);
+  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  // Auto-scroll active chip into horizontal center on mobile chip strip.
+  useEffect(() => {
+    const el = chipRefs.current[active];
+    if (!el) return;
+    try {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    } catch {}
+  }, [active]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
