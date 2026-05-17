@@ -1339,7 +1339,7 @@ const FunnelEditor = () => {
       <Button
         variant="hero"
         size="sm"
-        onClick={() => { if (!funnel.is_published) update("is_published", true); saveMutation.mutate(); }}
+        onClick={() => { update("is_published", true); saveMutation.mutate({ publish: true }); }}
         disabled={saveMutation.isPending || !funnel.title}
         className="shrink-0"
       >
