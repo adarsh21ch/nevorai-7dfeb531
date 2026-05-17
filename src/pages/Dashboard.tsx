@@ -1,42 +1,47 @@
-import { useRef } from "react";
 import { Navigate, Link, useNavigate } from "@/lib/router-compat";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { UpgradeBanner } from "@/components/UpgradeBanner";
 import { MonthlyViewsBanner } from "@/components/MonthlyViewsBanner";
 import { DashboardKpiStrip } from "@/components/dashboard/DashboardKpiStrip";
 import { DashboardContentRow } from "@/components/dashboard/DashboardContentRow";
 import { LatestVideoShareCard } from "@/components/dashboard/LatestVideoShareCard";
 import { useHasVideos } from "@/hooks/useHasVideos";
-import { Layers, Users, Eye, IndianRupee, ArrowRight, Upload, Video as VideoIcon } from "lucide-react";
+import { Layers, Users, Eye, IndianRupee, TrendingUp, BarChart3, Calendar, Plus, ArrowRight, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { usePlan } from "@/hooks/usePlan";
-import { VideoUploadModal } from "@/components/VideoUploadModal";
-import { useState } from "react";
+import { useMonthlyViews } from "@/hooks/useMonthlyViews";
+import { useDailyViews } from "@/hooks/useDailyViews";
 
+const fmt = (n: number) => n.toLocaleString("en-IN");
+
+type StatColor = "purple" | "teal" | "green" | "blue" | "amber" | "gray";
+const accentClass: Record<StatColor, string> = {
+  purple: "border-t-2 border-violet-500/40",
+  teal: "border-t-2 border-emerald-500/40",
+  green: "border-t-2 border-green-500/40",
+  blue: "border-t-2 border-blue-500/40",
+  amber: "border-t-2 border-amber-500/40",
+  gray: "border-t-2 border-border",
+};
+const iconClass: Record<StatColor, string> = {
+  purple: "text-violet-400",
+  teal: "text-emerald-400",
+  green: "text-green-400",
+  blue: "text-blue-400",
+  amber: "text-amber-400",
+  gray: "text-muted-foreground",
+};
 
 const Dashboard = () => {
   useDocumentTitle("Dashboard");
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { plan } = usePlan();
+  const monthly = useMonthlyViews();
+  const daily = useDailyViews();
   const { hasVideos, latestVideo, isLoading: videosLoading } = useHasVideos();
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const uploadInputRef = useRef<HTMLInputElement>(null);
-  const isFree = !plan.isPaid && plan.tier !== "trial";
-
-  const openUploadFlow = () => uploadInputRef.current?.click();
-  const handleUploadPicked = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0] || null;
-    e.target.value = "";
-    if (!f) return;
-    setPendingFile(f);
-    setUploadOpen(true);
-  };
-
 
   // ALL hooks must be called unconditionally before any early return.
   // Moving these above the auth/onboarding gates fixes a Rules-of-Hooks
@@ -155,7 +160,19 @@ const Dashboard = () => {
     );
   }
 
-  void leadCount; // referenced by query enabled chain only
+  const totalViews = funnels.reduce((a, f) => a + (f.total_views || 0), 0);
+  const publishedCount = funnels.filter((f) => f.is_published).length;
+  const convRate = totalViews > 0 ? ((leadCount / totalViews) * 100).toFixed(1) : "0";
+  const remainingToday = daily.isUnlimited ? "∞" : Math.max(0, daily.limit - daily.used);
+
+  const stats: Array<{ icon: any; label: string; value: string; sub: string; color: StatColor; href: string }> = [
+    { icon: BarChart3, label: "Views Today", value: fmt(daily.used), sub: `${remainingToday} remaining`, color: "purple", href: "/insights" },
+    { icon: Calendar, label: "Views This Month", value: fmt(monthly.used), sub: `of ${monthly.isUnlimited ? "∞" : fmt(monthly.limit)}`, color: "teal", href: "/insights" },
+    { icon: IndianRupee, label: "Revenue", value: "₹0", sub: "This month", color: "green", href: "/payments" },
+    { icon: Users, label: "Total Leads", value: fmt(leadCount), sub: "All time", color: "blue", href: "/leads" },
+    { icon: TrendingUp, label: "Conversion Rate", value: `${convRate}%`, sub: "Leads / Views", color: "amber", href: "/insights" },
+    { icon: Eye, label: "Video Plays", value: fmt(totalViews), sub: "All time", color: "gray", href: "/videos" },
+  ];
 
   return (
     <DashboardLayout>
@@ -176,84 +193,69 @@ const Dashboard = () => {
           </div>
         )}
 
+        <UpgradeBanner />
         <MonthlyViewsBanner />
 
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
-          <div className="page-header-accent" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Here's your Nevorai overview.
-          </p>
+        {/* Header + actions */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-heading font-bold">Dashboard</h1>
+            <div className="page-header-accent" />
+            <p className="mt-2 text-sm text-muted-foreground">
+              Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Here's your Nevorai overview.
+            </p>
+          </div>
+              <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto">
+                <Link to="/funnels/create" className="w-full sm:w-auto">
+                  <Button variant="hero" size="sm" className="h-11 w-full font-semibold sm:w-auto">
+                    <Plus size={16} className="mr-1.5" /> Create Funnel
+                  </Button>
+                </Link>
+                <Link to="/videos" className="w-full sm:w-auto">
+                  <Button variant="outline" size="sm" className="h-11 w-full font-semibold sm:w-auto">
+                    <Eye size={16} className="mr-1.5" /> Add Video
+                  </Button>
+                </Link>
+              </div>
         </div>
-
-        {/* Primary action — one clear CTA */}
-        <input
-          ref={uploadInputRef}
-          type="file"
-          accept=".mp4,.mov,.webm,.m4v,.mkv,.avi,video/*"
-          className="hidden"
-          onChange={handleUploadPicked}
-        />
-        <Button
-          variant="hero"
-          size="lg"
-          onClick={openUploadFlow}
-          className="h-14 w-full rounded-2xl text-base font-semibold sm:w-auto sm:px-8"
-        >
-          <Upload size={18} className="mr-2" /> Upload Video
-        </Button>
 
         {/* Latest video — share-first spotlight */}
         {latestVideo && <LatestVideoShareCard video={latestVideo} />}
 
-        {/* Plan + view limits strip (Today's Views + Monthly Views) */}
+        {/* Plan + view limits strip */}
         <DashboardKpiStrip />
 
-        {/* View more insights link */}
-        <div className="flex justify-end">
-          <Link to="/insights" className="flex items-center gap-1 text-xs text-primary hover:underline">
-            View more insights <ArrowRight size={12} />
-          </Link>
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+          {stats.map((s) => (
+            <Link
+              key={s.label}
+              to={s.href}
+              className={`group flex flex-col gap-1.5 rounded-2xl border border-border bg-card/40 p-4 transition-all hover:-translate-y-0.5 hover:border-border/80 hover:bg-card/70 ${accentClass[s.color]}`}
+            >
+              <div className="flex items-center gap-2">
+                <s.icon size={14} className={iconClass[s.color]} />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</span>
+              </div>
+              <div className="text-2xl font-heading font-extrabold leading-none">{s.value}</div>
+              <p className="text-[11px] text-muted-foreground">{s.sub}</p>
+            </Link>
+          ))}
         </div>
 
         {/* Content row */}
         <DashboardContentRow />
 
-        {/* Recent funnels — gated for free users */}
+        {/* Recent funnels */}
         {funnels.length === 0 ? (
-          isFree ? (
-            <div className="premium-card p-10 text-center">
-              <div className="stat-icon mx-auto mb-3 h-14 w-14 rounded-2xl">
-                <VideoIcon size={26} className="text-primary" />
-              </div>
-              <h3 className="mb-2 text-lg font-heading font-semibold">No videos yet</h3>
-              <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">
-                Upload your first video and share it with anyone via a short link.
-              </p>
-              <Button
-                variant="hero"
-                size="lg"
-                onClick={openUploadFlow}
-                className="h-12 w-full rounded-2xl font-semibold sm:w-auto sm:px-8"
-              >
-                <Upload size={16} className="mr-2" /> Upload Your First Video
-              </Button>
+          <div className="premium-card p-10 text-center">
+            <div className="stat-icon mx-auto mb-3 h-14 w-14 rounded-2xl">
+              <Layers size={26} className="text-primary" />
             </div>
-          ) : (
-            <div className="premium-card p-10 text-center">
-              <div className="stat-icon mx-auto mb-3 h-14 w-14 rounded-2xl">
-                <Layers size={26} className="text-primary" />
-              </div>
-              <h3 className="mb-2 text-lg font-heading font-semibold">No funnels yet</h3>
-              <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video funnel and start capturing leads on autopilot.</p>
-              <Link to="/funnels/create">
-                <Button variant="hero" size="lg" className="h-12 w-full rounded-2xl font-semibold sm:w-auto sm:px-8">
-                  Create Your First Funnel
-                </Button>
-              </Link>
-            </div>
-          )
+            <h3 className="mb-2 text-lg font-heading font-semibold">No funnels yet</h3>
+            <p className="mx-auto mb-5 max-w-sm text-sm text-muted-foreground">Create your first video funnel and start capturing leads on autopilot.</p>
+            <Link to="/funnels/create"><Button variant="hero" size="lg">Create Your First Funnel</Button></Link>
+          </div>
         ) : (
           <div>
             <div className="mb-3 flex items-center justify-between">
@@ -280,13 +282,6 @@ const Dashboard = () => {
             </div>
           </div>
         )}
-
-        <VideoUploadModal
-          open={uploadOpen}
-          onClose={() => { setUploadOpen(false); setPendingFile(null); }}
-          onSuccess={() => { /* handled inside modal's "Video ready" step */ }}
-          initialFile={pendingFile}
-        />
       </div>
     </DashboardLayout>
   );

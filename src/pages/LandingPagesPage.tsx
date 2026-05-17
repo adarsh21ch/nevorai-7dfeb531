@@ -91,7 +91,7 @@ const LandingPagesPage = ({ embedded = false }: { embedded?: boolean } = {}) => 
             </div>
             {limitBadge}
           </div>
-          <Button onClick={handleCreate} className="bg-primary w-full sm:w-auto">
+          <Button onClick={handleCreate} className="bg-primary">
             <Plus size={16} className="mr-2" /> Create Landing Page
           </Button>
         </div>

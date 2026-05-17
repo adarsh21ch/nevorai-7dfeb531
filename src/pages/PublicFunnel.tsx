@@ -461,6 +461,12 @@ const CustomVideoPlayer = ({
         </div>
       )}
 
+      <div
+        className="absolute right-3 text-[12px] font-medium pointer-events-none select-none z-10"
+        style={{ bottom: 56, color: "rgba(255,255,255,0.7)", letterSpacing: "0.3px", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+      >
+        nevorai.com
+      </div>
 
       {autoplayMuted && started && muted && (
         <button

@@ -20,15 +20,13 @@ import { usePlan } from "@/hooks/usePlan";
 // SupportFAB removed from global mount — moved to Profile page
 import { useRouter } from "@tanstack/react-router";
 
-import { FEATURE_FLAGS } from "@/config/featureFlags";
-
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Video, label: "My Videos", path: "/videos" },
   { icon: Zap, label: "Activity", path: "/insights" },
   { icon: Layers, label: "My Funnels", path: "/funnels" },
-  ...(FEATURE_FLAGS.LANDING_PAGES_ENABLED ? [{ icon: FileText, label: "Landing Pages", path: "/landing-pages" }] : []),
-  ...(FEATURE_FLAGS.LIVE_ENABLED ? [{ icon: Radio, label: "Live", path: "/live" }] : []),
+  { icon: FileText, label: "Landing Pages", path: "/landing-pages" },
+  { icon: Radio, label: "Live", path: "/live" },
   { icon: Crown, label: "Upgrade to Pro", path: "/billing" },
   { icon: IndianRupee, label: "Payments", path: "/payments" },
 ];
@@ -199,7 +197,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
           </div>
 
           <TrialBanner />
-          <div className="gradient-bg-subtle flex-1 overflow-x-hidden overflow-y-auto px-3 pb-[calc(96px+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pb-8 sm:pt-4 md:p-8">
+          <div className="gradient-bg-subtle flex-1 overflow-x-hidden overflow-y-auto px-3 pb-24 pt-3 sm:px-4 sm:pb-8 sm:pt-4 md:p-8">
             <div className="w-full min-w-0 max-w-full">{children}</div>
           </div>
         </main>

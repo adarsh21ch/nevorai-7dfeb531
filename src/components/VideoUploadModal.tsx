@@ -89,15 +89,6 @@ export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = 
   const [error, setError] = useState<string | null>(null);
   const [formatWarning, setFormatWarning] = useState<string | null>(null);
   const [tipOpen, setTipOpen] = useState(false);
-  const [tipDismissed, setTipDismissed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("nevorai.uploadTipDismissed") === "1";
-  });
-  const dismissTip = () => {
-    try { localStorage.setItem("nevorai.uploadTipDismissed", "1"); } catch {}
-    setTipDismissed(true);
-    setTipOpen(false);
-  };
   const [allowCopyLink, setAllowCopyLink] = useState(true);
   const [doneVideoId, setDoneVideoId] = useState<string | null>(null);
   const [storageLimitOpen, setStorageLimitOpen] = useState(false);
@@ -284,76 +275,78 @@ export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = 
         </DialogHeader>
 
         {doneVideoId ? (
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-center">
-              <CheckCircle2 size={48} className="text-emerald-400" />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/10 p-3">
+              <CheckCircle2 size={20} className="text-success shrink-0" />
+              <p className="text-sm">
+                Your video is uploaded. Share the link, or use it in a funnel, landing page, or live session.
+              </p>
             </div>
-            <p className="text-center text-sm text-muted-foreground">
-              Your video is live. Share the link anywhere.
-            </p>
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-2">
-              <input
-                readOnly
-                value={publicUrl}
-                className="flex-1 bg-transparent text-xs outline-none px-2"
-              />
-              <Button size="sm" variant="outline" onClick={copyDoneLink}>
-                <Copy size={14} className="mr-1" /> Copy
-              </Button>
+
+            <div>
+              <Label className="text-xs">Public link</Label>
+              <div className="mt-1.5 flex gap-2">
+                <Input readOnly value={publicUrl} className="bg-muted border-border text-xs" />
+                <Button variant="outline" size="icon" onClick={copyDoneLink}><Copy size={14} /></Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button asChild variant="outline" className="flex-1">
-                <a href={publicUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink size={14} className="mr-1" /> Open
-                </a>
-              </Button>
-              <Button onClick={finishAndClose} className="flex-1">
-                Done
-              </Button>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <WhatsAppShareButton url={publicUrl} className="w-full" />
+              <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="w-full"><ExternalLink size={14} /> Open</Button>
+              </a>
+              <Link to={`/videos/${doneVideoId}` as any} onClick={finishAndClose}>
+                <Button variant="outline" className="w-full"><FileVideo size={14} /> Edit</Button>
+              </Link>
             </div>
+
+            <div className="border-t border-border pt-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Use this video in</p>
+              <div className="grid grid-cols-3 gap-2">
+                <Link to={`/funnels/create?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
+                  <Button variant="hero" className="w-full"><Layers size={14} /> Funnel</Button>
+                </Link>
+                <Link to={`/landing-pages/create?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
+                  <Button variant="outline" className="w-full"><FileText size={14} /> LP</Button>
+                </Link>
+                <Link to={`/live?videoId=${doneVideoId}` as any} onClick={finishAndClose}>
+                  <Button variant="outline" className="w-full"><Radio size={14} /> Live</Button>
+                </Link>
+              </div>
+            </div>
+
+            <Button variant="ghost" className="w-full" onClick={finishAndClose}>Done</Button>
           </div>
         ) : (
         <div className="space-y-4">
-          {/* Pro Tip collapsible — dismissible */}
-          {!tipDismissed && (
-            <Collapsible open={tipOpen} onOpenChange={setTipOpen}>
-              <div className="rounded-lg border border-indigo-500/20 bg-indigo-500/10">
-                <div className="w-full flex items-center gap-2 p-3 text-left">
-                  <Info size={16} className="shrink-0 text-indigo-300" />
-                  <CollapsibleTrigger className="flex-1 flex items-center gap-2 text-left">
-                    <span className="flex-1 text-sm text-foreground">💡 Best video quality tip</span>
-                    <ChevronDown
-                      size={16}
-                      className={`shrink-0 text-muted-foreground transition-transform ${tipOpen ? "rotate-180" : ""}`}
-                    />
-                  </CollapsibleTrigger>
-                  <button
-                    type="button"
-                    onClick={dismissTip}
-                    aria-label="Dismiss tip"
-                    className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                  >
-                    <X size={14} />
-                  </button>
+          {/* Pro Tip collapsible */}
+          <Collapsible open={tipOpen} onOpenChange={setTipOpen}>
+            <div className="rounded-lg border border-indigo-500/20 bg-indigo-500/10">
+              <CollapsibleTrigger className="w-full flex items-center gap-2 p-3 text-left">
+                <Info size={16} className="shrink-0 text-indigo-300" />
+                <span className="flex-1 text-sm text-foreground">💡 Best video quality tip</span>
+                <ChevronDown
+                  size={16}
+                  className={`shrink-0 text-muted-foreground transition-transform ${tipOpen ? "rotate-180" : ""}`}
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                <div className="px-3 pb-3 text-sm text-muted-foreground space-y-2">
+                  <p className="font-medium text-foreground">💡 Pro Tip — For Best Playback Quality:</p>
+                  <p>
+                    Videos downloaded from YouTube play the smoothest on Nevorai. If your video lags or buffers, try this:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 pl-1">
+                    <li>Upload your video to YouTube (can be Unlisted)</li>
+                    <li>Download it using any YouTube downloader app</li>
+                    <li>Upload that downloaded file here</li>
+                  </ol>
+                  <p>This ensures perfect quality for all your viewers.</p>
                 </div>
-                <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                  <div className="px-3 pb-3 text-sm text-muted-foreground space-y-2">
-                    <p className="font-medium text-foreground">💡 Pro Tip — For Best Playback Quality:</p>
-                    <p>
-                      Videos downloaded from YouTube play the smoothest on Nevorai. If your video lags or buffers, try this:
-                    </p>
-                    <ol className="list-decimal list-inside space-y-1 pl-1">
-                      <li>Upload your video to YouTube (can be Unlisted)</li>
-                      <li>Download it using any YouTube downloader app</li>
-                      <li>Upload that downloaded file here</li>
-                    </ol>
-                    <p>This ensures perfect quality for all your viewers.</p>
-                    <Button size="sm" variant="outline" onClick={dismissTip} className="mt-1">Got it →</Button>
-                  </div>
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-          )}
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
 
           <input
             ref={fileRef}

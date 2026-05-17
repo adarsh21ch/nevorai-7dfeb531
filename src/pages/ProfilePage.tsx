@@ -16,14 +16,12 @@ import {
 import { useTheme } from "@/hooks/useTheme";
 import { Switch } from "@/components/ui/switch";
 import { Link } from "@/lib/router-compat";
-import { useRouter } from "@tanstack/react-router";
 import { usePlan } from "@/hooks/usePlan";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { sanitizeFields, normalizePhone } from "@/lib/sanitize";
 import { StorageUsageCard } from "@/components/StorageUsageCard";
-import { ProfilePhotoCropModal } from "@/components/ProfilePhotoCropModal";
 
 const ProfilePage = () => {
   useDocumentTitle("Profile");
@@ -32,99 +30,36 @@ const ProfilePage = () => {
   const { theme, toggleTheme } = useTheme();
   const { isAdmin } = useAdmin();
   const trial = useTrialStatus();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
-
-  // Prefetch likely-next routes from Profile so first-tap is instant.
-  useEffect(() => {
-    const paths = ["/billing", "/payments", "/pricing", "/kyc", "/notifications", "/settings", "/help", "/install"];
-    const run = () => paths.forEach((p) => { try { void router.preloadRoute({ to: p as any }); } catch {} });
-    const ric = (typeof window !== "undefined" ? (window as any).requestIdleCallback : null) as
-      | ((cb: () => void, opts?: { timeout: number }) => number) | null;
-    if (ric) ric(run, { timeout: 1500 }); else setTimeout(run, 200);
-  }, [router]);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({
     full_name: "", phone: "", city: "", bio: "", company: "",
     instagram_url: "", whatsapp_number: "",
-    username: "", cta_label: "", cta_url: "",
   });
-  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
-  const [cropFile, setCropFile] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
-      const p = profile as any;
       setForm({
         full_name: profile.full_name || "", phone: profile.phone || "", city: profile.city || "",
         bio: profile.bio || "", company: profile.company || "",
         instagram_url: profile.instagram_url || "", whatsapp_number: profile.whatsapp_number || "",
-        username: p.username || "", cta_label: p.cta_label || "", cta_url: p.cta_url || "",
       });
-      setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile]);
 
-  // Username uniqueness check (debounced)
-  useEffect(() => {
-    const u = form.username.trim().toLowerCase();
-    if (!u) { setUsernameStatus("idle"); return; }
-    if (!/^[a-z0-9_]{3,20}$/.test(u)) { setUsernameStatus("invalid"); return; }
-    if ((profile as any)?.username === u) { setUsernameStatus("available"); return; }
-    setUsernameStatus("checking");
-    const t = setTimeout(async () => {
-      const { data } = await (supabase as any)
-        .from("profiles").select("id").eq("username", u).maybeSingle();
-      setUsernameStatus(data ? "taken" : "available");
-    }, 400);
-    return () => clearTimeout(t);
-  }, [form.username, profile]);
-
   const handleSave = async () => {
     if (!user) return;
-    if (form.username && usernameStatus !== "available") {
-      toast.error("Fix username before saving"); return;
-    }
-    if (form.cta_url && !/^https?:\/\/|^mailto:|^tel:|^wa\.me/i.test(form.cta_url)) {
-      toast.error("CTA URL must start with https://, mailto:, tel: or wa.me"); return;
-    }
     const cleanForm = sanitizeFields(form, [
-      "full_name", "city", "bio", "company", "instagram_url", "cta_label",
-    ]) as any;
+      "full_name", "city", "bio", "company", "instagram_url",
+    ]);
     cleanForm.phone = normalizePhone(form.phone);
     cleanForm.whatsapp_number = normalizePhone(form.whatsapp_number);
-    cleanForm.username = form.username.trim().toLowerCase() || null;
-    cleanForm.cta_url = form.cta_url.trim() || null;
-    cleanForm.cta_label = (cleanForm.cta_label || "").slice(0, 30) || null;
     setLoading(true);
-    const { error } = await (supabase as any).from("profiles").update(cleanForm).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update(cleanForm).eq("id", user.id);
     setLoading(false);
-    if (error) { toast.error(error.message || "Failed to save"); return; }
+    if (error) { toast.error("Failed to save"); return; }
     await refreshProfile();
     toast.success("Profile updated!");
-  };
-
-  const onPickPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    e.target.value = "";
-    if (!f) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
-      toast.error("Use JPG, PNG or WebP"); return;
-    }
-    if (f.size > 5 * 1024 * 1024) { toast.error("Max 5 MB"); return; }
-    const reader = new FileReader();
-    reader.onload = () => setCropFile(reader.result as string);
-    reader.readAsDataURL(f);
-  };
-
-  const removePhoto = async () => {
-    if (!user) return;
-    if (!confirm("Remove your profile photo?")) return;
-    await (supabase as any).from("profiles").update({ avatar_url: null }).eq("id", user.id);
-    setAvatarUrl(null);
-    await refreshProfile();
-    toast.success("Photo removed");
   };
 
   const initials = (profile?.full_name || "U")
@@ -133,17 +68,13 @@ const ProfilePage = () => {
   const tier = plan.tier;
   const isPro = tier === "pro";
   const isBasic = tier === "basic";
-  const trialDaysLeft = trial.daysRemaining ?? 0;
-  const isActiveTrial =
-    (tier === "trial" || trial.subscriptionStatus === "trial") &&
-    !trial.isTrialExpired &&
-    trialDaysLeft > 0;
+  const isTrial = tier === "trial" || (trial.subscriptionStatus === "trial" && !trial.isTrialExpired);
   const planLabel = isPro
     ? "Pro Plan"
     : isBasic
     ? "Basic Plan"
-    : isActiveTrial
-    ? `Trial · ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left`
+    : isTrial
+    ? `Trial · ${trial.daysRemaining ?? 0} days left`
     : "Free Plan";
 
   const accountItems = [
@@ -187,18 +118,8 @@ const ProfilePage = () => {
         {/* PROFILE HEADER */}
         <div className="premium-card p-5">
           <div className="flex items-center gap-4">
-            <div className="relative shrink-0">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center overflow-hidden">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xl font-heading font-bold text-primary">{initials}</span>
-                )}
-              </div>
-              <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-md hover:scale-105 transition-transform" title="Change photo">
-                <Pencil size={12} />
-                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onPickPhoto} />
-              </label>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center shrink-0">
+              <span className="text-xl font-heading font-bold text-primary">{initials}</span>
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="font-heading font-bold text-lg truncate">{profile?.full_name || "User"}</h2>
@@ -208,23 +129,9 @@ const ProfilePage = () => {
                 <span className="text-[11px] font-semibold text-primary">{planLabel}</span>
                 {isPro && <InfinityIcon size={12} className="text-primary" />}
               </div>
-              {avatarUrl && (
-                <button onClick={removePhoto} className="block mt-1.5 text-[11px] text-muted-foreground hover:text-destructive underline">
-                  Remove photo
-                </button>
-              )}
             </div>
           </div>
         </div>
-        {cropFile && user && (
-          <ProfilePhotoCropModal
-            open={!!cropFile}
-            onClose={() => setCropFile(null)}
-            imageSrc={cropFile}
-            userId={user.id}
-            onSaved={(url: string) => { setAvatarUrl(url); refreshProfile(); }}
-          />
-        )}
 
         {/* ACCOUNT */}
         <div className="premium-card p-2 space-y-0.5">
@@ -253,37 +160,8 @@ const ProfilePage = () => {
                   <div><Label className="text-xs">Company</Label><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="mt-1 bg-muted border-border" /></div>
                   <div><Label className="text-xs">WhatsApp</Label><Input value={form.whatsapp_number} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })} className="mt-1 bg-muted border-border" /></div>
                   <div><Label className="text-xs">Instagram URL</Label><Input value={form.instagram_url} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} className="mt-1 bg-muted border-border" /></div>
-                  <div>
-                    <Label className="text-xs">Username</Label>
-                    <Input
-                      value={form.username}
-                      onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "") })}
-                      placeholder="yourname"
-                      maxLength={20}
-                      className="mt-1 bg-muted border-border"
-                    />
-                    {form.username && (
-                      <span className={`text-[10px] ${usernameStatus === "available" ? "text-success" : usernameStatus === "taken" || usernameStatus === "invalid" ? "text-destructive" : "text-muted-foreground"}`}>
-                        {usernameStatus === "checking" && "Checking…"}
-                        {usernameStatus === "available" && "Available ✓"}
-                        {usernameStatus === "taken" && "Taken ✗"}
-                        {usernameStatus === "invalid" && "3–20 chars, a–z, 0–9, _"}
-                      </span>
-                    )}
-                  </div>
                 </div>
                 <div><Label className="text-xs">Bio</Label><Textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value.slice(0, 160) })} className="mt-1 bg-muted border-border" rows={2} maxLength={160} /><span className="text-[10px] text-muted-foreground">{form.bio.length}/160</span></div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs">CTA Label</Label>
-                    <Input value={form.cta_label} maxLength={30} placeholder="e.g., Book a Call" onChange={(e) => setForm({ ...form, cta_label: e.target.value })} className="mt-1 bg-muted border-border" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">CTA URL</Label>
-                    <Input value={form.cta_url} placeholder="https://…" onChange={(e) => setForm({ ...form, cta_url: e.target.value })} className="mt-1 bg-muted border-border" />
-                  </div>
-                </div>
-                <p className="text-[10px] text-muted-foreground -mt-2">Shown as a button on all your video previews.</p>
                 <Button variant="hero" size="sm" onClick={handleSave} disabled={loading}>{loading ? "Saving..." : "Save Profile"}</Button>
               </div>
             </CollapsibleContent>
