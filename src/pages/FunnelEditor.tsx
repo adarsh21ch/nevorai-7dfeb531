@@ -330,9 +330,10 @@ const FunnelEditor = () => {
   }, [user, funnel, selectedVideo]);
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (opts?: { publish?: boolean }) => {
       const payload = buildPayload();
       if (!payload) throw new Error("Not authenticated");
+      if (opts?.publish) payload.is_published = true;
       // Preserve existing slug on edit; generate suffixed slug for new funnels.
       // The random suffix protects against URL enumeration regardless of whether
       // the user typed a custom slug or we derived one from the title.
