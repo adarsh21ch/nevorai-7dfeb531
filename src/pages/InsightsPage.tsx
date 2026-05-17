@@ -398,12 +398,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const pageTitle = isMobile ? "Activity" : "Insights";
   const pageSubtitle = isMobile ? "Live pulse of what's happening." : "Track your numbers, grow your business.";
 
-  // Top performers
-  const topVideos = [...videos].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 5);
-  const topFunnels = [...funnels].sort((a, b) => (b.total_views || 0) - (a.total_views || 0)).slice(0, 5);
-  const topLPs = [...landingPages].sort((a, b) => (b.total_views || 0) - (a.total_views || 0)).slice(0, 5);
-
-  // Per-entity event view & lead counts (period-scoped)
+  // Per-entity event view & lead counts (period-scoped) — built FIRST so Top performers can use them
   const videoViewCount: Record<string, number> = {};
   videoViews.forEach((v: any) => { videoViewCount[v.video_id] = (videoViewCount[v.video_id] || 0) + 1; });
   const funnelViewCount: Record<string, number> = {};
@@ -414,6 +409,34 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   leads.forEach((l: any) => { if (l.funnel_id) funnelLeadCount[l.funnel_id] = (funnelLeadCount[l.funnel_id] || 0) + 1; });
   const lpRegCount: Record<string, number> = {};
   registrations.forEach((r: any) => { if (r.landing_page_id) lpRegCount[r.landing_page_id] = (lpRegCount[r.landing_page_id] || 0) + 1; });
+
+  // Top performers — for "All time" use denormalised counters; for narrower
+  // ranges, sort by period-scoped event counts so the section honours the
+  // selected time filter and stays consistent with the KPI cards above.
+  const isAllTime = period === "all";
+  const topVideos = [...videos]
+    .map((v) => ({ ...v, _periodViews: isAllTime ? (v.view_count || 0) : (videoViewCount[v.id] || 0) }))
+    .sort((a, b) => b._periodViews - a._periodViews)
+    .filter((v) => isAllTime ? true : v._periodViews > 0)
+    .slice(0, 5);
+  const topFunnels = [...funnels]
+    .map((f) => ({
+      ...f,
+      _periodViews: isAllTime ? (f.total_views || 0) : (funnelViewCount[f.id] || 0),
+      _periodLeads: isAllTime ? (f.total_leads || 0) : (funnelLeadCount[f.id] || 0),
+    }))
+    .sort((a, b) => b._periodViews - a._periodViews)
+    .filter((f) => isAllTime ? true : (f._periodViews > 0 || f._periodLeads > 0))
+    .slice(0, 5);
+  const topLPs = [...landingPages]
+    .map((l) => ({
+      ...l,
+      _periodViews: isAllTime ? (l.total_views || 0) : (lpViewCount[l.id] || 0),
+      _periodLeads: isAllTime ? (l.total_registrations || 0) : (lpRegCount[l.id] || 0),
+    }))
+    .sort((a, b) => b._periodViews - a._periodViews)
+    .filter((l) => isAllTime ? true : (l._periodViews > 0 || l._periodLeads > 0))
+    .slice(0, 5);
 
   const sortFn = (a: any, b: any, vA: number, vB: number, lA: number, lB: number) => {
     if (sort === "alpha") return (a.title || "").localeCompare(b.title || "");
