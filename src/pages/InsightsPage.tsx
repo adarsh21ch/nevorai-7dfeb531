@@ -41,7 +41,9 @@ function getInitialTab(): Tab {
 
 function getInitialPeriod(): Period {
   if (typeof window === "undefined") return "7d";
-  const stored = window.localStorage.getItem("insights:period") as Period | null;
+  // v2 key — old "insights:period" may persist "today" which makes the page
+  // look broken for low-traffic creators on first open.
+  const stored = window.localStorage.getItem("insights:period:v2") as Period | null;
   if (stored && ["today", "7d", "30d", "all"].includes(stored)) return stored;
   return "7d";
 }
