@@ -121,6 +121,9 @@ export const usePlanLimits = () => {
     customBranding: config.feature_custom_branding === true,
     prospectAnalytics: config.feature_prospect_analytics === true,
     speakerProfile: config.feature_speaker_profile === true,
+    videoTopics: config.feature_video_topics !== false,
+    contactForm: config.feature_contact_form !== false,
+    privacySettings: config.feature_privacy_settings !== false,
   };
 
   return {
