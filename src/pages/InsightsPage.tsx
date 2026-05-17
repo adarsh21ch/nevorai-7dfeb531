@@ -556,33 +556,39 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             <ActivityFeed items={feedItems} />
           </div>
 
-          {/* Top entities */}
+          {/* Top entities — period-scoped so they stay consistent with KPI cards above */}
           <div className="grid lg:grid-cols-2 gap-4">
             <div className="premium-card p-5">
-              <h3 className="text-sm font-heading font-semibold mb-3 flex items-center gap-2"><Video size={14} className="text-primary" /> Top Videos</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-heading font-semibold flex items-center gap-2"><Video size={14} className="text-primary" /> Top Videos</h3>
+                <span className="text-[10px] text-muted-foreground">{PERIOD_LABELS[period]}</span>
+              </div>
               {topVideos.length ? (
                 <ul className="space-y-2">
                   {topVideos.map((v) => (
                     <li key={v.id} className="flex items-center justify-between gap-3 text-xs">
                       <span className="truncate">{v.title}</span>
-                      <span className="text-muted-foreground tabular-nums">{formatCompact(v.view_count || 0)} views</span>
+                      <span className="text-muted-foreground tabular-nums">{formatCompact(v._periodViews)} views</span>
                     </li>
                   ))}
                 </ul>
-              ) : <p className="text-xs text-muted-foreground text-center py-6">No videos yet</p>}
+              ) : <p className="text-xs text-muted-foreground text-center py-6">No views in this period</p>}
             </div>
             <div className="premium-card p-5">
-              <h3 className="text-sm font-heading font-semibold mb-3 flex items-center gap-2"><Layers size={14} className="text-primary" /> Top Funnels</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-heading font-semibold flex items-center gap-2"><Layers size={14} className="text-primary" /> Top Funnels</h3>
+                <span className="text-[10px] text-muted-foreground">{PERIOD_LABELS[period]}</span>
+              </div>
               {topFunnels.length ? (
                 <ul className="space-y-2">
                   {topFunnels.map((f) => (
                     <li key={f.id} className="flex items-center justify-between gap-3 text-xs">
                       <span className="truncate">{f.title}</span>
-                      <span className="text-muted-foreground tabular-nums">{formatCompact(f.total_views || 0)} views · {formatInt(f.total_leads || 0)} leads</span>
+                      <span className="text-muted-foreground tabular-nums">{formatCompact(f._periodViews)} views · {formatInt(f._periodLeads)} leads</span>
                     </li>
                   ))}
                 </ul>
-              ) : <p className="text-xs text-muted-foreground text-center py-6">No funnels yet</p>}
+              ) : <p className="text-xs text-muted-foreground text-center py-6">No activity in this period</p>}
             </div>
           </div>
 
