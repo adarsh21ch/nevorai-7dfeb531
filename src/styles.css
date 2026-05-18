@@ -159,8 +159,12 @@
 }
 
 [data-theme="light"] .gradient-bg-subtle {
-  background: radial-gradient(ellipse at top, hsl(221 83% 53% / 0.05) 0%, transparent 60%),
-              radial-gradient(ellipse at bottom right, hsl(221 83% 53% / 0.04) 0%, transparent 50%);
+  background: radial-gradient(ellipse at top, hsl(25 95% 53% / 0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at bottom right, hsl(25 95% 53% / 0.03) 0%, transparent 50%);
+}
+[data-theme="dark"] .gradient-bg-subtle {
+  background: radial-gradient(ellipse at top, hsl(25 95% 53% / 0.05) 0%, transparent 60%),
+              radial-gradient(ellipse at bottom right, hsl(25 95% 53% / 0.04) 0%, transparent 50%);
 }
 
 * { border-color: hsl(var(--border) / 0.08); }
