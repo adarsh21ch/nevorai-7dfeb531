@@ -32,7 +32,7 @@ export const Logo = ({ size = "default", showByline = false, tone = "auto" }: Lo
       : "var(--text-secondary)";
 
   return (
-    <div className={`flex items-center ${s.gap}`} style={forcedColor ? { color: forcedColor } : undefined}>
+    <div className={`flex items-center ${s.gap}`} style={{ color: forcedColor ?? "var(--logo-color)" }}>
       <LogoMark className={`${s.img} shrink-0`} />
       <div className="flex flex-col justify-center" style={{ lineHeight: 1 }}>
         <span
