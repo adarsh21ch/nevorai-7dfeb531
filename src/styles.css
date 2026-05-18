@@ -78,17 +78,17 @@
   --card-foreground: 0 0% 4%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 4%;
-  /* Primary = saffron #F97316 */
-  --primary: 25 95% 53%;
+  /* Primary = monochrome foreground (no saffron) */
+  --primary: 0 0% 4%;
   --primary-foreground: 0 0% 100%;
-  --primary-subtle: 26 100% 96%;
-  --primary-text: 21 88% 40%;
+  --primary-subtle: 0 0% 95%;
+  --primary-text: 0 0% 4%;
   --secondary: 0 0% 97%;
   --secondary-foreground: 0 0% 4%;
   --muted: 0 0% 95%;
   --muted-foreground: 0 0% 40%;
-  --accent: 26 100% 96%;
-  --accent-foreground: 21 88% 40%;
+  --accent: 0 0% 95%;
+  --accent-foreground: 0 0% 4%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   --success: 142 71% 35%;
@@ -97,7 +97,7 @@
   --warning-foreground: 0 0% 0%;
   --border: 0 0% 91%;
   --input: 0 0% 91%;
-  --ring: 25 95% 53%;
+  --ring: 0 0% 4%;
   --radius: 0.625rem;
 
   --surface-1: 0 0% 100%;
