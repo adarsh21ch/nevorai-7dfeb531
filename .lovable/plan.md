@@ -1,37 +1,52 @@
-## Why the first-tab lag happens
+## Nevorai Monochrome Rebrand — Landing Page
 
-The app is fast after a minute because everything is cached. The cold-start lag is **not** a data problem — data is already warm-prefetched in `useAuth`. It's a **JavaScript chunk** problem:
+A focused rebrand of the **landing page only**. Light mode becomes the default. The only color on the page is the saffron primary CTA. Theme toggle in nav. App/dashboard/admin pages are out of scope.
 
-1. Every route in `src/routes/*.lazy.tsx` is a separate code-split chunk. The first time you click a tab (Videos, Funnels, Insights, etc.), the browser must download that chunk + its transitive imports (DashboardLayout, charts, modals, etc.), parse, and only then render. That's the 3–5s wait.
-2. `defaultPreload: "render"` only preloads links that are currently rendered. On a fresh page load nothing is preloaded until React mounts and the sidebar paints — by then you've already clicked.
-3. The SW cleanup in `__root.tsx` triggers a full `window.location.reload()` once per session on returning users, which compounds the first impression.
-4. `AuthProvider` fires 6 parallel Supabase queries on mount competing with the initial route chunk download over the same HTTP/2 connection.
+### 1. Design tokens (`src/styles.css`)
+- Replace landing surface tokens with: `--bg-base`, `--bg-elevated`, `--bg-glass`, `--border-subtle`, `--border-strong`, `--text-primary/secondary/tertiary`, `--logo-color`, `--accent-cta` (#F97316), `--accent-cta-hover`, `--accent-cta-glow`.
+- Light mode = default `:root`. Dark mode = `[data-theme="dark"]` overrides.
+- Remove `.gradient-text`, `.gradient-primary`, `.text-gradient-hero`, hero blob gradients, animated grid, color radial backgrounds — replace with monochrome utility classes (`.btn-saffron`, `.btn-glass-mono`, `.badge-mono`, `.card-mono`, `.logo-halo`).
+- Keep saffron CTA gradient (single allowed colored element).
 
-## Fix plan (frontend only, no business-logic changes)
+### 2. Theme toggle (Navbar)
+- Add 36×36 icon button between FAQ and Log in (Sun/Moon from lucide-react), `useTheme()` hook already exists.
+- Rewrite Navbar to use semantic tokens (`text-primary`, `bg-base/80`, `border-subtle`) — drop hardcoded `text-white`, `bg-hero-bg`, gradient backgrounds.
+- Use Case dropdown icons drop `bg-gradient-brand`, become monochrome (border + foreground icon).
+- Mobile version mirrors the same.
 
-### 1. Eagerly preload dashboard route chunks after login
-In `src/hooks/useAuth.tsx`, once `user` is set, call `router.preloadRoute()` for every primary tab (`/dashboard`, `/videos`, `/insights`, `/funnels`, `/landing-pages`, `/live`, `/tools`, `/profile`, `/billing`, `/payments`, `/notifications`). This downloads the JS chunks during the idle moment right after login, so tab clicks become instant chunk-cache hits.
+### 3. Logo
+- Convert mark to inline SVG component that uses `currentColor` (replaces PNG imports for landing usage). Set color via `var(--logo-color)`.
+- Halo glow becomes white (dark) / saffron (light) via CSS class `.logo-halo`. Dot opacity pulse animation kept.
+- Existing PNG logo retained for non-landing surfaces to avoid touching dashboard.
 
-Use `requestIdleCallback` (fallback `setTimeout(…, 200)`) so it doesn't fight the first paint.
+### 4. Hero (`HeroSection.tsx`)
+- Remove `<FlowParticles />` and `bg-gradient-hero-glow`.
+- Background = `bg-base` (white default).
+- Replace cyan "Built for Creators Who Sell" badge with `.badge-mono`.
+- Both headline lines = `text-primary`, no gradient. "Twice the conversion." gets `italic` for subtle emphasis.
+- CTA buttons reuse `.btn-saffron` + `.btn-glass-mono`.
+- Optional 3% noise overlay for paper-texture depth.
 
-### 2. Preload on app shell mount, not just on hover
-In `DashboardLayout.tsx`, in addition to `onMouseEnter`, run a one-shot `useEffect` that preloads all sidebar + bottom-nav routes after mount. Mobile users never hover, so today their tabs are never preloaded.
+### 5. Comparison (`ResultsComparison.tsx`)
+- YouTube ✗ → `text-tertiary` (muted), not bright red.
+- Nevorai ✓ → first row uses `text-accent-cta` (saffron), rest use `text-primary`.
 
-### 3. Stagger the auth-time data prefetch
-In `useAuth.tsx`, the 6 parallel `prefetchQuery` calls block the network. Wrap them in `requestIdleCallback` and keep only `dashboard-summary` + `unread-notifications` as immediate. The rest fire after the first paint settles. This frees bandwidth for route chunks.
+### 6. Other landing sections (Features, HowItWorks, Pricing, FAQ, ProblemSolution, Footer, etc.)
+- Sweep: replace `bg-hero-bg`, `text-white`, `text-hero-muted`, `bg-gradient-brand`, `text-brand-emerald`, colored glows, particle/blob backgrounds with the new monochrome tokens and utility classes.
+- All section badges → `.badge-mono`.
+- All cards → `.card-mono`.
+- Remove FlowParticles imports anywhere they appear.
 
-### 4. Kill the SW reload loop on returning users
-In `src/routes/__root.tsx`, the SW-cleanup `useEffect` calls `window.location.reload()` once per session. The kill-switch SWs in `public/sw.js` already self-unregister. Drop the reload — just unregister silently. This removes a hard ~1s round-trip from cold start.
+### 7. Verification
+- `npm run build` passes.
+- Visit `/` in browser, screenshot light + dark hero, comparison section, mobile (375px) light + dark.
+- Confirm: no cyan/blue/purple anywhere, logo inverts cleanly, CTA is the only color, theme toggle persists.
 
-### 5. Add `modulepreload` hints for the heaviest shared chunks
-In `__root.tsx` `head().links`, add `{ rel: "modulepreload", href: "/_build/assets/DashboardLayout-*.js" }` style hints — but since hashed filenames change per build, instead use Vite's built-in `<link rel="modulepreload">` injection by importing `DashboardLayout` from `__root.tsx`'s component graph indirectly (cheaper: just make sure DashboardLayout is in the initial chunk by importing it once at the root level for authenticated routes). Skip if it grows the initial bundle by >30KB.
+### Out of scope (not touched)
+- Routing, auth, Supabase, admin panel, dashboard, funnel/landing-page editors, app pages, copy text.
+- Existing PNG logo files (kept so non-landing surfaces don't break).
 
-### 6. Verification
-- `npm run build` succeeds.
-- Browser cold-load: open in incognito, log in, click each tab — first-click latency should drop from 3–5s to <500ms.
-- Confirm Network panel shows `/dashboard`, `/videos`, `/insights` chunks downloading immediately after login (status 200, then 304 / cache on actual nav).
-
-## Scope guard
-- Frontend only. No DB, no Supabase functions, no business logic touched.
-- No new dependencies.
-- Files touched: `src/hooks/useAuth.tsx`, `src/components/layout/DashboardLayout.tsx`, `src/routes/__root.tsx`. Possibly `src/router.tsx` for `defaultPreloadStaleTime` confirmation.
+### Technical notes
+- Inline SVG logo component lives at `src/components/landing/LogoMark.tsx` so theming works via `currentColor`.
+- Theme provider already wired in `__root.tsx` (verified — `useTheme` exists). Only adding the toggle UI.
+- Sweep is mechanical class replacement across ~15 landing components; no logic changes.

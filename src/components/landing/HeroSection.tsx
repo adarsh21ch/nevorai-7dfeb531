@@ -1,16 +1,15 @@
 import { Link } from "@/lib/router-compat";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
-import { FlowParticles } from "./FlowParticles";
 import { AnimatedLogo3D } from "./AnimatedLogo3D";
 import { HeroMarquee } from "./HeroMarquee";
 
 export const HeroSection = () => {
   return (
-    <section className="hero-section relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden bg-hero-bg">
-      <FlowParticles />
-      <div className="absolute inset-0 bg-gradient-hero-glow pointer-events-none" />
-
+    <section
+      className="hero-section relative min-h-screen flex items-center pt-20 pb-16 overflow-hidden"
+      style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}
+    >
       <div className="container-app relative z-10">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
           <motion.div
@@ -18,6 +17,7 @@ export const HeroSection = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
             className="mb-8 hero-logo-halo"
+            style={{ color: "var(--logo-color)" }}
           >
             <AnimatedLogo3D />
           </motion.div>
@@ -26,16 +26,21 @@ export const HeroSection = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-6 badge-pill badge-pill-cyan"
+            className="mb-6 badge-pill"
           >
             Built for Creators Who Sell
           </motion.div>
 
           <div className="relative mb-6">
-            <div className="hero-glow" aria-hidden="true" />
-            <h1 className="font-heading font-extrabold tracking-tight text-white relative leading-[1.1]">
+            <h1
+              className="font-heading font-bold leading-[0.95]"
+              style={{
+                color: "var(--text-primary)",
+                letterSpacing: "-0.04em",
+              }}
+            >
               <motion.span
-                className="block text-4xl sm:text-5xl md:text-7xl text-white/70"
+                className="block text-5xl sm:text-6xl md:text-8xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
@@ -43,10 +48,11 @@ export const HeroSection = () => {
                 Same effort.
               </motion.span>
               <motion.span
-                className="block text-gradient-hero text-4xl sm:text-5xl md:text-7xl"
+                className="block text-5xl sm:text-6xl md:text-8xl italic"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
+                style={{ fontWeight: 700 }}
               >
                 Twice the conversion.
               </motion.span>
@@ -54,13 +60,14 @@ export const HeroSection = () => {
           </div>
 
           <motion.p
-            className="text-base md:text-xl max-w-2xl mb-10 text-hero-muted leading-relaxed"
+            className="text-base md:text-xl max-w-2xl mb-10 leading-relaxed"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
+            style={{ color: "var(--text-secondary)" }}
           >
             The video platform built for{" "}
-            <span className="text-white font-medium">creators who sell</span>.
+            <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>creators who sell</span>.
             Skip-protection, viewer tracking, and conversion insights — on every video you share.
           </motion.p>
 
@@ -85,10 +92,11 @@ export const HeroSection = () => {
           </motion.div>
 
           <motion.p
-            className="-mt-8 mb-14 text-xs text-white/50"
+            className="-mt-8 mb-14 text-xs"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.75 }}
+            style={{ color: "var(--text-tertiary)" }}
           >
             No credit card. 1 GB free forever. Setup in 2 minutes.
           </motion.p>
@@ -103,10 +111,11 @@ export const HeroSection = () => {
           </motion.div>
 
           <motion.p
-            className="mt-8 text-xs text-hero-muted"
+            className="mt-8 text-xs"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.9 }}
+            style={{ color: "var(--text-tertiary)" }}
           >
             🇮🇳 Made in India · Free forever for 1 GB
           </motion.p>
