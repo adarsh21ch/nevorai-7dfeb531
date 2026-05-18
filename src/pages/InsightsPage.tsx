@@ -349,13 +349,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     refetchInterval: visible ? 30_000 : false,
   });
 
-  const isLoading = authLoading || funnelsLoading || lpLoading;
   const error = funnelsError || lpError;
-
-  if (isLoading) {
-    const loadingState = <div className="premium-card p-10 text-center"><p className="text-sm text-muted-foreground">Loading insights…</p></div>;
-    return embedded ? loadingState : <DashboardLayout>{loadingState}</DashboardLayout>;
-  }
 
   if (error) {
     const errorState = (
@@ -503,7 +497,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     <div className="space-y-5">
       {/* Page header — flush at top of content area */}
       <div>
-        <div className="flex items-start justify-between gap-3">
+        <div className="hidden md:flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-2xl font-heading font-bold flex items-center gap-2">
               {pageTitle}
@@ -512,13 +506,15 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             <p className="text-xs text-muted-foreground mt-0.5">{pageSubtitle}</p>
           </div>
         </div>
-        <div className="mt-3 flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-1 overflow-x-auto md:mt-3">
           <PeriodChip p="today" />
           <PeriodChip p="7d" />
           <PeriodChip p="30d" />
           <PeriodChip p="all" />
+          {liveViewers > 0 ? <span className="ml-2 md:hidden"><LivePulseDot label={`${liveViewers} live`} /></span> : null}
         </div>
       </div>
+
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
         <div className="overflow-x-auto -mx-4 px-4">
