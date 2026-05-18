@@ -13,7 +13,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("nevorai-theme");
-      if (saved === "light" || saved === "dark") setTheme(saved);
+      if (saved === "light" || saved === "dark") {
+        setTheme(saved);
+        return;
+      }
+      if (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+        setTheme("dark");
+      }
     } catch {}
   }, []);
 
