@@ -468,10 +468,8 @@ const VideosPage = () => {
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPreview(); } }}
                   >
                     <VideoThumbnail thumbnailUrl={v.thumbnail_url} videoUrl={v.public_url} title={title} className="rounded-none" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/15 group-hover:bg-black/40 transition-colors">
-                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 shadow-lg ring-1 ring-black/10 transition-transform group-hover:scale-110 group-active:scale-95">
-                        <Play size={22} className="text-black translate-x-[1px]" fill="currentColor" />
-                      </span>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-colors">
+                      <Play size={48} className="text-white/95 drop-shadow-[0_3px_10px_rgba(0,0,0,0.6)] transition-transform group-hover:scale-110 group-active:scale-95" fill="currentColor" />
                     </div>
                     {formatDuration(v.duration_seconds) && (
                       <span className="absolute bottom-1.5 right-1.5 bg-black/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">{formatDuration(v.duration_seconds)}</span>
