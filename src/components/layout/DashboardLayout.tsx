@@ -141,6 +141,13 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
             {!collapsed && <Logo size="sm" showByline />}
             <div className="flex items-center gap-1">
               <button
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+              <button
                 onClick={() => setCollapsed(!collapsed)}
                 className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
