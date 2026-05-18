@@ -47,8 +47,8 @@ const STEP_TYPES = [
     label: "Manual Unlock",
     icon: UserCheck,
     description: "You approve manually before next step",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
+    color: "text-foreground",
+    bg: "bg-muted",
   },
 ] as const;
 
