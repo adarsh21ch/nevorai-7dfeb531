@@ -624,20 +624,20 @@ section[id] {
 .landing-page .text-brand-blue-deep { color: var(--text-primary) !important; }
 
 /* Light-mode override for text-white utilities used heavily on dark-only components */
-[data-theme="light"] .landing-page :where(.text-white, [class*="text-white\\/"]) {
+[data-theme="light"] .landing-page :where(.text-white, [class*="text-white\/"]) {
   color: var(--text-primary) !important;
 }
-[data-theme="light"] .landing-page :where([class*="bg-white\\/"], .bg-white\\/5, .bg-white\\/10) {
+[data-theme="light"] .landing-page :where([class*="bg-white\/"], .bg-white\/5, .bg-white\/10) {
   background-color: var(--bg-glass) !important;
 }
-[data-theme="light"] .landing-page :where([class*="border-white\\/"]) {
+[data-theme="light"] .landing-page :where([class*="border-white\/"]) {
   border-color: var(--border-subtle-c) !important;
 }
-[data-theme="light"] .landing-page .text-white\\/80,
-[data-theme="light"] .landing-page .text-white\\/70 { color: var(--text-secondary) !important; }
-[data-theme="light"] .landing-page .text-white\\/60,
-[data-theme="light"] .landing-page .text-white\\/50,
-[data-theme="light"] .landing-page .text-white\\/40 { color: var(--text-tertiary) !important; }
+[data-theme="light"] .landing-page .text-white\/80,
+[data-theme="light"] .landing-page .text-white\/70 { color: var(--text-secondary) !important; }
+[data-theme="light"] .landing-page .text-white\/60,
+[data-theme="light"] .landing-page .text-white\/50,
+[data-theme="light"] .landing-page .text-white\/40 { color: var(--text-tertiary) !important; }
 
 /* Monochrome badges (override colored pill variants) */
 .landing-page .badge-pill,
