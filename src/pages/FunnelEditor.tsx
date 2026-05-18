@@ -95,10 +95,11 @@ const MULTI_STEPS = [
   { icon: Settings, label: "Video Settings", num: "3" },
   { icon: User, label: "Speaker", num: "4" },
   { icon: ListChecks, label: "Video Topics", num: "5" },
-  { icon: MessageCircle, label: "Contact Info", num: "6" },
-  { icon: IndianRupee, label: "Payment", num: "7" },
-  { icon: Lock, label: "Privacy", num: "8" },
-  { icon: Rocket, label: "Publish", num: "9" },
+  { icon: ClipboardList, label: "Lead Capture", num: "6" },
+  { icon: MessageCircle, label: "Contact Info", num: "7" },
+  { icon: IndianRupee, label: "Payment", num: "8" },
+  { icon: Lock, label: "Privacy", num: "9" },
+  { icon: Rocket, label: "Publish", num: "10" },
 ];
 
 const UNLOCK_LABELS: Record<string, string> = {
