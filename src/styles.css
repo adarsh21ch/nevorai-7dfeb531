@@ -537,3 +537,235 @@ html {
 section[id] {
   scroll-margin-top: 80px;
 }
+
+/* =====================================================================
+   NEVORAI MONOCHROME REBRAND — LANDING PAGE
+   Light = default. Saffron CTA is the only color. Dark = toggle.
+   Scoped under .landing-page so app/admin surfaces are untouched.
+   ===================================================================== */
+
+/* Brand tokens (theme-aware via document data-theme) */
+:root, [data-theme="light"] {
+  --bg-base: #FFFFFF;
+  --bg-elevated: #FAFAFA;
+  --bg-glass: rgba(0,0,0,0.04);
+  --border-subtle-rgb: 0,0,0;
+  --border-subtle-c: rgba(0,0,0,0.08);
+  --border-strong-c: rgba(0,0,0,0.14);
+  --text-primary: #0A0A0A;
+  --text-secondary: #525866;
+  --text-tertiary: #8E95A3;
+  --logo-color: #0A0A0A;
+  --halo-color: 249,115,22;        /* saffron in light mode */
+}
+[data-theme="dark"] {
+  --bg-base: #050608;
+  --bg-elevated: #0E1014;
+  --bg-glass: rgba(255,255,255,0.04);
+  --border-subtle-c: rgba(255,255,255,0.08);
+  --border-strong-c: rgba(255,255,255,0.14);
+  --text-primary: #FAFAFA;
+  --text-secondary: #B0B5BD;
+  --text-tertiary: #6B7281;
+  --logo-color: #FFFFFF;
+  --halo-color: 255,255,255;       /* white in dark mode */
+}
+:root {
+  --accent-cta: #F97316;
+  --accent-cta-hover: #EA580C;
+  --accent-cta-glow: rgba(249,115,22,0.4);
+}
+
+/* Landing scope wrapper */
+.landing-page {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  transition: background-color 280ms ease, color 280ms ease;
+}
+
+/* Neutralize all gradient/colored utility classes inside landing */
+.landing-page .text-gradient-hero,
+.landing-page .text-gradient-brand,
+.landing-page .gradient-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+  animation: none !important;
+}
+.landing-page .bg-gradient-brand,
+.landing-page .bg-gradient-brand-soft,
+.landing-page .bg-gradient-brand-rich,
+.landing-page .gradient-primary {
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border-strong-c);
+}
+.landing-page .bg-gradient-hero-glow,
+.landing-page .gradient-bg-subtle,
+.landing-page .landing-mesh-bg {
+  background: var(--bg-base) !important;
+  background-image: none !important;
+}
+.landing-page .shadow-glow-brand,
+.landing-page .shadow-glow-brand-lg,
+.landing-page .shadow-glow-danger { box-shadow: none !important; }
+
+/* Repoint hero-* utility classes to theme tokens (so bg-hero-bg, text-hero-muted etc. become theme-aware) */
+.landing-page .bg-hero-bg { background-color: var(--bg-base) !important; }
+.landing-page .bg-hero-surface { background-color: var(--bg-elevated) !important; }
+.landing-page .text-hero-text { color: var(--text-primary) !important; }
+.landing-page .text-hero-muted { color: var(--text-secondary) !important; }
+.landing-page .text-hero-soft { color: var(--text-secondary) !important; }
+.landing-page .text-brand-emerald,
+.landing-page .text-brand-teal,
+.landing-page .text-brand-blue,
+.landing-page .text-brand-blue-bright,
+.landing-page .text-brand-blue-deep { color: var(--text-primary) !important; }
+
+/* Light-mode override for text-white utilities used heavily on dark-only components */
+[data-theme="light"] .landing-page :where(.text-white, [class*="text-white\\/"]) {
+  color: var(--text-primary) !important;
+}
+[data-theme="light"] .landing-page :where([class*="bg-white\\/"], .bg-white\\/5, .bg-white\\/10) {
+  background-color: var(--bg-glass) !important;
+}
+[data-theme="light"] .landing-page :where([class*="border-white\\/"]) {
+  border-color: var(--border-subtle-c) !important;
+}
+[data-theme="light"] .landing-page .text-white\\/80,
+[data-theme="light"] .landing-page .text-white\\/70 { color: var(--text-secondary) !important; }
+[data-theme="light"] .landing-page .text-white\\/60,
+[data-theme="light"] .landing-page .text-white\\/50,
+[data-theme="light"] .landing-page .text-white\\/40 { color: var(--text-tertiary) !important; }
+
+/* Monochrome badges (override colored pill variants) */
+.landing-page .badge-pill,
+.landing-page .badge-pill-cyan,
+.landing-page .badge-pill-red,
+.landing-page .badge-pill-saffron {
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border-subtle-c) !important;
+  color: var(--text-secondary) !important;
+  backdrop-filter: blur(12px);
+}
+.landing-page .badge-pill::before,
+.landing-page .badge-pill-cyan::before,
+.landing-page .badge-pill-red::before,
+.landing-page .badge-pill-saffron::before {
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+/* Card defaults inside landing */
+.landing-page .card-mono {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle-c);
+  border-radius: 16px;
+  padding: 32px;
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-theme="light"] .landing-page .card-mono {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.08);
+}
+[data-theme="dark"] .landing-page .card-mono {
+  box-shadow: 0 1px 0 0 rgba(255,255,255,0.04) inset, 0 24px 48px -12px rgba(0,0,0,0.4);
+}
+@media (hover: hover) {
+  .landing-page .card-mono:hover {
+    border-color: var(--border-strong-c);
+    transform: translateY(-2px);
+  }
+}
+
+/* Override glass-premium to be theme-aware in landing */
+.landing-page .glass-premium {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-subtle-c) !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .landing-page .glass-premium {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.08) !important;
+}
+@media (hover: hover) {
+  .landing-page .glass-premium:hover {
+    border-color: var(--border-strong-c) !important;
+    background: var(--bg-elevated) !important;
+  }
+}
+
+/* Logo halo — monochrome (white in dark / saffron in light) */
+.landing-page .hero-logo-halo {
+  animation: monoHaloPulse 4s ease-in-out infinite;
+}
+@keyframes monoHaloPulse {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 32px rgba(var(--halo-color), 0.18))
+      drop-shadow(0 0 64px rgba(var(--halo-color), 0.10));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 42px rgba(var(--halo-color), 0.26))
+      drop-shadow(0 0 80px rgba(var(--halo-color), 0.16));
+  }
+}
+
+/* Glass secondary CTA — theme-aware in landing */
+.landing-page .btn-glass-premium {
+  background: var(--bg-glass) !important;
+  border: 1px solid var(--border-strong-c) !important;
+  color: var(--text-primary) !important;
+}
+.landing-page .btn-glass-premium:hover {
+  background: var(--bg-elevated) !important;
+}
+
+/* Disable the FlowParticles container if it still mounts anywhere */
+.landing-page .flow-particles-bg { display: none !important; }
+
+/* Subtle paper-noise overlay in light mode (3% opacity) */
+[data-theme="light"] .landing-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+[data-theme="dark"] .landing-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,255,255,0.03), transparent 70%);
+}
+
+/* Theme toggle button (nav) */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle-c);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+.theme-toggle-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong-c);
+}
+.theme-toggle-btn svg { transition: transform 220ms ease, opacity 220ms ease; }
+
+/* Logo dot pulse (for inline SVG mark) */
+@keyframes logoDotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.logo-dot-pulse { animation: logoDotPulse 3s ease-in-out infinite; transform-origin: center; }
