@@ -19,7 +19,7 @@ export const Logo = ({ size = "default", showByline = false, variant = "short", 
   // the dot and the text top sit on the same optical line.
   const sizes = {
     sm: { img: "h-7 w-7", text: "text-[17px]", byline: "text-[9px]", gap: "gap-1.5" },
-    default: { img: "h-9 w-9", text: "text-[22px]", byline: "text-[10px]", gap: "gap-2" },
+    default: { img: "h-9 w-9 object-contain shrink-0 pt-0 mt-[8px]", text: "text-[22px]", byline: "text-[10px]", gap: "gap-2" },
     lg: { img: "h-12 w-12", text: "text-[28px]", byline: "text-[11px]", gap: "gap-2.5" },
   };
   const s = sizes[size];
@@ -29,7 +29,7 @@ export const Logo = ({ size = "default", showByline = false, variant = "short", 
   const bylineColor =
     tone === "light" ? "rgba(255,255,255,0.7)" : tone === "dark" ? "rgba(0,0,0,0.6)" : "hsl(var(--muted-foreground))";
 
-  const imgCls = `${s.img} object-contain shrink-0`;
+  const imgCls = s.img;
 
   const renderMark = () => {
     if (tone === "light") {
