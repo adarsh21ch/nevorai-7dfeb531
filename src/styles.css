@@ -266,31 +266,31 @@ img, video, iframe { max-width: 100%; }
    Use these instead of inline style={{ background: "linear-gradient(...)" }}
    ===================================================================== */
 .bg-gradient-brand {
-  background: linear-gradient(135deg, #00C896, #0066FF);
+  background: linear-gradient(135deg, #0a0a0a, #F97316);
 }
 .bg-gradient-brand-soft {
-  background: linear-gradient(90deg, #00C896, #0066FF);
+  background: linear-gradient(90deg, #1a1a1a, #F97316);
 }
 .bg-gradient-brand-rich {
-  background: linear-gradient(135deg, #7EE83A, #00D4C8, #00AAFF, #1A4FD6);
+  background: linear-gradient(90deg, transparent, #F97316, transparent);
 }
 .bg-gradient-danger {
   background: linear-gradient(90deg, #ef4444, #dc2626);
 }
 .bg-gradient-hero-glow {
-  background: radial-gradient(ellipse at top, rgba(0,212,200,0.08) 0%, transparent 60%),
-              radial-gradient(ellipse at bottom right, rgba(0,170,255,0.05) 0%, transparent 50%);
+  background: radial-gradient(ellipse at top, rgba(249,115,22,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at bottom right, rgba(249,115,22,0.04) 0%, transparent 50%);
 }
 .text-gradient-brand {
-  background-image: linear-gradient(135deg, #00C896, #0066FF);
+  background-image: linear-gradient(135deg, #0a0a0a, #F97316);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
 }
 
-.shadow-glow-brand   { box-shadow: 0 0 30px rgba(0,200,150,0.35); }
-.shadow-glow-brand-lg{ box-shadow: 0 0 30px rgba(0,200,150,0.40); }
+.shadow-glow-brand   { box-shadow: 0 0 30px rgba(249,115,22,0.30); }
+.shadow-glow-brand-lg{ box-shadow: 0 0 40px rgba(249,115,22,0.40); }
 .shadow-glow-danger  { box-shadow: 0 0 30px rgba(239,68,68,0.30); }
 .shadow-elegant      { box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
 
