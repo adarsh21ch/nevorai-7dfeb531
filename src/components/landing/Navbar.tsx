@@ -107,8 +107,9 @@ export const Navbar = () => {
                       onClick={() => setUseCasesOpen(false)}
                       className="flex items-start gap-3 px-3 py-2.5 rounded-lg transition-colors group"
                       style={{ color: "var(--text-primary)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-glass)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.background = "var(--bg-glass)")}
+                      onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.background = "transparent")}
+
                     >
                       <div
                         className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
