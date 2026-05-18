@@ -111,8 +111,8 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
         className={cn(
           "relative flex items-center gap-3 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-all",
           active
-            ? "border-primary bg-primary/10 text-primary"
-            : "border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "border-foreground bg-muted text-foreground font-semibold"
+            : "border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground"
         )}
       >
         <item.icon size={18} />
