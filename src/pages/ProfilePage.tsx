@@ -170,8 +170,8 @@ const ProfilePage = () => {
   const Row = ({ icon: Icon, label, path, desc, danger }: any) => (
     <Link to={path}
       className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-muted/50 transition-colors group">
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${danger ? "bg-destructive/10" : "bg-primary/10"}`}>
-        <Icon size={14} className={danger ? "text-destructive" : "text-primary"} />
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${danger ? "bg-destructive/10" : "bg-muted"}`}>
+        <Icon size={14} className={danger ? "text-destructive" : "text-muted-foreground"} />
       </div>
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-medium ${danger ? "text-destructive" : ""}`}>{label}</p>
@@ -188,11 +188,11 @@ const ProfilePage = () => {
         <div className="premium-card p-5">
           <div className="flex items-center gap-4">
             <div className="relative shrink-0">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 rounded-full bg-foreground border-2 border-foreground flex items-center justify-center overflow-hidden">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xl font-heading font-bold text-primary">{initials}</span>
+                  <span className="text-xl font-heading font-bold text-background">{initials}</span>
                 )}
               </div>
               <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-md hover:scale-105 transition-transform" title="Change photo">
@@ -234,8 +234,8 @@ const ProfilePage = () => {
           <Collapsible open={editOpen} onOpenChange={setEditOpen}>
             <CollapsibleTrigger asChild>
               <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-muted/50 transition-colors text-left">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Pencil size={14} className="text-primary" />
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <Pencil size={14} className="text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Edit Profile</p>
@@ -300,8 +300,8 @@ const ProfilePage = () => {
           <SectionLabel>Preferences</SectionLabel>
           <div className="flex items-center justify-between rounded-lg px-4 py-2.5">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                {theme === "dark" ? <Moon size={14} className="text-primary" /> : <Sun size={14} className="text-primary" />}
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                {theme === "dark" ? <Moon size={14} className="text-muted-foreground" /> : <Sun size={14} className="text-muted-foreground" />}
               </div>
               <div>
                 <p className="text-sm font-medium">{theme === "dark" ? "Dark mode" : "Light mode"}</p>

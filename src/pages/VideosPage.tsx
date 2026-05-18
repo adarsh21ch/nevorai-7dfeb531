@@ -202,7 +202,7 @@ const VideosPage = () => {
             <h1 className="text-xl sm:text-2xl font-heading font-bold">My Videos</h1>
             <StorageUsageInline />
           </div>
-          <Button size="sm" onClick={openUploadFlow} className="flex items-center gap-1.5">
+          <Button variant="hero" size="sm" onClick={openUploadFlow} className="flex items-center gap-1.5">
             <Upload size={14} /> Upload Video
           </Button>
           <input

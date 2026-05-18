@@ -47,7 +47,7 @@ const ToolsPage = () => {
                 className={cn(
                   "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-all min-h-[40px]",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
+                    ? "bg-foreground text-background"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
