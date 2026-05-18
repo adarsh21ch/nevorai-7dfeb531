@@ -770,6 +770,10 @@ section[id] {
 }
 .logo-dot-pulse { animation: logoDotPulse 3s ease-in-out infinite; transform-origin: center; }
 
+/* Logo mark image — invert in dark mode so the black artwork becomes white */
+.logo-mark-img { display: inline-block; }
+[data-theme="dark"] .logo-mark-img { filter: invert(1); }
+
 /* =====================================================================
    LANDING — MONOCHROME CONSISTENCY ENFORCEMENT
    Neutralizes all colored section backgrounds, tints, badges, and
