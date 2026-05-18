@@ -51,8 +51,6 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
   const { features } = usePlanLimits();
   const navItems = [
     ...baseNavItems,
-    ...(features.landingPages ? [{ icon: FileText, label: "Landing Pages", path: "/landing-pages" }] : []),
-    ...(features.goLive ? [{ icon: Radio, label: "Live", path: "/live" }] : []),
     ...tailNavItems,
   ];
   const isAdminUser = isAdmin;
