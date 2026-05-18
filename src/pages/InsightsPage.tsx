@@ -499,8 +499,8 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
   const content = (
     <div className="space-y-5">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-10 -mx-4 px-4 pt-2 pb-3 bg-background/85 backdrop-blur-sm border-b border-border/40">
+      {/* Sticky header — flush under top bar, opaque, full-bleed */}
+      <div className="sticky top-0 z-20 -mt-3 sm:-mt-4 md:-mt-8 -mx-3 sm:-mx-4 md:-mx-8 px-3 sm:px-4 md:px-8 pt-3 sm:pt-4 pb-3 bg-background border-b border-border shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-2xl font-heading font-bold flex items-center gap-2">
@@ -510,7 +510,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             <p className="text-xs text-muted-foreground mt-0.5">{pageSubtitle}</p>
           </div>
         </div>
-        <div className="mt-3 flex items-center gap-1.5 overflow-x-auto ">
+        <div className="mt-3 flex items-center gap-1.5 overflow-x-auto">
           <PeriodChip p="today" />
           <PeriodChip p="7d" />
           <PeriodChip p="30d" />
