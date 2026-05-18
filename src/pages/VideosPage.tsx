@@ -307,25 +307,38 @@ const VideosPage = () => {
               return (
                 <div
                   key={v.id}
-                  onClick={goPreview}
-                  className="flex items-center gap-3 px-3 sm:px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer"
+                  onClick={goEdit}
+                  className="flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer"
                 >
-                  {/* Thumbnail */}
-                  <div className="relative flex-shrink-0 w-20">
+                  {/* Thumbnail — click to preview video */}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); goPreview(); }}
+                    disabled={!isReady}
+                    aria-label={isReady ? "Play video preview" : "Video not ready"}
+                    className="group relative flex-shrink-0 w-32 sm:w-40 md:w-44 rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-primary/60 disabled:cursor-not-allowed"
+                  >
                     <VideoThumbnail thumbnailUrl={v.thumbnail_url} videoUrl={v.public_url} title={title} />
-                    {dur && (
-                      <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[9px] font-medium px-1 py-0.5 rounded">{dur}</span>
-                    )}
-                    {!isReady && !isFailed && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-lg">
-                        <Loader2 size={14} className="text-white animate-spin" />
+                    {isReady && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/45 transition-colors">
+                        <span className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/95 shadow-lg ring-1 ring-black/10 transition-transform group-hover:scale-110 group-active:scale-95">
+                          <Play size={18} className="text-black translate-x-[1px]" fill="currentColor" />
+                        </span>
                       </div>
                     )}
-                  </div>
+                    {dur && (
+                      <span className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">{dur}</span>
+                    )}
+                    {!isReady && !isFailed && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Loader2 size={18} className="text-white animate-spin" />
+                      </div>
+                    )}
+                  </button>
 
-                  {/* Info */}
+                  {/* Info — click to edit details */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate leading-snug">{title}</p>
+                    <p className="text-sm sm:text-base font-medium text-foreground truncate leading-snug">{title}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <VideoStatusBadge status={v.status} />
                       <span className="text-[11px] text-muted-foreground">{formatSize(v.file_size_bytes)}</span>
