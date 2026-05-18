@@ -156,9 +156,24 @@ const AdminUsersPage = () => {
       <div className="w-full min-w-0 space-y-4">
         <h1 className="text-lg font-heading font-bold sm:text-2xl">User Management</h1>
 
-        <div className="relative w-full">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search users..." className="pl-9 bg-muted border-border" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search users..." className="pl-9 bg-muted border-border" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <div className="inline-flex rounded-lg border border-border bg-muted/30 p-0.5 text-xs">
+            {(["all", "free", "basic", "pro"] as const).map((k) => (
+              <button key={k} onClick={() => setPlanFilter(k)}
+                className={`px-3 py-1.5 rounded-md transition-colors capitalize flex items-center gap-1.5 ${
+                  planFilter === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}>
+                {k === "all" ? "All" : k}
+                <span className={`text-[10px] tabular-nums ${planFilter === k ? "opacity-80" : "opacity-60"}`}>
+                  {counts[k]}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Desktop table */}
