@@ -769,3 +769,124 @@ section[id] {
   50% { opacity: 0.5; }
 }
 .logo-dot-pulse { animation: logoDotPulse 3s ease-in-out infinite; transform-origin: center; }
+
+/* =====================================================================
+   LANDING — MONOCHROME CONSISTENCY ENFORCEMENT
+   Neutralizes all colored section backgrounds, tints, badges, and
+   icons inside .landing-page. Saffron CTA buttons (.btn-saffron*)
+   are the only color allowed and are untouched here.
+   ===================================================================== */
+
+/* Section / surface tints → unified canvas */
+.landing-page :where(
+  .bg-rose-50, .bg-red-50, .bg-orange-50, .bg-amber-50,
+  .bg-emerald-50, .bg-green-50, .bg-blue-50, .bg-cyan-50,
+  .bg-stone-50, .bg-stone-100, .bg-zinc-50
+) { background-color: var(--bg-base) !important; }
+
+/* Arbitrary oklch/hex section backgrounds (ProblemSolutionSection tones, etc.) */
+.landing-page [class*="bg-[oklch"],
+.landing-page [class*="bg-[#"] {
+  background-color: var(--bg-base) !important;
+  background-image: none !important;
+}
+
+/* Section-level colored gradients */
+.landing-page section[class*="bg-gradient-to-"],
+.landing-page section[class*="from-emerald"],
+.landing-page section[class*="from-rose"],
+.landing-page section[class*="from-red"],
+.landing-page section[class*="from-orange"],
+.landing-page section[class*="from-amber"] {
+  background: var(--bg-base) !important;
+  background-image: none !important;
+}
+
+/* Inline radial-gradient halos used as section accents (FinalCTA, etc.) */
+.landing-page [aria-hidden="true"][style*="radial-gradient"],
+.landing-page [aria-hidden="true"][style*="linear-gradient"] {
+  background: transparent !important;
+}
+
+/* Destructive (red) → muted neutral */
+.landing-page :where([class*="bg-destructive"]) {
+  background-color: var(--bg-glass) !important;
+  box-shadow: none !important;
+}
+.landing-page :where([class*="text-destructive"]) { color: var(--text-tertiary) !important; }
+.landing-page :where([class*="border-destructive"]) { border-color: var(--border-subtle-c) !important; }
+
+/* Brand-* tints → primary text + glass surfaces */
+.landing-page :where([class*="text-brand-"]) { color: var(--text-primary) !important; }
+.landing-page :where([class*="bg-brand-"]) { background-color: var(--bg-glass) !important; box-shadow: none !important; }
+.landing-page :where([class*="border-brand-"]) { border-color: var(--border-subtle-c) !important; }
+
+/* Direct tailwind colored utilities (red/rose/amber/orange/emerald/green/blue/cyan/teal/yellow) */
+.landing-page :where(
+  [class*="bg-red-"], [class*="bg-rose-"], [class*="bg-amber-"], [class*="bg-orange-"],
+  [class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-blue-"], [class*="bg-cyan-"],
+  [class*="bg-teal-"], [class*="bg-yellow-"], [class*="bg-indigo-"], [class*="bg-violet-"],
+  [class*="bg-purple-"], [class*="bg-pink-"], [class*="bg-fuchsia-"], [class*="bg-lime-"]
+) { background-color: var(--bg-glass) !important; background-image: none !important; box-shadow: none !important; }
+
+.landing-page :where(
+  [class*="text-red-"], [class*="text-rose-"], [class*="text-amber-"], [class*="text-orange-"],
+  [class*="text-emerald-"], [class*="text-green-"], [class*="text-blue-"], [class*="text-cyan-"],
+  [class*="text-teal-"], [class*="text-yellow-"], [class*="text-indigo-"], [class*="text-violet-"],
+  [class*="text-purple-"], [class*="text-pink-"], [class*="text-fuchsia-"], [class*="text-lime-"]
+) { color: var(--text-secondary) !important; }
+
+.landing-page :where(
+  [class*="border-red-"], [class*="border-rose-"], [class*="border-amber-"], [class*="border-orange-"],
+  [class*="border-emerald-"], [class*="border-green-"], [class*="border-blue-"], [class*="border-cyan-"],
+  [class*="border-teal-"], [class*="border-yellow-"], [class*="border-indigo-"], [class*="border-violet-"],
+  [class*="border-purple-"], [class*="border-pink-"], [class*="border-fuchsia-"], [class*="border-lime-"]
+) { border-color: var(--border-subtle-c) !important; }
+
+/* Neutral persona / feature icon containers */
+.landing-page .bg-gradient-brand,
+.landing-page .bg-gradient-brand-soft,
+.landing-page .bg-gradient-brand-rich,
+.landing-page .bg-gradient-danger {
+  background: var(--bg-elevated) !important;
+  background-image: none !important;
+  border: 1px solid var(--border-subtle-c);
+  color: var(--text-primary) !important;
+}
+.landing-page .bg-gradient-brand svg,
+.landing-page .bg-gradient-brand-soft svg,
+.landing-page .bg-gradient-brand-rich svg,
+.landing-page .bg-gradient-danger svg { color: var(--text-primary) !important; }
+
+/* Restore saffron for the ONE allowed accent — Nevorai-route active pill */
+.landing-page [role="tablist"] button[aria-selected="true"] [layoutid="routePillBg"],
+.landing-page [role="tablist"] button[aria-selected="true"] > span:not(.relative) {
+  /* fallback when motion span used; see explicit class hook below */
+}
+
+/* Saffron-accent helper classes (applied inline in ResultsComparison) */
+.landing-page .pill-mono-active {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-strong-c) !important;
+  box-shadow: 0 4px 16px -4px rgba(0,0,0,0.12) !important;
+}
+.landing-page .pill-saffron-active {
+  background: var(--accent-cta) !important;
+  box-shadow: 0 6px 20px -6px var(--accent-cta-glow) !important;
+}
+.landing-page .text-saffron { color: var(--accent-cta) !important; }
+.landing-page .bg-saffron-soft {
+  background: rgba(249,115,22,0.08) !important;
+  border-color: rgba(249,115,22,0.20) !important;
+}
+
+/* Comparison container — neutralize the colored card frame */
+.landing-page .compare-card-frame {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-subtle-c) !important;
+}
+
+/* Section-level bg overrides for legacy bg-hero-bg already handled above.
+   Final safety: any section descendant still asking for legacy hero colors. */
+.landing-page section { background-color: transparent; }
+.landing-page section[class*="bg-hero"] { background-color: var(--bg-base) !important; }
