@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/aad2b903-30ed-4499-b6e5-d83501fd29df/id-preview-7ce6e8d2--257854fb-1c36-40a4-90bf-c56917b30cce.lovable.app-1778410160705.png" },
       { name: "theme-color", content: "#0EA5E9" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "Nevorai" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "application-name", content: "Nevorai" },
