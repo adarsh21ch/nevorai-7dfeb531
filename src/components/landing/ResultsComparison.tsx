@@ -170,10 +170,6 @@ export const ResultsComparison = () => {
                     </li>
                   ))}
                 </ul>
-                      {b}
-                    </li>
-                  ))}
-                </ul>
               </motion.div>
             </AnimatePresence>
           </motion.div>
