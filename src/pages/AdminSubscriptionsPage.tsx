@@ -232,7 +232,13 @@ const AdminSubscriptionsPage = () => {
 
   const profileMap = Object.fromEntries(profiles.map((p) => [p.id, p]));
 
+  const [tierFilter, setTierFilter] = useState<"all" | "paid" | "basic" | "pro">("paid");
+
   const filtered = subscriptions.filter((s) => {
+    // Tier filter
+    if (tierFilter === "paid" && (s.tier === "free" || !s.tier)) return false;
+    if (tierFilter === "basic" && s.tier !== "basic") return false;
+    if (tierFilter === "pro" && s.tier !== "pro") return false;
     if (!debouncedSearch) return true;
     const profile = profileMap[s.user_id];
     const q = debouncedSearch.toLowerCase();
