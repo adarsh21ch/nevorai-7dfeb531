@@ -67,7 +67,7 @@ export const HeroSection = () => {
             style={{ color: "var(--text-secondary)" }}
           >
             The video platform built for{" "}
-            <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>creators who sell</span>.
+            <span className="accent-saffron" style={{ fontWeight: 600 }}>creators who sell</span>.
             Skip-protection, viewer tracking, and conversion insights — on every video you share.
           </motion.p>
 
