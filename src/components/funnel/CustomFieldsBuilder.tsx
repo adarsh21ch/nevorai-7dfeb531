@@ -1,13 +1,10 @@
-import { useState } from "react";
-import { Plus, Pencil, Trash2, Lock, X } from "lucide-react";
+import { Plus, Trash2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { toast } from "sonner";
 import { Link as RouterLink } from "@/lib/router-compat";
 
 export type CustomFieldType =
@@ -43,37 +40,23 @@ interface Props {
 }
 
 export const CustomFieldsBuilder = ({ fields, onChange, enabled, maxFields }: Props) => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<CustomField | null>(null);
-
   const limitReached = maxFields !== -1 && fields.length >= maxFields;
   const limitLabel = maxFields === -1 ? "unlimited" : String(maxFields);
 
-  const openAdd = () => {
-    setEditing({ id: newId(), label: "", type: "short_text", placeholder: "", required: false, options: [] });
-    setModalOpen(true);
-  };
-  const openEdit = (f: CustomField) => { setEditing({ ...f }); setModalOpen(true); };
-  const remove = (id: string) => {
-    if (!confirm("Delete this custom field?")) return;
-    onChange(fields.filter((f) => f.id !== id));
+  const addField = () => {
+    if (limitReached) return;
+    onChange([
+      ...fields,
+      { id: newId(), label: "", type: "short_text", required: false, options: null },
+    ]);
   };
 
-  const saveField = () => {
-    if (!editing) return;
-    const label = editing.label.trim();
-    if (!label) { toast.error("Label is required"); return; }
-    if ((editing.type === "dropdown" || editing.type === "multi_choice")) {
-      const opts = (editing.options || []).map((o) => o.trim()).filter(Boolean);
-      if (opts.length < 2) { toast.error("Add at least 2 options (comma-separated)"); return; }
-      editing.options = opts;
-    } else {
-      editing.options = null;
-    }
-    const exists = fields.some((f) => f.id === editing.id);
-    onChange(exists ? fields.map((f) => (f.id === editing.id ? editing : f)) : [...fields, editing]);
-    setModalOpen(false);
-    setEditing(null);
+  const updateField = (id: string, patch: Partial<CustomField>) => {
+    onChange(fields.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+  };
+
+  const removeField = (id: string) => {
+    onChange(fields.filter((f) => f.id !== id));
   };
 
   if (!enabled) {
@@ -110,7 +93,7 @@ export const CustomFieldsBuilder = ({ fields, onChange, enabled, maxFields }: Pr
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
-                <Button size="sm" type="button" onClick={openAdd} disabled={limitReached} className="gap-1.5">
+                <Button size="sm" type="button" onClick={addField} disabled={limitReached} className="gap-1.5">
                   <Plus size={14} /> Add Field
                 </Button>
               </span>
@@ -130,80 +113,88 @@ export const CustomFieldsBuilder = ({ fields, onChange, enabled, maxFields }: Pr
           <p className="text-xs text-muted-foreground/70 mt-1">Click "+ Add Field" to create your first one</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {fields.map((f) => (
-            <div key={f.id} className="rounded-lg border border-border bg-card p-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-sm truncate">{f.label}</span>
-                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{FIELD_TYPE_LABELS[f.type]}</span>
-                    {f.required && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary">Required</span>}
-                  </div>
-                  
-                  {f.options && f.options.length > 0 && (
-                    <p className="text-[11px] text-muted-foreground mt-1">Options: {f.options.join(", ")}</p>
-                  )}
+        <div className="space-y-3">
+          {fields.map((f, idx) => {
+            const needsOptions = f.type === "dropdown" || f.type === "multi_choice";
+            return (
+              <div key={f.id} className="rounded-lg border border-border bg-card p-3 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    Field {idx + 1}
+                  </span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    type="button"
+                    className="h-7 w-7 text-destructive"
+                    onClick={() => removeField(f.id)}
+                    aria-label="Remove field"
+                  >
+                    <Trash2 size={13} />
+                  </Button>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(f)}><Pencil size={13} /></Button>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => remove(f.id)}><Trash2 size={13} /></Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
-      <Dialog open={modalOpen} onOpenChange={(v) => { setModalOpen(v); if (!v) setEditing(null); }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editing && fields.some((f) => f.id === editing.id) ? "Edit" : "Add"} Custom Field</DialogTitle>
-          </DialogHeader>
-          {editing && (
-            <div className="space-y-4 py-2">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Label *</Label>
-                <Input
-                  value={editing.label}
-                  onChange={(e) => setEditing({ ...editing, label: e.target.value })}
-                  placeholder="e.g. Industry"
-                  maxLength={80}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Field Type *</Label>
-                <Select value={editing.type} onValueChange={(v) => setEditing({ ...editing, type: v as CustomFieldType })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[]).map((t) => (
-                      <SelectItem key={t} value={t}>{FIELD_TYPE_LABELS[t]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {(editing.type === "dropdown" || editing.type === "multi_choice") && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Options (comma-separated)</Label>
-                  <Input
-                    value={(editing.options || []).join(", ")}
-                    onChange={(e) => setEditing({ ...editing, options: e.target.value.split(",").map((o) => o) })}
-                    placeholder="Coaching, SaaS, Real Estate, Other"
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground">Label</Label>
+                    <Input
+                      value={f.label}
+                      onChange={(e) => updateField(f.id, { label: e.target.value })}
+                      placeholder="e.g. Industry"
+                      maxLength={80}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground">Type</Label>
+                    <Select
+                      value={f.type}
+                      onValueChange={(v) =>
+                        updateField(f.id, {
+                          type: v as CustomFieldType,
+                          options:
+                            v === "dropdown" || v === "multi_choice" ? f.options || [] : null,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[]).map((t) => (
+                          <SelectItem key={t} value={t}>{FIELD_TYPE_LABELS[t]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {needsOptions && (
+                  <div className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground">Options (comma-separated)</Label>
+                    <Input
+                      value={(f.options || []).join(", ")}
+                      onChange={(e) =>
+                        updateField(f.id, {
+                          options: e.target.value.split(",").map((o) => o.trimStart()),
+                        })
+                      }
+                      placeholder="Coaching, SaaS, Real Estate, Other"
+                      className="h-9"
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-1">
+                  <Label className="text-xs">Required field</Label>
+                  <Switch
+                    checked={f.required}
+                    onCheckedChange={(v) => updateField(f.id, { required: v })}
                   />
                 </div>
-              )}
-              <div className="flex items-center justify-between rounded-lg border border-border p-3">
-                <Label className="text-sm">Required field</Label>
-                <Switch checked={editing.required} onCheckedChange={(v) => setEditing({ ...editing, required: v })} />
               </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => { setModalOpen(false); setEditing(null); }}>Cancel</Button>
-            <Button onClick={saveField}>Save Field</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
