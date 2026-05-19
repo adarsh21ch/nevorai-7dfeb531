@@ -82,10 +82,11 @@ export const CodeGateScreen = ({ funnelId, funnelTitle, creatorName, onSuccess, 
   };
 
   const bg = isDark ? "#09090b" : "#ffffff";
-  const cardBg = isDark ? "#141419" : "#f8f9fa";
-  const border = isDark ? "#27272a" : "#e5e7eb";
-  const text = isDark ? "#ffffff" : "#0f172a";
-  const textMuted = isDark ? "#94a3b8" : "#64748b";
+  const cardBg = isDark ? "#0f0f12" : "#ffffff";
+  const border = isDark ? "#1f1f23" : "#e5e7eb";
+  const subtle = isDark ? "#15151a" : "#f8f9fa";
+  const text = isDark ? "#ffffff" : "#0a0a0a";
+  const textMuted = isDark ? "#9ca3af" : "#52525b";
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: bg }}>
@@ -98,7 +99,10 @@ export const CodeGateScreen = ({ funnelId, funnelTitle, creatorName, onSuccess, 
           </div>
         </div>
         <div className="rounded-2xl p-8" style={{ background: cardBg, border: `1px solid ${border}` }}>
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+            style={{ background: "color-mix(in oklab, hsl(var(--primary)) 14%, transparent)", border: "1px solid color-mix(in oklab, hsl(var(--primary)) 35%, transparent)" }}
+          >
             <Shield size={28} className="text-primary" />
           </div>
           <h2 className="text-xl font-heading font-bold mb-1" style={{ color: text }}>{funnelTitle}</h2>
@@ -107,17 +111,33 @@ export const CodeGateScreen = ({ funnelId, funnelTitle, creatorName, onSuccess, 
           <p className="text-xs mb-6" style={{ color: textMuted }}>Enter the code shared with you to unlock this content</p>
           {locked ? (
             <div className="text-center">
-              <p className="text-sm font-medium text-amber-500 mb-2">Too many attempts</p>
-              <p className="text-xs" style={{ color: textMuted }}>Please try again in {Math.floor(lockRemaining / 60)}:{(lockRemaining % 60).toString().padStart(2, "0")}</p>
+              <p className="text-sm font-medium text-primary mb-2">Too many attempts</p>
+              <p className="text-xs" style={{ color: textMuted }}>
+                Please try again in {Math.floor(lockRemaining / 60)}:{(lockRemaining % 60).toString().padStart(2, "0")}
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3">
-              <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Enter access code"
-                className={`text-center uppercase tracking-[0.15em] font-mono text-lg h-12 ${shake ? "animate-shake" : ""} ${error ? "border-red-500" : ""}`}
-                style={{ background: isDark ? "#09090b" : "#f1f5f9", borderColor: error ? "#ef4444" : border, color: text }}
-                disabled={loading} autoFocus />
-              {error && <p className="text-xs text-red-500">{error}</p>}
-              <Button type="submit" className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl" disabled={loading || !code.trim()}>
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="Enter access code"
+                className={`text-center uppercase tracking-[0.2em] font-mono text-lg h-12 ${shake ? "animate-shake" : ""}`}
+                style={{
+                  background: subtle,
+                  borderColor: error ? "hsl(var(--primary))" : border,
+                  color: text,
+                  boxShadow: error ? "0 0 0 1px hsl(var(--primary))" : "none",
+                }}
+                disabled={loading}
+                autoFocus
+              />
+              {error && <p className="text-xs text-primary">{error}</p>}
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl"
+                disabled={loading || !code.trim()}
+              >
                 {loading ? <><Loader2 size={16} className="animate-spin mr-2" /> Verifying...</> : "Unlock Program →"}
               </Button>
             </form>
@@ -126,7 +146,9 @@ export const CodeGateScreen = ({ funnelId, funnelTitle, creatorName, onSuccess, 
             <Lock size={10} /> Secure & encrypted verification
           </p>
         </div>
-        <button onClick={onLoginClick} className="mt-4 text-xs hover:underline" style={{ color: textMuted }}>Already have access? Continue here</button>
+        <button onClick={onLoginClick} className="mt-4 text-xs hover:underline" style={{ color: textMuted }}>
+          Already have access? Continue here
+        </button>
       </div>
       <style>{`@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}.animate-shake{animation:shake 0.4s ease-in-out}`}</style>
     </div>
