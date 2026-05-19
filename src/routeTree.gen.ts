@@ -68,6 +68,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
 import { Route as LandingPagesIdIndexRouteImport } from './routes/landing-pages.$id.index'
@@ -396,6 +397,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
 } as any).lazy(() =>
   import('./routes/admin.settings.lazy').then((d) => d.Route),
 )
+const AdminRevenueRoute = AdminRevenueRouteImport.update({
+  id: '/admin/revenue',
+  path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPlansRoute = AdminPlansRouteImport.update({
   id: '/admin/plans',
   path: '/admin/plans',
@@ -509,6 +515,7 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/revenue': typeof AdminRevenueRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/support': typeof AdminSupportRoute
@@ -582,6 +589,7 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/revenue': typeof AdminRevenueRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/support': typeof AdminSupportRoute
@@ -654,6 +662,7 @@ export interface FileRoutesById {
   '/videos': typeof VideosRouteWithChildren
   '/admin/kyc': typeof AdminKycRoute
   '/admin/plans': typeof AdminPlansRoute
+  '/admin/revenue': typeof AdminRevenueRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/admin/support': typeof AdminSupportRoute
@@ -729,6 +738,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/admin/kyc'
     | '/admin/plans'
+    | '/admin/revenue'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/support'
@@ -802,6 +812,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/admin/kyc'
     | '/admin/plans'
+    | '/admin/revenue'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/support'
@@ -873,6 +884,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/admin/kyc'
     | '/admin/plans'
+    | '/admin/revenue'
     | '/admin/settings'
     | '/admin/subscriptions'
     | '/admin/support'
@@ -947,6 +959,7 @@ export interface RootRouteChildren {
   VideosRoute: typeof VideosRouteWithChildren
   AdminKycRoute: typeof AdminKycRoute
   AdminPlansRoute: typeof AdminPlansRoute
+  AdminRevenueRoute: typeof AdminRevenueRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminSupportRoute: typeof AdminSupportRoute
@@ -1390,6 +1403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/revenue': {
+      id: '/admin/revenue'
+      path: '/admin/revenue'
+      fullPath: '/admin/revenue'
+      preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/plans': {
       id: '/admin/plans'
       path: '/admin/plans'
@@ -1590,6 +1610,7 @@ const rootRouteChildren: RootRouteChildren = {
   VideosRoute: VideosRouteWithChildren,
   AdminKycRoute: AdminKycRoute,
   AdminPlansRoute: AdminPlansRoute,
+  AdminRevenueRoute: AdminRevenueRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminSupportRoute: AdminSupportRoute,
