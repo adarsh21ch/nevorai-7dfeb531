@@ -140,7 +140,7 @@ export const CustomFieldsBuilder = ({ fields, onChange, enabled, maxFields }: Pr
                     <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{FIELD_TYPE_LABELS[f.type]}</span>
                     {f.required && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary">Required</span>}
                   </div>
-                  {f.placeholder && <p className="text-[11px] text-muted-foreground mt-1">Placeholder: {f.placeholder}</p>}
+                  
                   {f.options && f.options.length > 0 && (
                     <p className="text-[11px] text-muted-foreground mt-1">Options: {f.options.join(", ")}</p>
                   )}
