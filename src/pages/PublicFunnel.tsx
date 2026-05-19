@@ -1156,7 +1156,9 @@ const PublicFunnel = () => {
       >
         <div className="flex items-center gap-2">
           <a href="https://nevorai.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-            <img src={logoImg} alt="Nevorai" className="h-6 w-6" />
+            <span style={{ color: isDark ? "#ffffff" : "#0a0a0a", display: "inline-flex" }}>
+              <LogoMark className="h-6 w-6" />
+            </span>
             <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontWeight: 700, color: tc.text, letterSpacing: "-0.02em", fontSize: 16, lineHeight: 1 }}>Nevorai</span>
           </a>
         </div>
