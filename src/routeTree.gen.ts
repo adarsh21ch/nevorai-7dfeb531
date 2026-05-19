@@ -401,7 +401,7 @@ const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/admin.revenue.lazy').then((d) => d.Route))
 const AdminPlansRoute = AdminPlansRouteImport.update({
   id: '/admin/plans',
   path: '/admin/plans',

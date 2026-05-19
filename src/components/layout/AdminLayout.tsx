@@ -1,11 +1,12 @@
 import { Link, useLocation } from "@/lib/router-compat";
 import { DashboardLayout } from "./DashboardLayout";
 import { AdminRoute } from "@/components/auth/AdminRoute";
-import { LayoutDashboard, Video, Users, UserCheck, CreditCard, Cog, MessageSquare, MessageCircle, Layers } from "lucide-react";
+import { LayoutDashboard, Video, Users, UserCheck, CreditCard, Cog, MessageSquare, MessageCircle, Layers, IndianRupee } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminTabs = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
+  { icon: IndianRupee, label: "Revenue", path: "/admin/revenue" },
   { icon: Layers, label: "Plans", path: "/admin/plans" },
   { icon: Video, label: "Videos", path: "/admin/videos" },
   { icon: Users, label: "Users", path: "/admin/users" },
