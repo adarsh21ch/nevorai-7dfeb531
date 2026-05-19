@@ -710,15 +710,15 @@ const PublicFunnel = () => {
 
   const tc = {
     bg: isDark ? "#09090b" : "#ffffff",
-    bgCard: isDark ? "#141419" : "#f8f9fa",
-    border: isDark ? "#27272a" : "#e5e7eb",
+    bgCard: isDark ? "#1a1a22" : "#ffffff",
+    border: isDark ? "#2a2a33" : "#e5e7eb",
     borderSubtle: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
     text: isDark ? "#ffffff" : "#0f172a",
     textMuted: isDark ? "#cbd5e1" : "#64748b",
     textDim: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.5)",
     textDimmer: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.3)",
-    inputBg: isDark ? "#09090b" : "#f1f5f9",
-    inputBorder: isDark ? "#27272a" : "#d1d5db",
+    inputBg: isDark ? "#0f0f14" : "#f8fafc",
+    inputBorder: isDark ? "#33333d" : "#d1d5db",
     inputText: isDark ? "#ffffff" : "#0f172a",
     placeholder: isDark ? "#64748b" : "#9ca3af",
     headerBg: isDark ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.8)",
@@ -728,6 +728,7 @@ const PublicFunnel = () => {
     footerText: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.25)",
     footerBorder: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)",
   };
+
 
   const { data: bundle, isLoading } = useQuery({
     queryKey: ["public-funnel-bundle", slug],
@@ -1026,10 +1027,20 @@ const PublicFunnel = () => {
     leadErrors[k] ? <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors[k]}</p> : null;
   const errBorder = (k: string) => (leadErrors[k] ? "#ef4444" : tc.inputBorder);
 
-  const LeadFormCard = ({ className = "" }: { className?: string }) => (
-    <div className={`rounded-2xl p-6 ${className}`} style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
-      <h3 className="text-lg font-heading font-bold mb-1" style={{ color: tc.text }}>{funnel.cta_text || "Register Now"}</h3>
-      <p className="text-xs mb-5" style={{ color: tc.textMuted }}>Fill in your details to continue</p>
+  const renderLeadFormCard = (className = "") => (
+    <div
+      className={`rounded-2xl p-7 sm:p-8 ${className}`}
+      style={{
+        background: tc.bgCard,
+        border: `1px solid ${tc.border}`,
+        boxShadow: isDark
+          ? "0 20px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset"
+          : "0 20px 50px -22px rgba(15,23,42,0.18), 0 0 0 1px rgba(0,0,0,0.02) inset",
+      }}
+    >
+      <h3 className="text-xl font-heading font-bold mb-1 tracking-tight" style={{ color: tc.text }}>{funnel.cta_text || "Register Now"}</h3>
+      <p className="text-xs mb-6" style={{ color: tc.textMuted }}>Fill in your details to continue</p>
+
       <form onSubmit={handleLeadSubmit} className="space-y-3" noValidate>
         <input type="text" name="website" value={leadForm.website} onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })} style={{ position: "absolute", left: "-9999px" }} tabIndex={-1} autoComplete="off" />
         {formConfig?.show_name && (
@@ -1145,7 +1156,13 @@ const PublicFunnel = () => {
       >
         <div className="flex items-center gap-2">
           <a href="https://nevorai.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-            <img src={logoImg} alt="Nevorai" className="h-6 w-6" />
+            <img
+              src={logoImg}
+              alt="Nevorai"
+              className="h-6 w-6 object-contain"
+              style={{ filter: isDark ? "invert(1)" : "none" }}
+              draggable={false}
+            />
             <span style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontWeight: 700, color: tc.text, letterSpacing: "-0.02em", fontSize: 16, lineHeight: 1 }}>Nevorai</span>
           </a>
         </div>
@@ -1197,7 +1214,7 @@ const PublicFunnel = () => {
           </div>
         )}
 
-        {showLeadFormNow && <LeadFormCard className="max-w-md mx-auto mb-8" />}
+        {showLeadFormNow && renderLeadFormCard("max-w-md mx-auto mb-8")}
 
         {(!showLeadFormNow || leadSubmitted) && (
           <div className={`${showLeadFormSidebar && !leadSubmitted ? "lg:grid lg:grid-cols-[1fr_380px] lg:gap-8" : "max-w-4xl mx-auto"}`}>
@@ -1347,12 +1364,12 @@ const PublicFunnel = () => {
                 )}
               </div>
 
-              {showLeadFormAfterCta && <div className="lg:hidden"><LeadFormCard /></div>}
+              {showLeadFormAfterCta && <div className="lg:hidden">{renderLeadFormCard()}</div>}
             </div>
 
             {showLeadFormSidebar && !leadSubmitted && (
               <div className="hidden lg:block sticky top-6 self-start">
-                <LeadFormCard />
+                {renderLeadFormCard()}
                 {ctaEnabled && showCta && funnel.cta_url && (
                   <Button
                     className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-lg shadow-primary/20 mt-4 cta-pulse"
@@ -1366,7 +1383,7 @@ const PublicFunnel = () => {
           </div>
         )}
 
-        {showLeadFormAfterCta && !showLeadFormSidebar && <LeadFormCard className="max-w-md mx-auto mt-6" />}
+        {showLeadFormAfterCta && !showLeadFormSidebar && renderLeadFormCard("max-w-md mx-auto mt-6")}
 
         {funnel.payment_enabled && leadSubmitted && !paymentSubmitted && (
           <div className="rounded-2xl p-6 max-w-md mx-auto mt-6" style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
