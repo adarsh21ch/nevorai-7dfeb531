@@ -346,10 +346,16 @@ const FunnelEditor = () => {
       const desired = (funnel.slug && funnel.slug.trim()) ? generateSlug(funnel.slug) : generateSlug(funnel.title);
       payload.slug = await ensureUniqueSlug(desired, existingFunnelSlug);
       if (funnel.access_code_plain && funnel.access_code_plain.trim()) {
+        const codeUp = funnel.access_code_plain.trim().toUpperCase();
         const enc = new TextEncoder();
-        const buf = await crypto.subtle.digest("SHA-256", enc.encode(funnel.access_code_plain.trim().toUpperCase()));
+        const buf = await crypto.subtle.digest("SHA-256", enc.encode(codeUp));
         (payload as any).access_code_hash = Array.from(new Uint8Array(buf))
           .map((b) => b.toString(16).padStart(2, "0")).join("");
+        (payload as any).access_code_plain = codeUp;
+      } else if (funnel.visibility === "public") {
+        // Clear stored code when funnel is made public
+        (payload as any).access_code_hash = null;
+        (payload as any).access_code_plain = null;
       }
       let funnelId: string;
       if (isEdit) {
