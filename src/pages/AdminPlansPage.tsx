@@ -133,6 +133,7 @@ const FEATURE_GROUPS = [
   ]},
   { group: "Lead Generation", items: [
     { field: "feature_lead_capture", label: "Lead Capture", icon: Target },
+    { field: "feature_custom_form_fields", label: "Custom Form Fields", icon: FileText },
     { field: "feature_whatsapp_automation", label: "WhatsApp Auto-Message", icon: MessageSquare },
     { field: "feature_smart_reminders", label: "Smart Follow-up Reminders", icon: Bell },
   ]},
