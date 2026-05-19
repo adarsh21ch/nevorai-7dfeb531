@@ -123,6 +123,12 @@ export const FunnelLivePreview = ({ funnel, selectedVideo, flowSteps, leadForm, 
               {leadForm.show_email && <div className="h-6 rounded bg-muted border border-border px-2 flex items-center text-[9px] text-muted-foreground">Email</div>}
               {leadForm.show_city && <div className="h-6 rounded bg-muted border border-border px-2 flex items-center text-[9px] text-muted-foreground">City</div>}
               {leadForm.show_custom && <div className="h-6 rounded bg-muted border border-border px-2 flex items-center text-[9px] text-muted-foreground">{leadForm.custom_field_label || "Custom"}</div>}
+              {(leadForm.custom_fields || []).map((cf) => (
+                <div key={cf.id} className="h-6 rounded bg-muted border border-border px-2 flex items-center justify-between text-[9px] text-muted-foreground">
+                  <span className="truncate">{cf.label || "Field"}{cf.required ? " *" : ""}</span>
+                  <span className="text-[8px] opacity-60 ml-1 shrink-0">{cf.type.replace("_", " ")}</span>
+                </div>
+              ))}
             </div>
           )}
           {isPrivate && (
