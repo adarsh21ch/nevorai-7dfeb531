@@ -915,19 +915,24 @@ section[id] {
 
 /* Saffron-accent helper classes (applied inline in ResultsComparison) */
 .landing-page .pill-mono-active {
-  background: var(--bg-elevated) !important;
-  border: 1px solid var(--border-strong-c) !important;
-  box-shadow: 0 4px 16px -4px rgba(0,0,0,0.12) !important;
-}
-.landing-page .pill-saffron-active {
   background: var(--text-primary) !important;
-  color: var(--bg-base) !important;
+  border: 1px solid var(--text-primary) !important;
   box-shadow: 0 6px 20px -6px rgba(0,0,0,0.25) !important;
 }
-.landing-page .text-saffron { color: var(--text-primary) !important; }
+.landing-page .pill-saffron-active {
+  background: var(--accent-saffron) !important;
+  border: 1px solid var(--accent-saffron) !important;
+  box-shadow: 0 6px 20px -6px rgba(249,115,22,0.45) !important;
+}
+/* Force readable label color on active pill regardless of landing text-white override */
+.landing-page [role="tablist"] button[aria-selected="true"] > span.relative {
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+}
+.landing-page .text-saffron { color: var(--accent-saffron) !important; }
 .landing-page .bg-saffron-soft {
-  background: var(--bg-glass) !important;
-  border-color: var(--border-subtle-c) !important;
+  background: var(--accent-saffron) !important;
+  border-color: var(--accent-saffron) !important;
 }
 
 /* Comparison container — neutralize the colored card frame */
