@@ -1026,10 +1026,20 @@ const PublicFunnel = () => {
     leadErrors[k] ? <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors[k]}</p> : null;
   const errBorder = (k: string) => (leadErrors[k] ? "#ef4444" : tc.inputBorder);
 
-  const LeadFormCard = ({ className = "" }: { className?: string }) => (
-    <div className={`rounded-2xl p-6 ${className}`} style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
-      <h3 className="text-lg font-heading font-bold mb-1" style={{ color: tc.text }}>{funnel.cta_text || "Register Now"}</h3>
-      <p className="text-xs mb-5" style={{ color: tc.textMuted }}>Fill in your details to continue</p>
+  const renderLeadFormCard = (className = "") => (
+    <div
+      className={`rounded-2xl p-7 sm:p-8 ${className}`}
+      style={{
+        background: tc.bgCard,
+        border: `1px solid ${tc.border}`,
+        boxShadow: isDark
+          ? "0 20px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset"
+          : "0 20px 50px -22px rgba(15,23,42,0.18), 0 0 0 1px rgba(0,0,0,0.02) inset",
+      }}
+    >
+      <h3 className="text-xl font-heading font-bold mb-1 tracking-tight" style={{ color: tc.text }}>{funnel.cta_text || "Register Now"}</h3>
+      <p className="text-xs mb-6" style={{ color: tc.textMuted }}>Fill in your details to continue</p>
+
       <form onSubmit={handleLeadSubmit} className="space-y-3" noValidate>
         <input type="text" name="website" value={leadForm.website} onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })} style={{ position: "absolute", left: "-9999px" }} tabIndex={-1} autoComplete="off" />
         {formConfig?.show_name && (
