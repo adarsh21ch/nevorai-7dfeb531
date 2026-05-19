@@ -924,8 +924,13 @@ section[id] {
   border: 1px solid var(--accent-saffron) !important;
   box-shadow: 0 6px 20px -6px rgba(249,115,22,0.45) !important;
 }
-/* Force readable label color on active pill regardless of landing text-white override */
-.landing-page [role="tablist"] button[aria-selected="true"] > span.relative {
+/* Active YouTube pill: text contrasts with --text-primary bg (black bg in light → white text; white bg in dark → black text) */
+.landing-page [role="tablist"] button[aria-selected="true"]:has(.pill-mono-active) > span.relative {
+  color: var(--bg-base) !important;
+  -webkit-text-fill-color: var(--bg-base) !important;
+}
+/* Active Nevorai pill: always white on saffron */
+.landing-page [role="tablist"] button[aria-selected="true"]:has(.pill-saffron-active) > span.relative {
   color: #FFFFFF !important;
   -webkit-text-fill-color: #FFFFFF !important;
 }
