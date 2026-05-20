@@ -133,6 +133,16 @@ export function ViewCapacityCard() {
               throw new Error(msg);
             }
             toast.success(`You're all set — now ${tier.daily_views} views/day!`);
+            // Payment receipt via Resend — fire and forget.
+            import("@/lib/email").then(({ sendSubscriptionReceipt }) =>
+              sendSubscriptionReceipt({
+                to: user.email ?? "",
+                name: profile?.full_name ?? "there",
+                plan: `${tier.daily_views} views/day`,
+                amount: proratedCharge,
+                orderId: response.razorpay_order_id,
+              }),
+            );
             setConfirmTier(null);
             setTimeout(() => window.location.reload(), 1200);
           } catch (err: any) {

@@ -246,6 +246,16 @@ export const PricingSection = () => {
             });
             if (verifyError) throw verifyError;
             toast.success(`Payment successful! Welcome to ${planName} 🎉`, { duration: 6000 });
+            // Payment receipt via Resend — fire and forget.
+            import("@/lib/email").then(({ sendSubscriptionReceipt }) =>
+              sendSubscriptionReceipt({
+                to: user.email ?? "",
+                name: profile?.full_name ?? "there",
+                plan: planName,
+                amount: payableToday,
+                orderId: response.razorpay_order_id,
+              }),
+            );
             refreshPlan();
             setTimeout(() => navigate("/billing"), 1500);
           } catch {

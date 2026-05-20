@@ -80,6 +80,16 @@ export function TopUpViewsCard({ onPurchased }: { onPurchased?: () => void }) {
             });
             if (vErr) throw vErr;
             toast.success(`+${data.total_views} views added! Valid until end of month.`);
+            // Payment receipt via Resend — fire and forget.
+            import("@/lib/email").then(({ sendSubscriptionReceipt }) =>
+              sendSubscriptionReceipt({
+                to: user.email ?? "",
+                name: profile?.full_name ?? "there",
+                plan: `+${data.total_views} extra views`,
+                amount: totalPrice,
+                orderId: response.razorpay_order_id,
+              }),
+            );
             await refresh();
             onPurchased?.();
           } catch {
