@@ -140,24 +140,34 @@ const AdminSettingsPage = () => {
 
     try {
       const returnTo = `${window.location.origin}/admin/settings?gmail=connected`;
-      const { data, error } = await supabase.functions.invoke("gmail-oauth-init", {
-        body: { return_to: returnTo },
-      });
-
-      // Surface the REAL error so we can diagnose. `supabase.functions.invoke`
-      // puts non-2xx bodies on `error.context` (a Response), not on `data`.
-      if (error || !data?.auth_url) {
-        let detail = data?.error as string | undefined;
-        try {
-          const ctx = (error as any)?.context;
-          if (ctx && typeof ctx.text === "function") {
-            const txt = await ctx.text();
-            try { detail = JSON.parse(txt)?.error || txt; } catch { detail = txt; }
-          }
-        } catch {}
-        console.error("[gmail-oauth-init] failed", { error, data, detail });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         try { popup?.close(); } catch {}
-        toast.error(detail || (error as any)?.message || "Failed to start Gmail connection");
+        toast.error("Your session has expired. Please log in again.");
+        setConnectingGmail(false);
+        return;
+      }
+
+      // Raw fetch so we always see the real status code + body, regardless of
+      // supabase-js FunctionsError quirks.
+      const res = await fetch(`${supabaseProjectUrl}/functions/v1/gmail-oauth-init`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ return_to: returnTo }),
+      });
+      const raw = await res.text();
+      let data: any = null;
+      try { data = JSON.parse(raw); } catch { /* not json */ }
+
+      if (!res.ok || !data?.auth_url) {
+        const detail = data?.error || raw || `HTTP ${res.status}`;
+        console.error("[gmail-oauth-init] failed", { status: res.status, raw, data });
+        try { popup?.close(); } catch {}
+        toast.error(`Gmail connect failed: ${detail}`);
         setConnectingGmail(false);
         return;
       }

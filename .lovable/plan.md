@@ -1,52 +1,30 @@
-## Nevorai Monochrome Rebrand — Landing Page
+## Goal
+Fix why **Connect Gmail** still opens a blank tab and then shows a failure toast.
 
-A focused rebrand of the **landing page only**. Light mode becomes the default. The only color on the page is the saffron primary CTA. Theme toggle in nav. App/dashboard/admin pages are out of scope.
+## Plan
+1. Reproduce the issue from the authenticated `/admin/settings#gmail` page in the live preview.
+2. Inspect the exact `gmail-oauth-init` request/response and any browser console errors during the click.
+3. Verify whether the failure is still happening before Google opens (edge function error) or during Google OAuth redirect/callback.
+4. If the edge function is failing, patch the root cause only:
+   - secret/env pickup issue
+   - redirect URI/state sanitization issue
+   - popup/message handling issue
+5. Re-test the full Gmail connect flow end-to-end after the fix.
 
-### 1. Design tokens (`src/styles.css`)
-- Replace landing surface tokens with: `--bg-base`, `--bg-elevated`, `--bg-glass`, `--border-subtle`, `--border-strong`, `--text-primary/secondary/tertiary`, `--logo-color`, `--accent-cta` (#F97316), `--accent-cta-hover`, `--accent-cta-glow`.
-- Light mode = default `:root`. Dark mode = `[data-theme="dark"]` overrides.
-- Remove `.gradient-text`, `.gradient-primary`, `.text-gradient-hero`, hero blob gradients, animated grid, color radial backgrounds — replace with monochrome utility classes (`.btn-saffron`, `.btn-glass-mono`, `.badge-mono`, `.card-mono`, `.logo-halo`).
-- Keep saffron CTA gradient (single allowed colored element).
+## What I already confirmed
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` now exist in project secrets.
+- The preview session I can access is currently unauthenticated, so I cannot inspect the admin flow until you log in.
 
-### 2. Theme toggle (Navbar)
-- Add 36×36 icon button between FAQ and Log in (Sun/Moon from lucide-react), `useTheme()` hook already exists.
-- Rewrite Navbar to use semantic tokens (`text-primary`, `bg-base/80`, `border-subtle`) — drop hardcoded `text-white`, `bg-hero-bg`, gradient backgrounds.
-- Use Case dropdown icons drop `bg-gradient-brand`, become monochrome (border + foreground icon).
-- Mobile version mirrors the same.
+## Likely next checks once logged in
+- Whether `gmail-oauth-init` is still returning a 500 even after secrets were added.
+- Whether Google Cloud OAuth client has the exact callback URI registered.
+- Whether the popup is being opened but never navigated because the init response is failing.
 
-### 3. Logo
-- Convert mark to inline SVG component that uses `currentColor` (replaces PNG imports for landing usage). Set color via `var(--logo-color)`.
-- Halo glow becomes white (dark) / saffron (light) via CSS class `.logo-halo`. Dot opacity pulse animation kept.
-- Existing PNG logo retained for non-landing surfaces to avoid touching dashboard.
+## Technical notes
+Relevant files already identified:
+- `src/pages/AdminSettingsPage.tsx`
+- `supabase/functions/gmail-oauth-init/index.ts`
+- `supabase/functions/gmail-oauth-callback/index.ts`
+- `supabase/functions/send-gmail-email/index.ts`
 
-### 4. Hero (`HeroSection.tsx`)
-- Remove `<FlowParticles />` and `bg-gradient-hero-glow`.
-- Background = `bg-base` (white default).
-- Replace cyan "Built for Creators Who Sell" badge with `.badge-mono`.
-- Both headline lines = `text-primary`, no gradient. "Twice the conversion." gets `italic` for subtle emphasis.
-- CTA buttons reuse `.btn-saffron` + `.btn-glass-mono`.
-- Optional 3% noise overlay for paper-texture depth.
-
-### 5. Comparison (`ResultsComparison.tsx`)
-- YouTube ✗ → `text-tertiary` (muted), not bright red.
-- Nevorai ✓ → first row uses `text-accent-cta` (saffron), rest use `text-primary`.
-
-### 6. Other landing sections (Features, HowItWorks, Pricing, FAQ, ProblemSolution, Footer, etc.)
-- Sweep: replace `bg-hero-bg`, `text-white`, `text-hero-muted`, `bg-gradient-brand`, `text-brand-emerald`, colored glows, particle/blob backgrounds with the new monochrome tokens and utility classes.
-- All section badges → `.badge-mono`.
-- All cards → `.card-mono`.
-- Remove FlowParticles imports anywhere they appear.
-
-### 7. Verification
-- `npm run build` passes.
-- Visit `/` in browser, screenshot light + dark hero, comparison section, mobile (375px) light + dark.
-- Confirm: no cyan/blue/purple anywhere, logo inverts cleanly, CTA is the only color, theme toggle persists.
-
-### Out of scope (not touched)
-- Routing, auth, Supabase, admin panel, dashboard, funnel/landing-page editors, app pages, copy text.
-- Existing PNG logo files (kept so non-landing surfaces don't break).
-
-### Technical notes
-- Inline SVG logo component lives at `src/components/landing/LogoMark.tsx` so theming works via `currentColor`.
-- Theme provider already wired in `__root.tsx` (verified — `useTheme` exists). Only adding the toggle UI.
-- Sweep is mechanical class replacement across ~15 landing components; no logic changes.
+Most likely remaining cause if secrets were added recently: the edge functions may still need to pick up the updated secrets before `gmail-oauth-init` can build the Google auth URL.
