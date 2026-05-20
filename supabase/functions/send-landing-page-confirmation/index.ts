@@ -41,7 +41,9 @@ Deno.serve(async (req) => {
       .eq('id', landing_page_id)
       .single()
 
-    if (!page || !page.send_confirmation_email) {
+    // Treat NULL as enabled — column default is true, NULL only on legacy
+    // rows that pre-date the toggle. Only an explicit `false` opts out.
+    if (!page || page.send_confirmation_email === false) {
       return new Response(JSON.stringify({ sent: false, reason: 'Email disabled' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
