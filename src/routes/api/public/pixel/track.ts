@@ -16,7 +16,7 @@ async function sha256(input: string): Promise<string> {
     .join("");
 }
 
-export const Route = createFileRoute("/api/pixel/track")({
+export const Route = createFileRoute("/api/public/pixel/track")({
   server: {
     handlers: {
       OPTIONS: async () =>

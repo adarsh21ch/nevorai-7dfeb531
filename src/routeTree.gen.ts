@@ -81,7 +81,7 @@ import { Route as InsightsLandingPagesIdRouteImport } from './routes/insights.la
 import { Route as InsightsFunnelsIdRouteImport } from './routes/insights.funnels.$id'
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
 import { Route as FSlugMemberRouteImport } from './routes/f.$slug.member'
-import { Route as ApiPixelTrackRouteImport } from './routes/api/pixel/track'
+import { Route as ApiPublicPixelTrackRouteImport } from './routes/api/public/pixel/track'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
@@ -481,9 +481,9 @@ const FSlugMemberRoute = FSlugMemberRouteImport.update({
 } as any).lazy(() =>
   import('./routes/f.$slug.member.lazy').then((d) => d.Route),
 )
-const ApiPixelTrackRoute = ApiPixelTrackRouteImport.update({
-  id: '/api/pixel/track',
-  path: '/api/pixel/track',
+const ApiPublicPixelTrackRoute = ApiPublicPixelTrackRouteImport.update({
+  id: '/api/public/pixel/track',
+  path: '/api/public/pixel/track',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -550,7 +550,6 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
-  '/api/pixel/track': typeof ApiPixelTrackRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/insights/funnels/$id': typeof InsightsFunnelsIdRoute
@@ -561,6 +560,7 @@ export interface FileRoutesByFullPath {
   '/f/$slug/': typeof FSlugIndexRoute
   '/funnels/$id/': typeof FunnelsIdIndexRoute
   '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
+  '/api/public/pixel/track': typeof ApiPublicPixelTrackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -623,7 +623,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/funnels': typeof FunnelsIndexRoute
   '/landing-pages': typeof LandingPagesIndexRoute
-  '/api/pixel/track': typeof ApiPixelTrackRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/insights/funnels/$id': typeof InsightsFunnelsIdRoute
@@ -634,6 +633,7 @@ export interface FileRoutesByTo {
   '/f/$slug': typeof FSlugIndexRoute
   '/funnels/$id': typeof FunnelsIdIndexRoute
   '/landing-pages/$id': typeof LandingPagesIdIndexRoute
+  '/api/public/pixel/track': typeof ApiPublicPixelTrackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -699,7 +699,6 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
-  '/api/pixel/track': typeof ApiPixelTrackRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/insights/funnels/$id': typeof InsightsFunnelsIdRoute
@@ -710,6 +709,7 @@ export interface FileRoutesById {
   '/f/$slug/': typeof FSlugIndexRoute
   '/funnels/$id/': typeof FunnelsIdIndexRoute
   '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
+  '/api/public/pixel/track': typeof ApiPublicPixelTrackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -776,7 +776,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
-    | '/api/pixel/track'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/insights/funnels/$id'
@@ -787,6 +786,7 @@ export interface FileRouteTypes {
     | '/f/$slug/'
     | '/funnels/$id/'
     | '/landing-pages/$id/'
+    | '/api/public/pixel/track'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -849,7 +849,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/funnels'
     | '/landing-pages'
-    | '/api/pixel/track'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/insights/funnels/$id'
@@ -860,6 +859,7 @@ export interface FileRouteTypes {
     | '/f/$slug'
     | '/funnels/$id'
     | '/landing-pages/$id'
+    | '/api/public/pixel/track'
   id:
     | '__root__'
     | '/'
@@ -924,7 +924,6 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
-    | '/api/pixel/track'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/insights/funnels/$id'
@@ -935,6 +934,7 @@ export interface FileRouteTypes {
     | '/f/$slug/'
     | '/funnels/$id/'
     | '/landing-pages/$id/'
+    | '/api/public/pixel/track'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -996,9 +996,9 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   FunnelsIndexRoute: typeof FunnelsIndexRoute
   LandingPagesIndexRoute: typeof LandingPagesIndexRoute
-  ApiPixelTrackRoute: typeof ApiPixelTrackRoute
   FSlugMemberRoute: typeof FSlugMemberRoute
   FSlugIndexRoute: typeof FSlugIndexRoute
+  ApiPublicPixelTrackRoute: typeof ApiPublicPixelTrackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1507,11 +1507,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FSlugMemberRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/pixel/track': {
-      id: '/api/pixel/track'
-      path: '/api/pixel/track'
-      fullPath: '/api/pixel/track'
-      preLoaderRoute: typeof ApiPixelTrackRouteImport
+    '/api/public/pixel/track': {
+      id: '/api/public/pixel/track'
+      path: '/api/public/pixel/track'
+      fullPath: '/api/public/pixel/track'
+      preLoaderRoute: typeof ApiPublicPixelTrackRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1655,9 +1655,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   FunnelsIndexRoute: FunnelsIndexRoute,
   LandingPagesIndexRoute: LandingPagesIndexRoute,
-  ApiPixelTrackRoute: ApiPixelTrackRoute,
   FSlugMemberRoute: FSlugMemberRoute,
   FSlugIndexRoute: FSlugIndexRoute,
+  ApiPublicPixelTrackRoute: ApiPublicPixelTrackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
