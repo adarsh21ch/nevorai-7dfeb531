@@ -708,6 +708,21 @@ const PublicFunnel = () => {
     });
   };
 
+  // Sync app-level html/body background to the PUBLIC funnel theme so the
+  // page underneath the wrapper (painted by #root via app data-theme) doesn't
+  // bleed through and make text on tc.bg invisible.
+  useEffect(() => {
+    const pageBg = pubTheme === "dark" ? "#09090b" : "#ffffff";
+    const prevHtml = document.documentElement.style.backgroundColor;
+    const prevBody = document.body.style.backgroundColor;
+    document.documentElement.style.backgroundColor = pageBg;
+    document.body.style.backgroundColor = pageBg;
+    return () => {
+      document.documentElement.style.backgroundColor = prevHtml;
+      document.body.style.backgroundColor = prevBody;
+    };
+  }, [pubTheme]);
+
   const tc = {
     bg: isDark ? "#09090b" : "#ffffff",
     bgCard: isDark ? "#1a1a22" : "#ffffff",
