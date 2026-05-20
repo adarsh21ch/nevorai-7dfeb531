@@ -221,10 +221,9 @@ const AdminSettingsPage = () => {
 
   const disconnectMutation = useMutation({
     mutationFn: async () => {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/send-gmail-email?action=disconnect`,
+        `${supabaseProjectUrl}/functions/v1/send-gmail-email?action=disconnect`,
         {
           method: "GET",
           headers: {
@@ -244,7 +243,6 @@ const AdminSettingsPage = () => {
 
   const testEmailMutation = useMutation({
     mutationFn: async () => {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const { data: { session } } = await supabase.auth.getSession();
       const targetEmail = gmailConnected?.email;
       if (!targetEmail) throw new Error("No connected Gmail address found");
@@ -260,7 +258,7 @@ const AdminSettingsPage = () => {
 </body></html>`;
 
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/send-gmail-email`,
+        `${supabaseProjectUrl}/functions/v1/send-gmail-email`,
         {
           method: "POST",
           headers: {
