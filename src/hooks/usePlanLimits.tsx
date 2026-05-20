@@ -23,6 +23,7 @@ export interface PlanConfig {
   feature_advanced_analytics?: boolean;
   feature_go_live?: boolean;
   feature_landing_pages?: boolean;
+  feature_landing_page_email?: boolean;
   feature_team_analytics?: boolean;
   feature_video_upload?: boolean;
   feature_insights?: boolean;
@@ -115,6 +116,7 @@ export const usePlanLimits = () => {
     teamAnalytics: config.feature_team_analytics === true,
     goLive: config.feature_go_live !== false,
     landingPages: config.feature_landing_pages !== false,
+    landingPageEmail: config.feature_landing_page_email === true,
     videoUpload: config.feature_video_upload === true,
     insights: config.feature_insights === true,
     funnelCreation: config.feature_funnel_creation !== false,
