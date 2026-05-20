@@ -164,7 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [fetchProfile]);
 
   const signUp = useCallback(async (email: string, password: string, fullName: string, phone: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -172,6 +172,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
       },
     });
+    // Fire Meta Pixel Lead + CompleteRegistration at the exact moment of
+    // signup success — not on dashboard mount (that race-conditions with
+    // the lazy chunk + Strict Mode and fires for returning users too).
+    if (!error && data?.user) {
+      const { trackLead, trackCompleteRegistration } = await import("@/lib/pixel");
+      void trackLead(data.user.id, {
+        email,
+        phone,
+        content_name: "Free Signup",
+        content_category: "authentication",
+      });
+      void trackCompleteRegistration(data.user.id, { email, phone });
+    }
     return { error };
   }, []);
 
