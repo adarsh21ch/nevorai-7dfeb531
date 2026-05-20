@@ -49,6 +49,36 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Plan gate — feature_landing_page_email must be enabled for the owner's plan.
+    // Resolve the owner's active subscription tier → plan_config.plan_name.
+    const ownerId = (page as any).owner_id
+    let planName = 'free'
+    if (ownerId) {
+      const { data: sub } = await supabase
+        .from('user_subscriptions')
+        .select('tier, status, expires_at')
+        .eq('user_id', ownerId)
+        .in('status', ['active', 'payment_failed', 'pending'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      const expired = sub?.expires_at ? new Date(sub.expires_at) < new Date() : false
+      if (sub?.status === 'active' && !expired && sub?.tier && sub.tier !== 'free') {
+        planName = sub.tier
+      }
+    }
+    const { data: planCfg } = await supabase
+      .from('plan_config')
+      .select('feature_landing_page_email')
+      .eq('plan_name', planName)
+      .maybeSingle()
+    if (!planCfg || planCfg.feature_landing_page_email !== true) {
+      return new Response(
+        JSON.stringify({ sent: false, reason: 'plan_upgrade_required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
     // Use sender_display_name from landing page settings; fall back to platform name
     const senderDisplayName = (page as any).sender_display_name || 'nFlow'
     const isPlatformSender = senderDisplayName === 'nFlow'

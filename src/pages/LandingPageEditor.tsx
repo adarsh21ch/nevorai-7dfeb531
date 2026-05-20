@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useVideoGate } from "@/hooks/useVideoGate";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -142,6 +143,8 @@ const LandingPageEditor = () => {
   // Phase 7 gate: must have at least one uploaded video before creating a new landing page.
   useVideoGate(!isEdit);
   const isMobile = useIsMobile();
+  const { features: planFeatures } = usePlanLimits();
+  const emailFeatureLocked = !planFeatures.landingPageEmail;
   const [wizardStep, setWizardStep] = useState(0);
   const [form, setForm] = useState(defaultFormState);
   const [slugEdited, setSlugEdited] = useState(false);
@@ -537,16 +540,34 @@ const LandingPageEditor = () => {
       <h2 className="text-lg font-heading font-semibold">Confirmation Email</h2>
       <p className="text-sm text-muted-foreground">Configure the email sent to registrants after they sign up.</p>
       <div className="space-y-4 mt-4">
-        <div className="p-4 bg-muted/50 rounded-xl">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="font-semibold">Send Confirmation Email</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">Automatically send an email when someone registers</p>
+        <div className={`p-4 bg-muted/50 rounded-xl ${emailFeatureLocked ? "border border-dashed border-primary/40" : ""}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <Label className="font-semibold flex items-center gap-1.5">
+                {emailFeatureLocked && <LockIcon size={14} className="text-primary" />}
+                Send Confirmation Email
+              </Label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {emailFeatureLocked
+                  ? "Upgrade to Basic or Pro to enable confirmation emails"
+                  : "Automatically send an email when someone registers"}
+              </p>
             </div>
-            <Switch checked={form.send_confirmation_email} onCheckedChange={(v) => updateField("send_confirmation_email", v)} />
+            {emailFeatureLocked ? (
+              <Button
+                size="sm"
+                variant="hero"
+                onClick={() => navigate("/upgrade")}
+                className="shrink-0 gap-1.5"
+              >
+                <LockIcon size={12} /> Upgrade
+              </Button>
+            ) : (
+              <Switch checked={form.send_confirmation_email} onCheckedChange={(v) => updateField("send_confirmation_email", v)} />
+            )}
           </div>
         </div>
-        {form.send_confirmation_email && (
+        {form.send_confirmation_email && !emailFeatureLocked && (
           <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
             <div className="p-4 bg-muted/50 rounded-xl space-y-3">
               <div>
