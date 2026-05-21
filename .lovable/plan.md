@@ -1,74 +1,71 @@
-# Fix: Landing page confirmation emails not sending
+## Reality check (read first)
 
-## Root cause (confirmed)
+Your funnel system **already has** most of the schema you described — just under different names:
 
-The plan-gate added in `send-landing-page-confirmation` last turn is blocking 100% of sends because:
+| You asked for | Already exists as |
+|---|---|
+| `funnel_steps.type` / `config` | `funnel_steps.step_type` + 30+ typed columns (video_asset_id, cta_url, booking_url, timer_*, access_code_*, etc.) |
+| `funnel_leads` | `funnel_leads` (name/phone/email/status) ✅ |
+| `step_submissions` | `funnel_step_progress` (per-lead per-step state, watch %, unlocked flags) ✅ |
+| `manual_unlock_requests` | `funnel_step_progress.manually_unlocked` + `unlocked_by` ✅ |
+| Payment | `funnel_payments` + `funnel_price_options` ✅ (you said "skip payment, mark coming soon") |
 
-1. **The SQL migration was never applied to Supabase.** The column `plan_config.feature_landing_page_email` does not exist in the live database, so the gate returns `plan_upgrade_required` for everyone — free, basic, and pro.
-2. **The plan resolution logic in the edge function is too strict.** It only accepts `status = 'active'` + `tier != 'free'` + non-expired. Real paid users on trials, lifetime plans, or rows with `expires_at = null` will silently resolve to `'free'` and be blocked even after the migration runs.
+What's actually broken vs missing is **UI wiring**, not backend. Rebuilding the schema your way would delete working features (video analytics, access codes, between-step audio, timers, speaker per-step, privacy, etc.) and break every existing funnel.
 
-The admin "Send Test Email" works because it calls `send-gmail-email` directly and never touches this gate.
+**I will NOT do a full rewrite.** I'll fix the actual gaps on top of what exists.
 
-## The fix (structural, not a bandaid)
+---
 
-### Step 1 — Apply the database migration
+## What I'll build (one phase at a time, you approve each)
 
-Run the existing `feature_landing_page_email_migration.sql` in Supabase so the column exists with correct values:
+### Phase 1 — Step Editor (the actual blocker you screenshotted)
+The "Full step configuration UI will be ported in a later pass" placeholder → replace with real per-type editor.
 
-```sql
-ALTER TABLE public.plan_config
-  ADD COLUMN IF NOT EXISTS feature_landing_page_email boolean NOT NULL DEFAULT false;
-UPDATE public.plan_config SET feature_landing_page_email = true  WHERE plan_name IN ('basic','pro');
-UPDATE public.plan_config SET feature_landing_page_email = false WHERE plan_name = 'free';
-```
+**File:** `src/components/funnel/StepConfigPanel.tsx` (already exists, currently stub)
 
-Done as a migration so it's permanent and visible.
+Per `step_type`, render:
+- **video** — VideoPickerModal (already exists) + show selected thumbnail/title/duration after pick (fixes your bug) + unlock-after-percent slider
+- **lead_form** — reuse existing `CustomFieldsBuilder.tsx` + submit-button label + success message
+- **booking** — WhatsApp number + country code + message template with `{prospect_name}` `{funnel_title}` vars + instruction text
+- **cta** (existing key, your "cta_link") — button label + URL (validated) + new_tab toggle + instruction
+- **manual_approval** (existing key, your "manual_unlock") — instruction + WhatsApp contact + "notify me" toggle
+- **payment** — locked card, "Coming Soon" badge, disable in `StepTypeSelector` ✅
 
-### Step 2 — Make the plan gate fail-OPEN, not fail-CLOSED
+Live right-side preview reuses existing `JourneyPreview`/`MultiStepViewer`.
 
-This is the critical structural change. The current code defaults to blocking when anything is uncertain. We invert that:
+### Phase 2 — Prospect view wiring
+`PublicFunnel.tsx` + `MultiStepViewer.tsx` already render steps. Gaps to fix:
+- booking step → render WhatsApp deep-link button, mark step complete on click (write `funnel_step_progress`)
+- cta step → same (click → unlock)
+- manual_approval → show "waiting" state, subscribe via Supabase realtime to `funnel_step_progress` for live unlock
+- video step → already tracks; verify auto-advance fires at threshold
 
-- **If the column doesn't exist, or the lookup errors, or the plan can't be resolved → send the email.** Worst case a free user gets a confirmation email — not a paying customer losing leads.
-- Only block when we have an **explicit, unambiguous** `feature_landing_page_email = false` for a resolved plan.
+### Phase 3 — Creator unlock panel
+In `LeadProgressTab.tsx` (already exists), add per-step "Unlock" button for `step_type='manual_approval'` rows where `manually_unlocked=false`. On click → update `funnel_step_progress` row.
 
-### Step 3 — Use the same plan-resolution rule the rest of the app uses
+### Phase 4 — Polish
+Step reorder (drag), duplicate step menu item, preview-as-prospect button, lead count badge.
 
-Instead of re-implementing subscription logic inside the edge function (which is what caused the trial/lifetime edge cases), broaden the query:
-- Accept `status in ('active','trialing')`
-- Treat `expires_at IS NULL` as not-expired (lifetime/perpetual)
-- If multiple subs exist, pick the one with the highest tier, not just the newest
+---
 
-### Step 4 — Add observable logging
+## What I'm NOT doing (and why)
 
-Add `console.log` lines at every decision point in the gate:
-- which `ownerId` we got
-- which `planName` we resolved
-- the raw `planCfg` row
-- the final decision (`sent` / `plan_upgrade_required`)
+- ❌ Creating new `step_submissions` / `manual_unlock_requests` tables — duplicates existing `funnel_step_progress`
+- ❌ Renaming `step_type` → `type`, `config` columns → `jsonb` — would break every existing funnel + edge function + analytics query
+- ❌ Auto-save every 30s — `FunnelEditor` already saves on blur; 30s timer adds race conditions
+- ❌ Rebuilding `MultiStepViewer` — it works; I'll patch the missing step-type branches
 
-So if it ever misbehaves again, one look at Supabase function logs tells us exactly which step is wrong — no guessing.
+---
 
-### Step 5 — Surface the real reason in `submit-landing-page-registration`
+## Credit-honest estimate
 
-The submit function already captures `email_delivery.reason` from the response. We'll make sure that reason is logged on the server side (it already is) and confirm the UI's "mail sent" toast is only shown when `email_delivery.sent === true`, not on plain submit success. This way the user never again sees a false "email sent" confirmation while it silently failed.
+- Phase 1 alone: ~1 large message (it's the big one — 5 type-specific editor panels + preview)
+- Phase 2: 1 medium message
+- Phase 3: 1 small message
+- Phase 4: optional, 1 medium
 
-## Files to change
+**Question for you before I start:** Approve this approach, or do you want me to do something different? Specifically:
 
-- `feature_landing_page_email_migration.sql` — move into `supabase/migrations/` with proper timestamp so it actually runs
-- `supabase/functions/send-landing-page-confirmation/index.ts` — rewrite the plan gate to fail-open, broaden plan resolution, add logging
-- `src/pages/PublicLandingPage.tsx` (or wherever the toast is) — only show "email sent" when `email_delivery.sent === true`; otherwise show a neutral "Registration received" toast
-
-## What will NOT change
-
-- `send-gmail-email` edge function — untouched
-- Gmail OAuth flow — untouched
-- Resend email path — untouched
-- Admin Settings test-email button — untouched (already working)
-- The UI lock + upgrade prompt on the landing page editor toggle — untouched
-
-## Verification after deploy
-
-1. Run migration → confirm column exists with `SELECT plan_name, feature_landing_page_email FROM plan_config;`
-2. Submit a registration on a paid user's landing page → email arrives, logs show `sent=true`
-3. Submit a registration on a free user's landing page → no email, logs show `plan_upgrade_required` with the resolved plan name
-4. Temporarily break the lookup (e.g. wrong plan name) → email still sends (fail-open), logs show the warning
+1. ✅ Go phase by phase (recommended — safest, you see results each round)
+2. ⚠️ Do Phase 1 + 2 in one shot (cheaper, riskier — more chance of a bug landing on you)
+3. ❌ Full rewrite per your spec (will break existing funnels, not recommended)
