@@ -3,9 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Unlock, Eye, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Unlock, Eye, Search, ChevronDown, ChevronUp, Bell, UserCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface LeadProgressTabProps {
   funnelId: string;
@@ -40,6 +40,19 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
       return data || [];
     },
   });
+
+  // Realtime: refresh progress as prospects move through steps / request unlocks.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`creator-progress-${funnelId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "funnel_step_progress", filter: `funnel_id=eq.${funnelId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["funnel-step-progress", funnelId] }),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [funnelId, queryClient]);
 
   const unlockStep = useMutation({
     mutationFn: async ({ progressId, stepId, leadId, sessionId }: { progressId?: string; stepId: string; leadId?: string; sessionId?: string }) => {
@@ -83,8 +96,50 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
     return (s.lead?.name || "").toLowerCase().includes(lc) || (s.lead?.phone || "").includes(search) || (s.lead?.email || "").toLowerCase().includes(lc);
   });
 
+  // Pending manual_approval unlock requests across all sessions.
+  const manualApprovalStepIds = new Set(steps.filter((s: any) => s.step_type === "manual_approval").map((s) => s.id));
+  const pendingRequests = sessions.flatMap((session) =>
+    session.progressList
+      .filter((p: any) => manualApprovalStepIds.has(p.funnel_step_id) && p.status === "locked" && !p.manually_unlocked)
+      .map((p: any) => ({
+        session,
+        progress: p,
+        step: steps.find((s) => s.id === p.funnel_step_id)!,
+      })),
+  );
+
   return (
     <div className="space-y-4">
+      {pendingRequests.length > 0 && (
+        <div className="glass-card p-4 border-amber-500/30 bg-amber-500/5">
+          <div className="flex items-center gap-2 mb-3">
+            <Bell size={16} className="text-amber-500" />
+            <h4 className="text-sm font-semibold">Pending unlock requests</h4>
+            <Badge variant="secondary" className="text-xs bg-amber-500/15 text-amber-600 border-0">{pendingRequests.length}</Badge>
+          </div>
+          <div className="space-y-2">
+            {pendingRequests.slice(0, 8).map(({ session, progress, step }) => (
+              <div key={progress.id} className="flex items-center gap-3 rounded-lg bg-background/50 px-3 py-2 border border-border">
+                <UserCheck size={14} className="text-amber-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">
+                    {session.lead?.name || "Anonymous viewer"}
+                    {session.lead?.phone && <span className="text-muted-foreground"> · {session.lead.phone}</span>}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">Step {step.step_order + 1}: {step.title || "Manual approval"}</p>
+                </div>
+                <Button size="sm" className="h-7 text-xs" onClick={() => unlockStep.mutate({ progressId: progress.id, stepId: step.id, leadId: session.lead?.id, sessionId: session.sessionId || undefined })}>
+                  <Unlock size={12} /> Unlock
+                </Button>
+              </div>
+            ))}
+            {pendingRequests.length > 8 && (
+              <p className="text-[11px] text-muted-foreground text-center pt-1">+{pendingRequests.length - 8} more — find them in the list below</p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
