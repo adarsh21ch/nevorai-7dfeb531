@@ -19,9 +19,10 @@ import { VideoThumbnail } from "@/components/VideoThumbnail";
 import { getStepTypeMeta } from "@/components/funnel/StepTypeSelector";
 import {
   Play, Video as VideoIcon, ExternalLink, MessageCircle, UserCheck, Lock,
-  Info, Check
+  Info, Check, Clock, ShieldCheck, Eye, EyeOff, ChevronDown
 } from "lucide-react";
 import { Link as RouterLink } from "@/lib/router-compat";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export interface FlowStep {
   id?: string;
@@ -349,6 +350,123 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
     }
   };
 
+  // EXTRA GATES — Waiting period + Access Code (applies to any active step type).
+  const [showExtras, setShowExtras] = useState(true);
+  const [showCode, setShowCode] = useState(false);
+  const renderExtraGates = () => {
+    const delayOn = !!step.time_delay_enabled;
+    const delayMin = step.time_delay_minutes ?? 0;
+    const codeOn = !!step.access_code_enabled;
+    const codeRaw = step._access_code_raw ?? step.access_code_plain ?? "";
+    const codeMsg = step.access_code_message ?? "To unlock this step, contact your mentor and request the access code for this session.";
+    return (
+      <div className="rounded-2xl border border-border bg-muted/20 overflow-hidden">
+        <Collapsible open={showExtras} onOpenChange={setShowExtras}>
+          <CollapsibleTrigger className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={15} className="text-muted-foreground" />
+              <span className="text-sm font-semibold">Extra Gates</span>
+            </div>
+            <ChevronDown size={15} className={`text-muted-foreground transition-transform ${showExtras ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="px-4 pb-4 pt-1 space-y-4">
+            {/* Waiting period */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Clock size={14} className="text-muted-foreground shrink-0" />
+                  <Label className="text-sm font-medium">Waiting period after unlock</Label>
+                </div>
+                <Switch checked={delayOn} onCheckedChange={(v) => { onUpdate("time_delay_enabled", v); if (v && (!delayMin || delayMin < 1)) onUpdate("time_delay_minutes", 60); }} />
+              </div>
+              {delayOn && (
+                <div className="pl-6 space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Minutes to wait after previous step completes</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={10080}
+                    value={delayMin || ""}
+                    onChange={(e) => onUpdate("time_delay_minutes", Math.max(0, parseInt(e.target.value) || 0))}
+                    placeholder="60"
+                    className="h-9"
+                  />
+                  <p className="text-[11px] text-muted-foreground">A countdown timer is shown to the viewer. Auto-unlocks after the wait.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-border/60" />
+
+            {/* Access Code Gate */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-muted-foreground shrink-0" />
+                    <Label className="text-sm font-medium">Access Code Gate</Label>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground pl-6">Require a code to view this step</p>
+                </div>
+                <Switch checked={codeOn} onCheckedChange={(v) => onUpdate("access_code_enabled", v)} />
+              </div>
+              {codeOn && (
+                <div className="pl-6 space-y-3 pt-1">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Access Code</Label>
+                    <div className="relative mt-1">
+                      <Input
+                        type={showCode ? "text" : "password"}
+                        value={codeRaw}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 24);
+                          onUpdate("_access_code_raw", val);
+                          onUpdate("access_code_plain", val);
+                        }}
+                        placeholder="E.G. MENTOR2024"
+                        className="h-9 pr-9 font-mono tracking-wider"
+                        maxLength={24}
+                      />
+                      <button type="button" onClick={() => setShowCode((s) => !s)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                        {showCode ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">Hashed securely on save. Save it somewhere safe.</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Message shown to viewer</Label>
+                    <Textarea
+                      value={codeMsg}
+                      onChange={(e) => onUpdate("access_code_message", e.target.value.slice(0, 200))}
+                      rows={3}
+                      maxLength={200}
+                      className="mt-1 text-sm"
+                    />
+                    <p className="text-[11px] text-muted-foreground text-right">{codeMsg.length}/200</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-border/60" />
+
+            {/* Step active toggle */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <Lock size={14} className="text-muted-foreground shrink-0" />
+                  <Label className="text-sm font-medium">Step Active</Label>
+                </div>
+                <p className="text-[11px] text-muted-foreground pl-6">Inactive steps are hidden from viewers</p>
+              </div>
+              <Switch checked={step.is_active !== false} onCheckedChange={(v) => onUpdate("is_active", v)} />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+    );
+  };
+
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto p-6">
@@ -360,6 +478,7 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
         <div className="mt-4 space-y-5">
           {step.step_type !== "payment" && renderCommon()}
           {renderBody()}
+          {step.step_type !== "payment" && renderExtraGates()}
         </div>
         <div className="pt-6 mt-6 border-t border-border">
           <Button onClick={onClose} className="w-full h-11">

@@ -832,8 +832,11 @@ const FunnelEditor = () => {
       <VideoPickerModal
         open={stepVideoPickerIdx !== null}
         onClose={() => setStepVideoPickerIdx(null)}
-        onSelect={(videoId) => {
-          if (stepVideoPickerIdx !== null) updateFlowStep(stepVideoPickerIdx, "video_asset_id", videoId);
+        onSelect={(videoId, title) => {
+          if (stepVideoPickerIdx !== null) {
+            updateFlowStep(stepVideoPickerIdx, "video_asset_id", videoId);
+            toast.success(`Video attached: ${title || "selected video"}`);
+          }
           setStepVideoPickerIdx(null);
         }}
       />
