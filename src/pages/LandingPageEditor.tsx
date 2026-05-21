@@ -264,6 +264,21 @@ const LandingPageEditor = () => {
       if (key === "title" && !slugEdited) {
         next.slug = generateSlug(value);
       }
+      // Structural rule: confirmation email requires a prospect email address.
+      // When the confirmation email toggle is ON, email field must be enabled
+      // AND required. We enforce this both when the toggle flips on, and when
+      // someone tries to disable / un-require the email field while it's on.
+      if (key === "send_confirmation_email" && value === true) {
+        next.field_email_enabled = true;
+        next.field_email_required = true;
+      }
+      if (
+        next.send_confirmation_email &&
+        (key === "field_email_enabled" || key === "field_email_required")
+      ) {
+        next.field_email_enabled = true;
+        next.field_email_required = true;
+      }
       return next;
     });
   };
@@ -489,15 +504,33 @@ const LandingPageEditor = () => {
             {formFields.map((f) => {
               const enabledKey = `field_${f.key}_enabled` as keyof typeof form;
               const requiredKey = `field_${f.key}_required` as keyof typeof form;
+              // Email field is locked ON + Required whenever the confirmation
+              // email is enabled — we need an address to send it to.
+              const emailLocked = f.key === "email" && form.send_confirmation_email;
               return (
                 <div key={f.key} className="flex items-center justify-between p-3.5">
                   <div className="flex items-center gap-3">
-                    <Switch checked={form[enabledKey] as boolean} onCheckedChange={(v) => updateField(enabledKey as string, v)} />
-                    <span className={!(form[enabledKey] as boolean) ? "text-muted-foreground text-sm" : "text-sm font-medium"}>{f.label}</span>
+                    <Switch
+                      checked={form[enabledKey] as boolean}
+                      onCheckedChange={(v) => updateField(enabledKey as string, v)}
+                      disabled={emailLocked}
+                    />
+                    <span className={!(form[enabledKey] as boolean) ? "text-muted-foreground text-sm" : "text-sm font-medium"}>
+                      {f.label}
+                      {emailLocked && (
+                        <span className="ml-2 text-[10px] uppercase tracking-wide text-primary font-semibold">
+                          Required for emails
+                        </span>
+                      )}
+                    </span>
                   </div>
                   {form[enabledKey] as boolean && (
                     <div className="flex items-center gap-2 text-sm">
-                      <Switch checked={form[requiredKey] as boolean} onCheckedChange={(v) => updateField(requiredKey as string, v)} />
+                      <Switch
+                        checked={form[requiredKey] as boolean}
+                        onCheckedChange={(v) => updateField(requiredKey as string, v)}
+                        disabled={emailLocked}
+                      />
                       <span className="text-muted-foreground text-xs">Required</span>
                     </div>
                   )}
@@ -549,7 +582,7 @@ const LandingPageEditor = () => {
               </Label>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {emailFeatureLocked
-                  ? "Upgrade to Basic or Pro to enable confirmation emails"
+                  ? "Available on the Pro plan — upgrade to send branded confirmation emails to prospects"
                   : "Automatically send an email when someone registers"}
               </p>
             </div>

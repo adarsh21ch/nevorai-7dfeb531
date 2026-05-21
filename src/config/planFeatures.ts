@@ -97,6 +97,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { key: "feature_youtube_import", label: "YouTube Video Import", type: "boolean", category: "Features", dbField: "feature_youtube_import" },
   { key: "feature_video_sharing", label: "Video Sharing", type: "boolean", category: "Features", dbField: "feature_video_sharing" },
   { key: "feature_landing_pages", label: "Landing Pages", type: "boolean", category: "Features", dbField: "feature_landing_pages" },
+  { key: "feature_landing_page_email", label: "Landing Page Confirmation Email", type: "boolean", category: "Features", hint: "Send branded confirmation email to prospects after they register on a landing page", dbField: "feature_landing_page_email" },
   { key: "feature_go_live", label: "Live Broadcast", type: "boolean", category: "Features", dbField: "feature_go_live" },
   { key: "feature_whatsapp_automation", label: "WhatsApp Auto-Message", type: "boolean", category: "Features", dbField: "feature_whatsapp_automation" },
   { key: "feature_smart_reminders", label: "Smart Follow-up Reminders", type: "boolean", category: "Features", dbField: "feature_smart_reminders" },
