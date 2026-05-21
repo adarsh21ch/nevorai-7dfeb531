@@ -507,7 +507,7 @@ export const MultiStepViewer = ({
             <div className="min-w-0">
               <p className="font-semibold text-[13px] truncate" style={{ color: sc.text }}>{creatorProfile.full_name}</p>
               {creatorProfile.kyc_status === "approved" && (
-                <span className="flex items-center gap-1 text-[10px] font-semibold text-green-400">
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-[#F97316]">
                   <BadgeCheck size={10} /> Verified
                 </span>
               )}
@@ -517,7 +517,7 @@ export const MultiStepViewer = ({
         <div className="pb-4 mb-4" style={{ borderBottom: `1px solid ${sc.border}` }}>
           <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5" style={{ color: sc.textDim }}>Journey Progress</p>
           <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: sc.progressBg }}>
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #22c55e, #16a34a)" }} />
+            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #FB923C, #F97316)" }} />
           </div>
           <p className="text-[12px] font-semibold" style={{ color: sc.progressText }}>{completedCount} / {steps.length} completed</p>
         </div>
@@ -536,15 +536,15 @@ export const MultiStepViewer = ({
                 style={{
                   padding: "10px 12px", borderRadius: "12px",
                   border: isCompleted ? "1px solid rgba(34,197,94,0.25)" : isActive ? "1px solid rgba(34,197,94,0.3)" : "1px solid transparent",
-                  borderLeft: isCompleted || isActive ? "3px solid #22c55e" : "3px solid transparent",
+                  borderLeft: isCompleted || isActive ? "3px solid #F97316" : "3px solid transparent",
                   background: isCompleted ? "rgba(34,197,94,0.1)" : isActive ? "rgba(34,197,94,0.08)" : isLocked ? "transparent" : sc.itemBg,
                   cursor: isLocked ? "not-allowed" : "pointer", opacity: isLocked ? 0.55 : 1,
                 }}>
                 <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
                   style={{ background: isCompleted ? "rgba(34,197,94,0.2)" : isActive ? "rgba(34,197,94,0.15)" : sc.itemIconBg }}>
-                  {isCompleted ? <Check size={13} className="text-green-400" /> :
+                  {isCompleted ? <Check size={13} className="text-[#F97316]" /> :
                    isLocked ? <Lock size={11} style={{ color: sc.iconLocked }} /> :
-                   <Icon size={13} className={isActive ? "text-green-400" : ""} style={!isActive ? { color: sc.iconDim } : {}} />}
+                   <Icon size={13} className={isActive ? "text-[#F97316]" : ""} style={!isActive ? { color: sc.iconDim } : {}} />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold leading-tight truncate" style={{ fontSize: "13px", color: isLocked ? sc.textLocked : sc.text }}>
@@ -605,7 +605,7 @@ export const MultiStepViewer = ({
                   padding: "6px 14px", borderRadius: "100px", fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap",
                   border: isActive ? "1px solid rgba(34,197,94,0.4)" : isCompleted ? "1px solid rgba(34,197,94,0.25)" : `1px solid ${sc.stepBarBorder}`,
                   background: isActive ? sc.stepBarActive : isCompleted ? "rgba(34,197,94,0.08)" : sc.stepBarBg,
-                  color: isActive ? "#22c55e" : isCompleted ? "#4ade80" : isLocked ? sc.textLocked : sc.stepBarInactive,
+                  color: isActive ? "#F97316" : isCompleted ? "#FB923C" : isLocked ? sc.textLocked : sc.stepBarInactive,
                   cursor: isLocked ? "not-allowed" : "pointer", opacity: isLocked ? 0.5 : 1,
                 }}>
                 {isCompleted ? <Check size={12} /> : isLocked ? <Lock size={10} /> : <Circle size={10} />}
@@ -627,7 +627,7 @@ export const MultiStepViewer = ({
                     Step {activeStepIndex + 1} of {steps.length}
                   </span>
                   {activeProgress?.status === "completed" && (
-                    <span className="flex items-center gap-1 text-[10px] font-semibold text-green-400">
+                    <span className="flex items-center gap-1 text-[10px] font-semibold text-[#F97316]">
                       <Check size={10} /> Completed
                     </span>
                   )}
@@ -693,7 +693,7 @@ export const MultiStepViewer = ({
                     <div className="rounded-2xl p-6" style={{ background: sc.cardBg, border: `1px solid ${sc.cardBorder}` }}>
                       {leadSubmitted || activeProgress?.status === "completed" ? (
                         <div className="text-center py-6">
-                          <CheckCircle2 size={40} className="text-green-400 mx-auto mb-3" />
+                          <CheckCircle2 size={40} className="text-[#F97316] mx-auto mb-3" />
                           <h3 className="font-heading font-bold" style={{ color: sc.text }}>Details Submitted</h3>
                         </div>
                       ) : (
@@ -742,7 +742,7 @@ export const MultiStepViewer = ({
                     <div className="rounded-2xl p-6 text-center" style={{ background: sc.cardBg, border: `1px solid ${sc.cardBorder}` }}>
                       {activeProgress?.status === "completed" ? (
                         <>
-                          <CheckCircle2 size={40} className="text-green-400 mx-auto mb-3" />
+                          <CheckCircle2 size={40} className="text-[#F97316] mx-auto mb-3" />
                           <h3 className="font-heading font-bold" style={{ color: sc.text }}>Step Completed</h3>
                         </>
                       ) : (
@@ -762,7 +762,7 @@ export const MultiStepViewer = ({
                     <div className="rounded-2xl p-6" style={{ background: sc.cardBg, border: `1px solid ${sc.cardBorder}` }}>
                       {paymentSubmitted || activeProgress?.status === "completed" ? (
                         <div className="text-center py-6">
-                          <CheckCircle2 size={40} className="text-green-400 mx-auto mb-3" />
+                          <CheckCircle2 size={40} className="text-[#F97316] mx-auto mb-3" />
                           <h3 className="font-heading font-bold" style={{ color: sc.text }}>Payment Submitted</h3>
                         </div>
                       ) : (
@@ -806,7 +806,7 @@ export const MultiStepViewer = ({
                     <div className="rounded-2xl p-8 text-center" style={{ background: sc.cardBg, border: `1px solid ${sc.cardBorder}` }}>
                       {activeProgress?.status === "completed" || activeProgress?.manually_unlocked || activeProgress?.status === "unlocked" ? (
                         <>
-                          <CheckCircle2 size={40} className="text-green-400 mx-auto mb-3" />
+                          <CheckCircle2 size={40} className="text-[#F97316] mx-auto mb-3" />
                           <h3 className="font-heading font-bold" style={{ color: sc.text }}>Step Unlocked</h3>
                           <p style={{ fontSize: "14px", color: sc.textMuted }} className="mt-2">You can now continue to the next step.</p>
                         </>
@@ -834,10 +834,10 @@ export const MultiStepViewer = ({
                     <button onClick={() => setActiveStepIndex(activeStepIndex + 1)}
                       className="w-full flex items-center justify-between transition-all"
                       style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "12px", padding: "14px 18px", marginTop: "16px" }}>
-                      <span className="flex items-center gap-2 text-sm font-semibold text-green-400">
+                      <span className="flex items-center gap-2 text-sm font-semibold text-[#F97316]">
                         <Sparkles size={16} /> Next step unlocked!
                       </span>
-                      <span className="flex items-center gap-1 text-sm font-medium text-green-400">
+                      <span className="flex items-center gap-1 text-sm font-medium text-[#F97316]">
                         Continue to Step {activeStepIndex + 2} <ChevronRight size={16} />
                       </span>
                     </button>

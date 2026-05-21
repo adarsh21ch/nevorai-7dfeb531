@@ -163,7 +163,7 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="flex gap-0.5">
-                        {steps.map((_, i) => <div key={i} className={`w-4 h-1 rounded-full ${i < session.completedSteps ? "bg-green-500" : "bg-muted"}`} />)}
+                        {steps.map((_, i) => <div key={i} className={`w-4 h-1 rounded-full ${i < session.completedSteps ? "bg-[#F97316]" : "bg-muted"}`} />)}
                       </div>
                       <span className="text-[10px] text-muted-foreground">{session.completedSteps}/{steps.length} steps</span>
                     </div>
