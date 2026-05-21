@@ -41,6 +41,19 @@ export const LeadProgressTab = ({ funnelId, userId }: LeadProgressTabProps) => {
     },
   });
 
+  // Realtime: refresh progress as prospects move through steps / request unlocks.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`creator-progress-${funnelId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "funnel_step_progress", filter: `funnel_id=eq.${funnelId}` },
+        () => queryClient.invalidateQueries({ queryKey: ["funnel-step-progress", funnelId] }),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [funnelId, queryClient]);
+
   const unlockStep = useMutation({
     mutationFn: async ({ progressId, stepId, leadId, sessionId }: { progressId?: string; stepId: string; leadId?: string; sessionId?: string }) => {
       if (progressId) {
