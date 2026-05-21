@@ -1,4 +1,4 @@
-import { Play, ClipboardList, ExternalLink, CreditCard, UserCheck, Calendar } from "lucide-react";
+import { Play, ExternalLink, Calendar, ClipboardList, CreditCard, UserCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const STEP_TYPES = [
@@ -11,12 +11,12 @@ const STEP_TYPES = [
     bg: "bg-blue-500/10",
   },
   {
-    value: "lead_form",
-    label: "Lead Form",
-    icon: ClipboardList,
-    description: "Collect their info before continuing",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
+    value: "cta",
+    label: "CTA / Link",
+    icon: ExternalLink,
+    description: "Button + redirect to any URL",
+    color: "text-violet-400",
+    bg: "bg-violet-500/10",
   },
   {
     value: "booking",
@@ -26,32 +26,13 @@ const STEP_TYPES = [
     color: "text-pink-400",
     bg: "bg-pink-500/10",
   },
-  {
-    value: "payment",
-    label: "Payment",
-    icon: CreditCard,
-    description: "Collect UPI payment proof",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-    comingSoon: true,
-  },
+] as const;
 
-  {
-    value: "cta",
-    label: "CTA / Link",
-    icon: ExternalLink,
-    description: "Button + redirect to any URL",
-    color: "text-violet-400",
-    bg: "bg-violet-500/10",
-  },
-  {
-    value: "manual_approval",
-    label: "Manual Unlock",
-    icon: UserCheck,
-    description: "You approve manually before next step",
-    color: "text-foreground",
-    bg: "bg-muted",
-  },
+// Retained for getStepTypeMeta() so existing funnels with legacy step types still render correctly.
+const LEGACY_STEP_TYPES = [
+  { value: "lead_form", label: "Lead Form", icon: ClipboardList, description: "Collect their info before continuing", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { value: "payment", label: "Payment", icon: CreditCard, description: "Collect UPI payment proof", color: "text-amber-400", bg: "bg-amber-500/10" },
+  { value: "manual_approval", label: "Manual Unlock", icon: UserCheck, description: "You approve manually before next step", color: "text-foreground", bg: "bg-muted" },
 ] as const;
 
 interface StepTypeSelectorProps {
