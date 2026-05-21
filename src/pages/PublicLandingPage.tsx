@@ -164,7 +164,13 @@ const PublicLandingPage = () => {
       localStorage.setItem(`nf_registered_${page.id}`, JSON.stringify({
         name: formData.name, email: formData.email, submittedAt: Date.now(),
       }));
-      toast.success("🎉 You're registered! Check your email for confirmation.", { duration: 5000 });
+      const emailSent = data?.email_delivery?.sent === true;
+      toast.success(
+        emailSent
+          ? "🎉 You're registered! Check your email for confirmation."
+          : "🎉 You're registered!",
+        { duration: 5000 }
+      );
       setSubmitted(true);
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");

@@ -50,34 +50,56 @@ Deno.serve(async (req) => {
     }
 
     // Plan gate — feature_landing_page_email must be enabled for the owner's plan.
-    // Resolve the owner's active subscription tier → plan_config.plan_name.
+    // STRUCTURAL RULE: fail-OPEN. We only block when we can unambiguously prove
+    // the plan has the feature disabled. Any uncertainty (missing column,
+    // unresolved plan, lookup error) → allow the email. Better a free user
+    // gets a confirmation than a paying user silently loses leads.
     const ownerId = (page as any).owner_id
+    console.log('[plan-gate] ownerId=', ownerId)
+
+    // Tier priority used to pick best subscription if multiple exist.
+    const tierRank: Record<string, number> = { free: 0, basic: 1, pro: 2 }
     let planName = 'free'
+
     if (ownerId) {
-      const { data: sub } = await supabase
+      const { data: subs, error: subErr } = await supabase
         .from('user_subscriptions')
         .select('tier, status, expires_at')
         .eq('user_id', ownerId)
-        .in('status', ['active', 'payment_failed', 'pending'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      const expired = sub?.expires_at ? new Date(sub.expires_at) < new Date() : false
-      if (sub?.status === 'active' && !expired && sub?.tier && sub.tier !== 'free') {
-        planName = sub.tier
+        .in('status', ['active', 'trialing', 'payment_failed', 'pending'])
+      if (subErr) {
+        console.warn('[plan-gate] sub lookup error — failing OPEN:', subErr.message)
+      } else if (subs && subs.length) {
+        const now = Date.now()
+        const valid = subs.filter((s: any) => {
+          if (!['active', 'trialing'].includes(s.status)) return false
+          // null expires_at => lifetime / perpetual
+          if (s.expires_at && new Date(s.expires_at).getTime() < now) return false
+          return !!s.tier
+        })
+        // pick highest tier
+        valid.sort((a: any, b: any) => (tierRank[b.tier] ?? -1) - (tierRank[a.tier] ?? -1))
+        if (valid[0]?.tier) planName = valid[0].tier
       }
     }
-    const { data: planCfg } = await supabase
+    console.log('[plan-gate] resolved planName=', planName)
+
+    const { data: planCfg, error: planErr } = await supabase
       .from('plan_config')
       .select('feature_landing_page_email')
       .eq('plan_name', planName)
       .maybeSingle()
-    if (!planCfg || planCfg.feature_landing_page_email !== true) {
+    console.log('[plan-gate] planCfg=', planCfg, 'err=', planErr?.message)
+
+    // Only block on an explicit `false`. Missing row / missing column / error → allow.
+    if (planCfg && (planCfg as any).feature_landing_page_email === false) {
+      console.log('[plan-gate] BLOCKED for plan', planName)
       return new Response(
         JSON.stringify({ sent: false, reason: 'plan_upgrade_required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
+    console.log('[plan-gate] ALLOWED for plan', planName)
 
     // Use sender_display_name from landing page settings; fall back to platform name
     const senderDisplayName = (page as any).sender_display_name || 'nFlow'
