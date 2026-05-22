@@ -161,7 +161,7 @@ const FunnelEditor = () => {
     is_published: false,
     access_code_plain: "",
     required_fields: { email: false, city: false, state: false, whatsapp: false } as { email: boolean; city: boolean; state: boolean; whatsapp: boolean },
-    speaker_mode: "account" as "none" | "account" | "custom",
+    speaker_mode: "none" as "none" | "account" | "custom",
     speaker_name: "", speaker_photo_url: "", speaker_about: "",
     video_topics_enabled: false,
     video_topics: [] as string[],
@@ -915,12 +915,32 @@ const FunnelEditor = () => {
     </>
   );
 
-  const renderSpeakerStep = () => (
+  const renderSpeakerStep = () => {
+    const speakerEnabled = funnel.speaker_mode !== "none";
+    const setSpeakerEnabled = (on: boolean) => {
+      if (on) {
+        // Re-enable: default to "account" unless user already has a custom value saved.
+        if (funnel.speaker_mode === "none") {
+          update("speaker_mode", funnel.speaker_name || funnel.speaker_photo_url || funnel.speaker_about ? "custom" : "account");
+        }
+      } else {
+        update("speaker_mode", "none");
+      }
+    };
+    return (
     <>
       <h2 className="text-lg font-heading font-semibold">Speaker</h2>
-      <p className="text-sm text-muted-foreground">Choose how the speaker is shown on your funnel page.</p>
+      <p className="text-sm text-muted-foreground">Show a presenter card on your funnel page so prospects know who's speaking.</p>
       <div className="space-y-5 mt-4">
-        {isMulti && (
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+          <div>
+            <Label className="font-semibold">Show speaker section</Label>
+            <p className="text-xs text-muted-foreground mt-0.5">When enabled, a presenter card appears on the funnel page.</p>
+          </div>
+          <Switch checked={speakerEnabled} onCheckedChange={setSpeakerEnabled} />
+        </div>
+
+        {speakerEnabled && isMulti && (
           <div className="p-4 bg-muted/50 rounded-xl space-y-3">
             <Label className="font-semibold">Speaker Mode</Label>
             <div className="flex rounded-xl border border-border overflow-hidden">
@@ -941,14 +961,14 @@ const FunnelEditor = () => {
           </div>
         )}
 
-        {isMulti && funnel.speaker_scope === "per_step" && (
+        {speakerEnabled && isMulti && funnel.speaker_scope === "per_step" && (
           <PerStepSpeakerAssignment steps={flowSteps as any} setSteps={setFlowSteps as any} />
         )}
 
-        {(funnel.speaker_scope === "global" || !isMulti) && (
+        {speakerEnabled && (funnel.speaker_scope === "global" || !isMulti) && (
           <>
             <div className="flex rounded-xl border border-border overflow-hidden">
-              {(["none", "account", "custom"] as const).map((mode) => (
+              {(["account", "custom"] as const).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => update("speaker_mode", mode)}
@@ -958,14 +978,10 @@ const FunnelEditor = () => {
                       : "bg-muted text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {mode === "none" ? "None" : mode === "account" ? "Account" : "Custom"}
+                  {mode === "account" ? "Account" : "Custom"}
                 </button>
               ))}
             </div>
-
-            {funnel.speaker_mode === "none" && (
-              <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-xl">No speaker info will be shown on the funnel page.</p>
-            )}
 
             {funnel.speaker_mode === "account" && (
               <div className="p-4 bg-muted/50 rounded-xl space-y-3">
@@ -1037,7 +1053,8 @@ const FunnelEditor = () => {
         )}
       </div>
     </>
-  );
+    );
+  };
 
   const renderVideoTopicsStep = () => {
     const topics = funnel.video_topics;

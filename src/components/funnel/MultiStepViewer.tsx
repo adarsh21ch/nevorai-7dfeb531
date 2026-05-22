@@ -628,10 +628,98 @@ export const MultiStepViewer = ({
         </div>
 
         <div className="flex-1 px-4 lg:px-8 py-6 lg:py-8 max-w-[860px] mx-auto w-full">
-          <h1 className="hidden lg:block font-heading font-extrabold tracking-tight leading-tight mb-6" style={{ fontSize: "clamp(22px, 3vw, 34px)", letterSpacing: "-0.02em", color: sc.text }}>
+          <h1 className="hidden lg:block font-heading font-extrabold tracking-tight leading-tight mb-3" style={{ fontSize: "clamp(22px, 3vw, 34px)", letterSpacing: "-0.02em", color: sc.text }}>
             {funnel.title}
           </h1>
-          {activeStep && (
+          {funnel.description && (
+            <p className="hidden lg:block mb-6" style={{ fontSize: "15px", color: sc.textMuted, lineHeight: 1.6 }}>{funnel.description}</p>
+          )}
+          {(() => {
+            // Speaker card — resolves global vs. per-step override.
+            const mode = funnel.speaker_mode || "none";
+            if (mode === "none") return null;
+            const stepOverride = activeStep && (activeStep.speaker_mode_step === "override" || activeStep.speaker_mode_step === "custom");
+            let name = "", photo = "", about = "";
+            if (stepOverride && activeStep) {
+              name = activeStep.speaker_name_custom || "";
+              photo = activeStep.speaker_photo_url_custom || "";
+              about = activeStep.speaker_bio || activeStep.speaker_title || "";
+            } else if (mode === "account") {
+              name = creatorProfile?.full_name || "";
+              photo = creatorProfile?.avatar_url || "";
+              about = creatorProfile?.bio || "";
+            } else if (mode === "custom") {
+              name = funnel.speaker_name || "";
+              photo = funnel.speaker_photo_url || "";
+              about = funnel.speaker_about || "";
+            }
+            if (!name && !photo) return null;
+            return (
+              <div className="flex items-center gap-3 sm:gap-4 mb-6 p-3 sm:p-4 rounded-2xl" style={{ background: sc.itemBg, border: `1px solid ${sc.border}` }}>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shrink-0 flex items-center justify-center" style={{ border: "2px solid rgba(249,115,22,0.35)" }}>
+                  {photo ? (
+                    <img src={photo} alt={name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-[#F97316] font-heading font-bold text-base">{name.charAt(0).toUpperCase() || "?"}</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: sc.textDimmer }}>Presented by</p>
+                  <p className="font-heading font-bold text-[15px] sm:text-[16px] truncate" style={{ color: sc.text }}>{name || "Speaker"}</p>
+                  {about && (
+                    <p className="text-[12px] sm:text-[13px] mt-0.5 line-clamp-2" style={{ color: sc.textMuted }}>{about}</p>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+          {(() => {
+            // Funnel-wide lead capture gate (when no explicit lead_form step exists).
+            const hasLeadFormStep = steps.some((s) => s.step_type === "lead_form");
+            const wantsCapture = !!formConfig?.capture_enabled && !hasLeadFormStep && !leadSubmitted;
+            if (!wantsCapture) return null;
+            return (
+              <div className="rounded-2xl p-6 mb-6" style={{ background: sc.cardBg, border: `1px solid ${sc.cardBorder}` }}>
+                <h3 className="text-lg font-heading font-bold mb-1" style={{ color: sc.text }}>Get started</h3>
+                <p className="text-[13px] mb-4" style={{ color: sc.textMuted }}>Fill in your details to unlock this journey.</p>
+                <form onSubmit={(e) => { e.preventDefault(); handleLeadSubmit(activeStepIndex); }} className="space-y-3" noValidate>
+                  <input type="text" name="website" value={leadForm.website} onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })} style={{ position: "absolute", left: "-9999px" }} tabIndex={-1} autoComplete="off" />
+                  {formConfig?.show_name && (
+                    <div>
+                      <Input ref={(el) => { leadRefs.current.name = el; }} {...nameInputProps} placeholder="Full Name" value={leadForm.name} onChange={(e) => setLeadField("name", e.target.value)} onBlur={(e) => setLeadField("name", trimSmart(e.target.value))} aria-invalid={!!leadErrors.name} style={{ background: sc.inputBg, borderColor: leadErrors.name ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                      {leadErrors.name && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.name}</p>}
+                    </div>
+                  )}
+                  {formConfig?.show_phone && (
+                    <div>
+                      <div className="flex gap-2">
+                        <div className="flex items-center px-3 rounded-xl text-sm shrink-0 h-12" style={{ background: sc.inputBg, border: `1px solid ${sc.cardBorder}`, color: sc.textMuted }}>+91</div>
+                        <Input ref={(el) => { leadRefs.current.phone = el; }} {...phoneInputProps} placeholder="9876543210" value={leadForm.phone} onChange={(e) => setLeadField("phone", normalizePhone(e.target.value))} aria-invalid={!!leadErrors.phone} style={{ background: sc.inputBg, borderColor: leadErrors.phone ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                      </div>
+                      {leadErrors.phone && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.phone}</p>}
+                    </div>
+                  )}
+                  {formConfig?.show_email && (
+                    <div>
+                      <Input ref={(el) => { leadRefs.current.email = el; }} {...emailInputProps} placeholder="Email" value={leadForm.email} onChange={(e) => setLeadField("email", e.target.value)} onBlur={(e) => setLeadField("email", e.target.value.trim())} aria-invalid={!!leadErrors.email} style={{ background: sc.inputBg, borderColor: leadErrors.email ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                      {leadErrors.email && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.email}</p>}
+                    </div>
+                  )}
+                  {formConfig?.show_city && (
+                    <div>
+                      <Input ref={(el) => { leadRefs.current.city = el; }} {...cityInputProps} placeholder="City" value={leadForm.city} onChange={(e) => setLeadField("city", e.target.value)} onBlur={(e) => setLeadField("city", trimSmart(e.target.value))} aria-invalid={!!leadErrors.city} style={{ background: sc.inputBg, borderColor: leadErrors.city ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                      {leadErrors.city && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.city}</p>}
+                    </div>
+                  )}
+                  <Button type="submit" disabled={leadSubmitting} className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl">
+                    {leadSubmitting ? <><Loader2 size={16} className="animate-spin mr-2 inline" /> Submitting…</> : <>Continue →</>}
+                  </Button>
+                  <PrivacyMicrocopy color={sc.textMuted} />
+                </form>
+              </div>
+            );
+          })()}
+          {activeStep && !((!steps.some((s) => s.step_type === "lead_form")) && !!formConfig?.capture_enabled && !leadSubmitted) && (
             <div className="space-y-5">
               <div style={{ paddingBottom: "12px", borderBottom: `1px solid ${sc.border}`, marginBottom: "16px" }}>
                 <div className="flex items-center gap-3 mb-1">
