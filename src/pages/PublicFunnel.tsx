@@ -694,11 +694,15 @@ const PublicFunnel = () => {
   const [passwordUnlocked, setPasswordUnlocked] = useState(false);
   const [codeGateUnlocked, setCodeGateUnlocked] = useState(false);
   const [privateLeadSubmitted, setPrivateLeadSubmitted] = useState(false);
-  const [pubTheme, setPubTheme] = useState<"dark" | "light">(() => {
-    if (typeof window === "undefined") return "dark";
-    const saved = localStorage.getItem("nevorai-public-theme");
-    return saved === "light" ? "light" : "dark";
-  });
+  const [pubTheme, setPubTheme] = useState<"dark" | "light">("dark");
+  // Hydrate theme from localStorage AFTER mount (avoid SSR/CSR mismatch → React #418).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem("nevorai-public-theme");
+      if (saved === "light" || saved === "dark") setPubTheme(saved);
+    } catch {}
+  }, []);
   const isDark = pubTheme === "dark";
   const togglePubTheme = () => {
     setPubTheme((t) => {
