@@ -136,12 +136,12 @@ const PublicLivePage = () => {
           _session_id: stateData.session.id,
           _session_slot: slot,
           _viewer_token: viewerTokenRef.current,
-          _delta_seconds: 15,
+          _delta_seconds: 30,
         });
       } catch (e) { /* ignore */ }
     };
     send();
-    const i = setInterval(send, 15_000);
+    const i = setInterval(send, 30_000);
     return () => clearInterval(i);
   }, [stateData?.state, stateData?.session?.id, stateData?.current_slot_start]);
 
@@ -168,7 +168,7 @@ const PublicLivePage = () => {
   useEffect(() => { fetchState(); }, [fetchState]);
 
   useEffect(() => {
-    const i = setInterval(fetchState, 30_000);
+    const i = setInterval(fetchState, 60_000);
     return () => clearInterval(i);
   }, [fetchState]);
 

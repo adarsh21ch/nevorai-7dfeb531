@@ -36,7 +36,7 @@ export const useDailyViews = () => {
       return data as { total_views: number; view_date: string } | null;
     },
     enabled: !!user,
-    refetchInterval: 30_000,
+    refetchInterval: 120_000,
   });
 
   const planLimit = (config as any)?.daily_view_limit ?? 20;

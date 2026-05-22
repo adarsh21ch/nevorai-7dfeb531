@@ -12,7 +12,7 @@ export const WatchingNowStrip = () => {
   const { data: liveViewers = [] } = useQuery({
     queryKey: ["watching-now", user?.id],
     enabled: !!user,
-    refetchInterval: 15000,
+    refetchInterval: 60000,
     queryFn: async () => {
       // Active = analytics events recorded in the last 60s for any of my funnels
       const { data: funnels } = await supabase

@@ -47,7 +47,7 @@ export default function FunnelInsightsPage() {
       return count || 0;
     },
     enabled: !!id,
-    refetchInterval: visible ? 15_000 : false,
+    refetchInterval: visible ? 60_000 : false,
   });
 
   const { data: leads = [] } = useQuery({

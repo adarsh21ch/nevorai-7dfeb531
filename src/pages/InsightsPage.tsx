@@ -153,7 +153,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     },
     enabled: !!user?.id,
     staleTime: 30_000,
-    refetchInterval: visible ? 30_000 : false,
+    refetchInterval: visible ? 120_000 : false,
   });
 
   const { data: leadsPrev = [] } = useQuery({
@@ -177,7 +177,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     },
     enabled: !!user?.id,
     staleTime: 30_000,
-    refetchInterval: visible ? 30_000 : false,
+    refetchInterval: visible ? 120_000 : false,
   });
 
   const { data: regsPrev = [] } = useQuery({
@@ -202,7 +202,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     },
     enabled: !!user?.id,
     staleTime: 15_000,
-    refetchInterval: visible ? 30_000 : false,
+    refetchInterval: visible ? 120_000 : false,
   });
 
   const { data: funnelViews = [] } = useQuery({
@@ -215,7 +215,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     },
     enabled: !!user?.id,
     staleTime: 15_000,
-    refetchInterval: visible ? 30_000 : false,
+    refetchInterval: visible ? 120_000 : false,
   });
 
   const { data: lpViews = [] } = useQuery({
@@ -228,7 +228,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     },
     enabled: !!user?.id,
     staleTime: 15_000,
-    refetchInterval: visible ? 30_000 : false,
+    refetchInterval: visible ? 120_000 : false,
   });
 
   // === Live viewer counts per entity (15s polling) ===
@@ -253,7 +253,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       return out;
     },
     enabled: !!user?.id,
-    refetchInterval: visible ? 15_000 : false,
+    refetchInterval: visible ? 60_000 : false,
   });
 
   const liveViewers = liveMap.total;
@@ -346,7 +346,7 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       return items.slice(0, 40);
     },
     enabled: !!user?.id,
-    refetchInterval: visible ? 30_000 : false,
+    refetchInterval: visible ? 120_000 : false,
   });
 
   const error = funnelsError || lpError;

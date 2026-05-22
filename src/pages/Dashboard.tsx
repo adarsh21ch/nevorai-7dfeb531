@@ -101,7 +101,7 @@ const Dashboard = () => {
       return data;
     },
     enabled: !!user?.id,
-    refetchInterval: 30000,
+    refetchInterval: 120000,
   });
 
   // ---- conditional renders (after all hooks) ----

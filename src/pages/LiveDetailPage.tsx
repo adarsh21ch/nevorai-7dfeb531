@@ -44,7 +44,7 @@ const LiveDetailPage = () => {
       return data;
     },
     enabled: !!id,
-    refetchInterval: 30_000,
+    refetchInterval: 120_000,
   });
 
   const { data: registrations = [] } = useQuery({
@@ -73,7 +73,7 @@ const LiveDetailPage = () => {
       return data || [];
     },
     enabled: !!id,
-    refetchInterval: 30_000,
+    refetchInterval: 120_000,
   });
 
   const updateSession = useMutation({

@@ -19,10 +19,10 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreload: "render",         // preload visible route chunks immediately
+    defaultPreload: "intent",         // preload on hover/focus, not on every render
     defaultPendingMs: 0,
     defaultPendingMinMs: 0,
-    defaultPreloadStaleTime: 0,
+    defaultPreloadStaleTime: 30_000,  // reuse preload data for 30s instead of re-fetching
   });
 
   return router;
