@@ -334,7 +334,19 @@ const PublicLandingPage = () => {
                   <Check className="text-primary" size={32} />
                 </div>
                 <h2 className="text-2xl font-bold">You're Registered!</h2>
-                <p className="text-muted-foreground">Thank you for registering. We'll see you at the session!</p>
+                {formData.email ? (
+                  <>
+                    <p className="text-muted-foreground">
+                      Thank you for registering. We've sent a confirmation to{" "}
+                      <strong className="text-foreground">{formData.email}</strong>.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Please check your inbox (and the spam folder) for next steps.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">Thank you for registering. We'll see you at the session!</p>
+                )}
               </Card>
             )}
             {page.testimonials_enabled && testimonials.length > 0 &&
