@@ -89,6 +89,7 @@ const PublicLivePage = () => {
   const [registered, setRegistered] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", city: "" });
+  const [customValues, setCustomValues] = useState<Record<string, any>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string | null>>({});
   const formRefs = useRef<Record<string, HTMLElement | null>>({});
   const [countdown, setCountdown] = useState(0);
