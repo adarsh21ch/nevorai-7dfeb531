@@ -672,7 +672,8 @@ export const MultiStepViewer = ({
   return (
     <div className="flex min-h-[calc(100vh-52px)]">
       <JourneySidebar />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 pb-[88px] lg:pb-0">
+
         <div className="lg:hidden text-center py-4 px-4" style={{ borderBottom: `1px solid ${sc.border}` }}>
           <h1 className="font-heading font-extrabold tracking-tight leading-tight" style={{ fontSize: "clamp(18px, 5vw, 28px)", letterSpacing: "-0.02em", color: sc.text }}>
             {funnel.title}
