@@ -110,13 +110,18 @@ const UNLOCK_HINTS: Record<string, (value?: string | null) => string> = {
 };
 
 const getSessionId = (funnelId: string): string => {
-  const key = `nf_session_${funnelId}`;
-  let sid = localStorage.getItem(key);
-  if (!sid) {
-    sid = crypto.randomUUID();
-    localStorage.setItem(key, sid);
+  if (typeof window === "undefined") return "";
+  try {
+    const key = `nf_session_${funnelId}`;
+    let sid = localStorage.getItem(key);
+    if (!sid) {
+      sid = crypto.randomUUID();
+      localStorage.setItem(key, sid);
+    }
+    return sid;
+  } catch {
+    return "";
   }
-  return sid;
 };
 
 export const MultiStepViewer = ({
@@ -133,19 +138,27 @@ export const MultiStepViewer = ({
   const [paymentProof, setPaymentProof] = useState({ upi_transaction_id: "", amount: 0 });
   const [loading, setLoading] = useState(true);
   const sessionId = useRef(getSessionId(funnel.id));
+  // SSR returns "" for sessionId; populate on the client before any progress load.
+  if (typeof window !== "undefined" && !sessionId.current) {
+    sessionId.current = getSessionId(funnel.id);
+  }
   const progressSaveTimer = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const [stepCodeUnlocked, setStepCodeUnlocked] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
+  const [stepCodeUnlocked, setStepCodeUnlocked] = useState<Record<string, boolean>>({});
+  // Hydrate from localStorage AFTER mount to avoid SSR/CSR hydration mismatch (React #418).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
       const sid = sessionId.current;
+      const map: Record<string, boolean> = {};
       for (const s of steps) {
         if (s.access_code_enabled && localStorage.getItem(`nf_step_code_${s.id}_${sid}`) === "true") {
           map[s.id] = true;
         }
       }
+      if (Object.keys(map).length) setStepCodeUnlocked((prev) => ({ ...map, ...prev }));
     } catch {}
-    return map;
-  });
+  }, [steps]);
+
 
   const [, setTick] = useState(0);
   useEffect(() => {
