@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     const { data: funnel, error: funnelErr } = await supabase
       .from("funnels")
       .select(
-        "id, owner_id, title, slug, description, video_asset_id, thumbnail_url, is_published, visibility, intent_type, allow_seek, allow_speed_change, cta_enabled, cta_text, cta_timing_seconds, cta_url, lock_cta, audio_note_url, audio_note_timing, audio_note_autoplay, audio_lock_video, show_contact_buttons, contact_whatsapp, contact_phone, contact_instagram, show_contact_after_cta, whatsapp_auto_message, whatsapp_message_template, payment_enabled, upi_id, qr_code_url, payment_instructions, total_views, funnel_mode, required_fields, speaker_mode, speaker_name, speaker_photo_url, speaker_about, video_topics_enabled, video_topics"
+        "id, owner_id, title, slug, description, video_asset_id, thumbnail_url, is_published, visibility, intent_type, allow_seek, allow_speed_change, cta_enabled, cta_text, cta_timing_seconds, cta_url, lock_cta, audio_note_url, audio_note_timing, audio_note_autoplay, audio_lock_video, show_contact_buttons, contact_whatsapp, contact_phone, contact_instagram, show_contact_after_cta, whatsapp_auto_message, whatsapp_message_template, payment_enabled, upi_id, qr_code_url, payment_instructions, total_views, funnel_mode, required_fields, speaker_mode, speaker_name, speaker_photo_url, speaker_about, video_topics_enabled, video_topics, video_topics_scope"
       )
       .eq("slug", slug)
       .maybeSingle();
