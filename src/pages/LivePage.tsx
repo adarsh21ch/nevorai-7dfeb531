@@ -437,6 +437,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       replay_delay_minutes: s.replay_delay_minutes ?? s.replay_available_after_minutes ?? 0,
       replay_expires_hours: s.replay_expires_hours ?? null,
       replay_per_slot: s.replay_per_slot !== false,
+      replay_allow_seek: s.replay_allow_seek !== false,
       is_published: s.is_published !== false,
       max_attendees: s.max_attendees || null,
       access_type: s.access_type || "public",
