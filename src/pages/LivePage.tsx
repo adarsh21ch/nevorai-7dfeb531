@@ -627,39 +627,38 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
                   {form.session_type === "funnel_video" ? (
                     <div>
-                      <Label className="text-sm font-medium">Select Funnel *</Label>
-                      <Select value={form.funnel_id ?? "__none__"} onValueChange={(v) => upd("funnel_id", v === "__none__" ? null : v)}>
-                        <SelectTrigger className="mt-1 bg-muted border-border"><SelectValue placeholder="Choose a funnel..." /></SelectTrigger>
-                        <SelectContent>
-                          {funnels.length === 0 && <SelectItem value="__none__" disabled>No funnels with video found</SelectItem>}
-                          {funnels.map((f: any) => (<SelectItem key={f.id} value={f.id}>{f.title}</SelectItem>))}
-                        </SelectContent>
-                      </Select>
-                      {selectedFunnel && (
-                        <div className="mt-3 flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
+                      <Label className="text-sm font-medium">Select Video *</Label>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 mb-2">Pick the recorded video you want to play live.</p>
+                      {selectedFunnel ? (
+                        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border">
                           {selectedFunnel.thumbnail_url ? (
-                            <img src={selectedFunnel.thumbnail_url} alt="" className="w-16 h-12 rounded object-cover" />
+                            <img src={selectedFunnel.thumbnail_url} alt="" className="w-20 h-14 rounded object-cover shrink-0" />
                           ) : (
-                            <div className="w-16 h-12 rounded bg-muted flex items-center justify-center"><Video size={16} className="text-muted-foreground" /></div>
+                            <div className="w-20 h-14 rounded bg-muted flex items-center justify-center shrink-0"><Video size={18} className="text-muted-foreground" /></div>
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold truncate">{selectedFunnel.title}</p>
-                            <p className="text-xs text-muted-foreground">Video duration: {formatDuration(form.video_duration_seconds)}</p>
+                            <p className="text-xs text-muted-foreground">Duration: {formatDuration(form.video_duration_seconds)}</p>
                           </div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => setVideoPickerOpen(true)}>
+                            Change
+                          </Button>
                         </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setVideoPickerOpen(true)}
+                          className="w-full p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all text-left flex items-center gap-3 group"
+                        >
+                          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                            <Video size={20} className="text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-foreground">Choose from your video library</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">Browse uploaded videos and select one to play live.</p>
+                          </div>
+                        </button>
                       )}
-                      {funnels.length === 0 && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          You need a published funnel with a video first.{" "}
-                          <button onClick={() => navigate("/funnels")} className="text-primary underline">Create one</button>.
-                        </p>
-                      )}
-                      <div className="mt-3 pt-3 border-t border-border">
-                        <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setVideoPickerOpen(true)}>
-                          <Video size={14} /> Pick from your video library
-                        </Button>
-                        <p className="text-[11px] text-muted-foreground mt-1.5">We'll auto-select the funnel that uses that video.</p>
-                      </div>
                       <VideoPickerModal
                         open={videoPickerOpen}
                         onClose={() => setVideoPickerOpen(false)}
@@ -667,9 +666,11 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           const match = (funnels as any[]).find((f) => f.video_asset_id === videoId);
                           if (match) {
                             upd("funnel_id", match.id);
-                            toast.success(`Selected funnel "${match.title}" containing "${title}"`);
+                            toast.success(`Selected "${title}"`);
                           } else {
-                            toast.error(`No funnel uses "${title}" yet. Create a funnel with this video first.`);
+                            toast.error(`"${title}" isn't attached to a funnel yet. Create a funnel with this video first.`, {
+                              action: { label: "Create funnel", onClick: () => navigate("/funnels") },
+                            });
                           }
                           setVideoPickerOpen(false);
                         }}
@@ -699,24 +700,41 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     <Label className="text-sm font-medium">Access Type</Label>
                     <div className="grid grid-cols-3 gap-2 mt-1.5">
                       {[
-                        { val: "public", label: "Public", icon: Globe, desc: "Anyone can join" },
-                        { val: "lead_gated", label: "Registration", icon: Users, desc: "Collect info first" },
-                        { val: "paid", label: "Paid", icon: IndianRupee, desc: "Payment required" },
-                      ].map((opt) => (
-                        <button key={opt.val} onClick={() => upd("access_type", opt.val)}
-                          className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-center transition-all ${
-                            form.access_type === opt.val ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-muted-foreground/40"
-                          }`}>
-                          <opt.icon size={18} />
-                          <span className="text-xs font-semibold">{opt.label}</span>
-                          <span className="text-[10px] text-muted-foreground">{opt.desc}</span>
-                        </button>
-                      ))}
+                        { val: "public", label: "Public", icon: Globe, desc: "Anyone can join", disabled: false },
+                        { val: "lead_gated", label: "Registration", icon: Users, desc: "Collect info first", disabled: false },
+                        { val: "paid", label: "Paid", icon: IndianRupee, desc: "Coming soon", disabled: true },
+                      ].map((opt) => {
+                        const active = form.access_type === opt.val;
+                        return (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            disabled={opt.disabled}
+                            onClick={() => !opt.disabled && upd("access_type", opt.val)}
+                            className={`relative flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-center transition-all ${
+                              opt.disabled
+                                ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
+                                : active
+                                ? "border-primary bg-primary/10 text-primary shadow-[0_0_0_4px_hsl(var(--primary)/0.08)]"
+                                : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted/40"
+                            }`}
+                          >
+                            {opt.disabled && (
+                              <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap">
+                                COMING SOON
+                              </span>
+                            )}
+                            <opt.icon size={18} />
+                            <span className="text-xs font-semibold">{opt.label}</span>
+                            <span className="text-[10px] text-muted-foreground">{opt.desc}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {(form.access_type === "lead_gated" || form.access_type === "paid") && (
-                    <div className="space-y-2 p-3 bg-muted/40 rounded-xl">
+                  {form.access_type === "lead_gated" && (
+                    <div className="space-y-2 p-3 bg-muted/40 rounded-xl border border-border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Registration Form</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
@@ -731,32 +749,14 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  {form.access_type === "paid" && (
-                    <div className="space-y-3 p-3 bg-muted/40 rounded-xl">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment</p>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs">Amount (₹)</Label>
-                          <NumberInput min={0} prefix="₹" value={form.payment_amount} onValueChange={(n) => upd("payment_amount", typeof n === "number" ? n : 0)} className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">UPI ID</Label>
-                          <Input value={form.upi_id} onChange={(e) => upd("upi_id", e.target.value)} className="mt-1 bg-muted border-border" placeholder="name@upi" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs">Payment Instructions</Label>
-                        <Textarea value={form.payment_instructions} onChange={(e) => upd("payment_instructions", e.target.value)} className="mt-1 bg-muted border-border" rows={2} />
-                      </div>
+                      <p className="text-[10px] text-muted-foreground pt-1">Custom registration fields are coming soon.</p>
                     </div>
                   )}
                 </div>
               </EditorSectionBlock>
 
               <EditorSectionBlock id="live-section-schedule">
+
 
                 <div className="space-y-4">
                   <div className="space-y-1">
