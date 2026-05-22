@@ -1,8 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Resend } from "resend";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const FROM = "Nevorai <hello@nevorai.com>";
+// ─────────────────────────────────────────────────────────────────────────────
+// All app-level transactional emails (lead alerts, prospect confirmations,
+// welcome, payment receipts) are sent through the admin's connected Gmail
+// account via the `send-gmail-email` Supabase edge function. This is the
+// single email transport — Resend has been removed because the admin
+// configures Gmail in the platform settings, and using two transports causes
+// silent delivery failures (test email works via Gmail but app emails go
+// nowhere because the Resend key isn't configured per-customer).
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SITE = "https://nevorai.com";
 
 const esc = (s: unknown) =>
@@ -48,18 +56,54 @@ type Payload =
       orderId: string;
     };
 
-async function buildAndSend(resend: Resend, payload: Payload) {
+interface OutgoingMail {
+  to: string;
+  subject: string;
+  html: string;
+  sender_name?: string;
+}
+
+/** Send a single email through the admin's connected Gmail account. */
+async function sendViaGmail(mail: OutgoingMail): Promise<{ ok: boolean; reason?: string }> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.warn("[email] Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
+    return { ok: false, reason: "no_supabase_env" };
+  }
+  try {
+    const res = await fetch(`${url}/functions/v1/send-gmail-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify(mail),
+    });
+    const json: any = await res.json().catch(() => ({}));
+    if (!res.ok || !json?.sent) {
+      console.error("[email] gmail send failed", res.status, json);
+      return { ok: false, reason: json?.error || `status_${res.status}` };
+    }
+    return { ok: true };
+  } catch (err: any) {
+    console.error("[email] gmail send threw", err?.message || err);
+    return { ok: false, reason: err?.message || "fetch_failed" };
+  }
+}
+
+async function buildAndSend(payload: Payload) {
   if (payload.type === "welcome") {
     const html = wrap(`
       <h1 style="font-size:24px;font-weight:700;margin:0 0 14px;line-height:1.3;">Welcome, ${esc(payload.name)} 👋</h1>
       <p style="font-size:15px;line-height:1.6;color:#475569;margin:0 0 22px;">Your Nevorai account is ready. Create your first video funnel, share the link, and watch your leads come in — without YouTube stealing your prospects.</p>
       ${button(`${SITE}/dashboard`, "Go to Dashboard")}
     `);
-    return resend.emails.send({
-      from: FROM,
+    return sendViaGmail({
       to: payload.to,
       subject: "Welcome to Nevorai 🎉",
       html,
+      sender_name: "Nevorai",
     });
   }
 
@@ -70,7 +114,7 @@ async function buildAndSend(resend: Resend, payload: Payload) {
       .select("id, title, owner_id")
       .eq("id", payload.funnel_id)
       .maybeSingle();
-    if (!funnel) return { skipped: "funnel_not_found" };
+    if (!funnel) return { ok: false, reason: "funnel_not_found" };
 
     const { data: creator } = await supabaseAdmin
       .from("profiles")
@@ -82,7 +126,7 @@ async function buildAndSend(resend: Resend, payload: Payload) {
     const ftitle = (funnel as any).title || "your funnel";
     const cname = (creator as any)?.full_name || "the creator";
 
-    const sends: Promise<unknown>[] = [];
+    const results: Array<{ ok: boolean; reason?: string }> = [];
 
     // 1. Alert to creator
     if ((creator as any)?.email) {
@@ -99,12 +143,12 @@ async function buildAndSend(resend: Resend, payload: Payload) {
         </table>
         ${button(`${SITE}/insights/funnels/${(funnel as any).id}`, "View Lead in Dashboard")}
       `);
-      sends.push(
-        resend.emails.send({
-          from: FROM,
+      results.push(
+        await sendViaGmail({
           to: (creator as any).email,
           subject: `New lead: ${p.name} just registered`,
           html,
+          sender_name: "Nevorai",
         }),
       );
     }
@@ -117,18 +161,17 @@ async function buildAndSend(resend: Resend, payload: Payload) {
         <p style="font-size:15px;line-height:1.6;color:#475569;margin:0 0 22px;"><strong>${esc(cname)}</strong> will be in touch with you shortly.</p>
         <p style="font-size:13px;color:#94a3b8;line-height:1.6;margin:0;">This confirmation was sent via Nevorai — the video sales platform for Indian creators.</p>
       `);
-      sends.push(
-        resend.emails.send({
-          from: FROM,
+      results.push(
+        await sendViaGmail({
           to: p.email,
           subject: "You're registered",
           html,
+          sender_name: cname || "Nevorai",
         }),
       );
     }
 
-    await Promise.allSettled(sends);
-    return { sent: sends.length };
+    return { ok: true, sent: results.filter((r) => r.ok).length, attempted: results.length };
   }
 
   if (payload.type === "receipt") {
@@ -150,27 +193,21 @@ async function buildAndSend(resend: Resend, payload: Payload) {
       </table>
       ${button(`${SITE}/dashboard`, "Go to Dashboard")}
     `);
-    return resend.emails.send({
-      from: FROM,
+    return sendViaGmail({
       to: payload.to,
       subject: `Payment confirmed — Nevorai ${payload.plan}`,
       html,
+      sender_name: "Nevorai",
     });
   }
 
-  return { skipped: "unknown_type" };
+  return { ok: false, reason: "unknown_type" };
 }
 
 export const Route = createFileRoute("/api/public/email/send")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = process.env.RESEND_API_KEY;
-        if (!key) {
-          console.warn("[email] RESEND_API_KEY missing");
-          return Response.json({ ok: false, reason: "no_key" }, { status: 200 });
-        }
-
         let body: Payload;
         try {
           body = (await request.json()) as Payload;
@@ -178,14 +215,12 @@ export const Route = createFileRoute("/api/public/email/send")({
           return Response.json({ ok: false, reason: "bad_json" }, { status: 400 });
         }
 
-        // Minimal validation
         if (!body || typeof body !== "object" || !("type" in body)) {
           return Response.json({ ok: false, reason: "bad_payload" }, { status: 400 });
         }
 
         try {
-          const resend = new Resend(key);
-          const result = await buildAndSend(resend, body);
+          const result = await buildAndSend(body);
           return Response.json({ ok: true, result });
         } catch (err: any) {
           console.error("[email] send failed", err?.message || err);

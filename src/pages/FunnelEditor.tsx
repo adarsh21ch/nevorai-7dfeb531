@@ -579,21 +579,32 @@ const FunnelEditor = () => {
         </button>
         <button
           onClick={() => {
+            if (!canUseMultiStep) {
+              toast.error("Multi-step funnels are not available on your plan. Upgrade to Pro to unlock.");
+              navigate("/billing");
+              return;
+            }
             update("funnel_mode", "multi");
             if (flowSteps.length === 0) setFlowSteps([createEmptyStep(0)]);
             setModeChosen(true);
             // No wizard step navigation needed.
           }}
-          className="p-6 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 text-left transition-all group"
+          className={`p-6 rounded-xl border-2 text-left transition-all group relative ${canUseMultiStep ? "border-border hover:border-primary/50 hover:bg-primary/5" : "border-border/60 opacity-70 hover:opacity-90"}`}
         >
+          {!canUseMultiStep && (
+            <span className="absolute top-2 right-2 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-500/15 text-amber-600 px-2 py-0.5">Pro</span>
+          )}
           <div className="w-11 h-11 rounded-xl bg-accent/20 flex items-center justify-center mb-3">
             <Layers size={22} className="text-accent-foreground" />
           </div>
-          <h3 className="font-heading font-bold text-sm group-hover:text-primary transition-colors">Multi-Step Funnel</h3>
+          <h3 className={`font-heading font-bold text-sm transition-colors ${canUseMultiStep ? "group-hover:text-primary" : ""}`}>Multi-Step Funnel</h3>
           <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-            A guided journey with sequential steps, unlock rules, and progress tracking.
+            {canUseMultiStep
+              ? "A guided journey with sequential steps, unlock rules, and progress tracking."
+              : "Available on Pro. Upgrade to build guided multi-step journeys with unlock rules."}
           </p>
         </button>
+
       </div>
     </>
   );

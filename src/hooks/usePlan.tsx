@@ -83,21 +83,21 @@ export const usePlan = () => {
     gcTime: 15 * 60 * 1000,
   });
 
-  // Free-tier limits live in plan_config (admin-driven). Read once and fall
-  // back to constants if the row is missing so usePlan never returns null.
-  const { data: freePlanCfg } = useQuery({
-    queryKey: ["plan-config-free"],
+  // All plan_config rows — single source of truth for admin-managed feature
+  // toggles like `multilevel_funnel_enabled`. Used to gate features per tier.
+  const { data: allPlanCfgs = [] } = useQuery({
+    queryKey: ["plan-config-all"],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("plan_config")
-        .select("max_funnels, max_storage_mb, max_landing_pages, max_live_sessions, multilevel_funnel_enabled")
-        .eq("plan_name", "free")
-        .maybeSingle();
-      return data;
+        .select("plan_name, max_funnels, max_storage_mb, max_landing_pages, max_live_sessions, multilevel_funnel_enabled");
+      return (data || []) as any[];
     },
     staleTime: 10 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
+  const freePlanCfg = allPlanCfgs.find((c: any) => c.plan_name === "free");
+
 
   const freeLimits: PlanLimits = freePlanCfg ? {
     funnel_limit: freePlanCfg.max_funnels ?? FREE_LIMITS_FALLBACK.funnel_limit,
@@ -117,13 +117,24 @@ export const usePlan = () => {
   const isPaid = isActive && subscription?.tier && subscription.tier !== "free";
   const tier = trialActive ? "trial" : (isActive ? (subscription?.tier || "free") : "free");
 
+  // SINGLE SOURCE OF TRUTH: plan_config is what the admin "Plans & Features"
+  // editor writes to. Read multi_step from there for ALL tiers (free + paid)
+  // so admin toggles take effect immediately for every user without needing
+  // a duplicate column on admin_subscription_plans.
+  const lookupTierForConfig = tier === "trial" ? "pro" : (isPaid ? (subscription?.tier || "free") : "free");
+  const tierPlanCfg = allPlanCfgs.find((c: any) => c.plan_name === lookupTierForConfig);
+  const multiStepEnabled = tierPlanCfg
+    ? !!(tierPlanCfg as any).multilevel_funnel_enabled
+    : freeLimits.multi_step_funnel_enabled;
+
   const limits: PlanLimits = (isPaid || trialActive) && planConfig ? {
     funnel_limit: planConfig.funnel_limit,
     video_max_size_mb: planConfig.video_max_size_mb,
     landing_page_limit: (planConfig as any).landing_page_limit ?? null,
     live_session_limit: (planConfig as any).live_session_limit ?? null,
-    multi_step_funnel_enabled: (planConfig as any).multi_step_funnel_enabled ?? false,
-  } : freeLimits;
+    multi_step_funnel_enabled: multiStepEnabled,
+  } : { ...freeLimits, multi_step_funnel_enabled: multiStepEnabled };
+
 
   const plan: PlanInfo = {
     isActive,
