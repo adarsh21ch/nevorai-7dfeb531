@@ -59,6 +59,7 @@ interface FormState {
   replay_delay_minutes: number;
   replay_expires_hours: number | null;
   replay_per_slot: boolean;
+  replay_allow_seek: boolean;
   is_published: boolean;
   max_attendees: number | null;
   access_type: string;
@@ -96,6 +97,7 @@ const emptyForm = (): FormState => ({
   replay_delay_minutes: 0,
   replay_expires_hours: null,
   replay_per_slot: true,
+  replay_allow_seek: true,
   is_published: true,
   max_attendees: null,
   access_type: "public",
@@ -317,6 +319,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       replay_delay_minutes: form.replay_delay_minutes,
       replay_expires_hours: form.replay_expires_hours,
       replay_per_slot: form.replay_per_slot,
+      replay_allow_seek: form.replay_allow_seek,
       is_published: form.is_published,
       timezone: form.timezone,
       scheduled_times,
@@ -356,8 +359,11 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      if (form.access_type === "paid") {
+        throw new Error("Paid sessions are coming soon. Please choose Public or Registration for now.");
+      }
       if (form.session_type === "funnel_video") {
-        if (!form.funnel_id) throw new Error("Please select a funnel first");
+        if (!form.funnel_id) throw new Error("Please select a video first");
         if (!form.scheduled_times.some(Boolean)) throw new Error("Please add at least one scheduled time");
       } else if (!form.meeting_url) {
         throw new Error("Please add a meeting URL");
@@ -435,6 +441,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       replay_delay_minutes: s.replay_delay_minutes ?? s.replay_available_after_minutes ?? 0,
       replay_expires_hours: s.replay_expires_hours ?? null,
       replay_per_slot: s.replay_per_slot !== false,
+      replay_allow_seek: s.replay_allow_seek !== false,
       is_published: s.is_published !== false,
       max_attendees: s.max_attendees || null,
       access_type: s.access_type || "public",
@@ -555,11 +562,12 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
             { id: "live-section-replay", label: "Replay & Settings", num: 4, icon: Play, complete: form.is_published },
           ];
           const liveHeader = (
-            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur -mx-3 sm:-mx-4 md:-mx-8 -mt-3 sm:-mt-4 md:-mt-8 px-3 sm:px-4 md:px-8 py-3 mb-4 border-b border-border flex items-center justify-between gap-2">
+            <div className="sticky top-0 z-30 bg-card -mx-3 sm:-mx-4 md:-mx-8 -mt-3 sm:-mt-4 md:-mt-8 px-4 sm:px-6 md:px-8 py-4 mb-4 border-b border-border flex items-center justify-between gap-3 rounded-t-2xl">
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-heading font-bold truncate">{editingId ? "Edit Live Session" : "Create Live Session"}</h2>
+                <h2 className="text-lg font-heading font-bold truncate text-foreground">{editingId ? "Edit Live Session" : "Create Live Session"}</h2>
+                <p className="text-[11px] text-muted-foreground mt-0.5 hidden sm:block">Set up a video to play live at scheduled times.</p>
                 {isEditingLive && (
-                  <div className="mt-2 p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-xs text-yellow-200">
+                  <div className="mt-2 p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-xs text-yellow-600 dark:text-yellow-200">
                     ⚠ This session is currently <strong>live</strong>. Edits will only affect future scheduled slots.
                   </div>
                 )}
@@ -568,15 +576,16 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 <Button size="sm" disabled={!finalCanSubmit || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
                   {saveMutation.isPending ? "Saving..." : editingId ? "Save Changes" : "Schedule Session"}
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => { setCreating(false); setEditingId(null); }}>
+                <Button variant="ghost" size="icon" onClick={() => { setCreating(false); setEditingId(null); }} className="text-muted-foreground hover:text-foreground">
                   <X size={18} />
                 </Button>
               </div>
             </div>
           );
           return (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm overflow-y-auto">
-            <div className="min-h-screen px-4 py-6 max-w-5xl mx-auto">
+          <div className="fixed inset-0 z-50 bg-background/70 dark:bg-black/70 backdrop-blur-md overflow-y-auto p-3 sm:p-6">
+            <div className="min-h-full max-w-5xl mx-auto bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+              <div className="px-3 sm:px-4 md:px-8 py-3 sm:py-4 md:py-8">
               <EditorScrollLayout sections={liveEditorSections} header={liveHeader}>
               <EditorSectionBlock id="live-section-delivery">
 
@@ -618,39 +627,38 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
                   {form.session_type === "funnel_video" ? (
                     <div>
-                      <Label className="text-sm font-medium">Select Funnel *</Label>
-                      <Select value={form.funnel_id ?? "__none__"} onValueChange={(v) => upd("funnel_id", v === "__none__" ? null : v)}>
-                        <SelectTrigger className="mt-1 bg-muted border-border"><SelectValue placeholder="Choose a funnel..." /></SelectTrigger>
-                        <SelectContent>
-                          {funnels.length === 0 && <SelectItem value="__none__" disabled>No funnels with video found</SelectItem>}
-                          {funnels.map((f: any) => (<SelectItem key={f.id} value={f.id}>{f.title}</SelectItem>))}
-                        </SelectContent>
-                      </Select>
-                      {selectedFunnel && (
-                        <div className="mt-3 flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
+                      <Label className="text-sm font-medium">Select Video *</Label>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 mb-2">Pick the recorded video you want to play live.</p>
+                      {selectedFunnel ? (
+                        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-border">
                           {selectedFunnel.thumbnail_url ? (
-                            <img src={selectedFunnel.thumbnail_url} alt="" className="w-16 h-12 rounded object-cover" />
+                            <img src={selectedFunnel.thumbnail_url} alt="" className="w-20 h-14 rounded object-cover shrink-0" />
                           ) : (
-                            <div className="w-16 h-12 rounded bg-muted flex items-center justify-center"><Video size={16} className="text-muted-foreground" /></div>
+                            <div className="w-20 h-14 rounded bg-muted flex items-center justify-center shrink-0"><Video size={18} className="text-muted-foreground" /></div>
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold truncate">{selectedFunnel.title}</p>
-                            <p className="text-xs text-muted-foreground">Video duration: {formatDuration(form.video_duration_seconds)}</p>
+                            <p className="text-xs text-muted-foreground">Duration: {formatDuration(form.video_duration_seconds)}</p>
                           </div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => setVideoPickerOpen(true)}>
+                            Change
+                          </Button>
                         </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setVideoPickerOpen(true)}
+                          className="w-full p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all text-left flex items-center gap-3 group"
+                        >
+                          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                            <Video size={20} className="text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-foreground">Choose from your video library</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">Browse uploaded videos and select one to play live.</p>
+                          </div>
+                        </button>
                       )}
-                      {funnels.length === 0 && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          You need a published funnel with a video first.{" "}
-                          <button onClick={() => navigate("/funnels")} className="text-primary underline">Create one</button>.
-                        </p>
-                      )}
-                      <div className="mt-3 pt-3 border-t border-border">
-                        <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setVideoPickerOpen(true)}>
-                          <Video size={14} /> Pick from your video library
-                        </Button>
-                        <p className="text-[11px] text-muted-foreground mt-1.5">We'll auto-select the funnel that uses that video.</p>
-                      </div>
                       <VideoPickerModal
                         open={videoPickerOpen}
                         onClose={() => setVideoPickerOpen(false)}
@@ -658,9 +666,11 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           const match = (funnels as any[]).find((f) => f.video_asset_id === videoId);
                           if (match) {
                             upd("funnel_id", match.id);
-                            toast.success(`Selected funnel "${match.title}" containing "${title}"`);
+                            toast.success(`Selected "${title}"`);
                           } else {
-                            toast.error(`No funnel uses "${title}" yet. Create a funnel with this video first.`);
+                            toast.error(`"${title}" isn't attached to a funnel yet. Create a funnel with this video first.`, {
+                              action: { label: "Create funnel", onClick: () => navigate("/funnels") },
+                            });
                           }
                           setVideoPickerOpen(false);
                         }}
@@ -690,24 +700,41 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                     <Label className="text-sm font-medium">Access Type</Label>
                     <div className="grid grid-cols-3 gap-2 mt-1.5">
                       {[
-                        { val: "public", label: "Public", icon: Globe, desc: "Anyone can join" },
-                        { val: "lead_gated", label: "Registration", icon: Users, desc: "Collect info first" },
-                        { val: "paid", label: "Paid", icon: IndianRupee, desc: "Payment required" },
-                      ].map((opt) => (
-                        <button key={opt.val} onClick={() => upd("access_type", opt.val)}
-                          className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-center transition-all ${
-                            form.access_type === opt.val ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-muted-foreground/40"
-                          }`}>
-                          <opt.icon size={18} />
-                          <span className="text-xs font-semibold">{opt.label}</span>
-                          <span className="text-[10px] text-muted-foreground">{opt.desc}</span>
-                        </button>
-                      ))}
+                        { val: "public", label: "Public", icon: Globe, desc: "Anyone can join", disabled: false },
+                        { val: "lead_gated", label: "Registration", icon: Users, desc: "Collect info first", disabled: false },
+                        { val: "paid", label: "Paid", icon: IndianRupee, desc: "Coming soon", disabled: true },
+                      ].map((opt) => {
+                        const active = form.access_type === opt.val;
+                        return (
+                          <button
+                            key={opt.val}
+                            type="button"
+                            disabled={opt.disabled}
+                            onClick={() => !opt.disabled && upd("access_type", opt.val)}
+                            className={`relative flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-center transition-all ${
+                              opt.disabled
+                                ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
+                                : active
+                                ? "border-primary bg-primary/10 text-primary shadow-[0_0_0_4px_hsl(var(--primary)/0.08)]"
+                                : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted/40"
+                            }`}
+                          >
+                            {opt.disabled && (
+                              <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap">
+                                COMING SOON
+                              </span>
+                            )}
+                            <opt.icon size={18} />
+                            <span className="text-xs font-semibold">{opt.label}</span>
+                            <span className="text-[10px] text-muted-foreground">{opt.desc}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {(form.access_type === "lead_gated" || form.access_type === "paid") && (
-                    <div className="space-y-2 p-3 bg-muted/40 rounded-xl">
+                  {form.access_type === "lead_gated" && (
+                    <div className="space-y-2 p-3 bg-muted/40 rounded-xl border border-border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Registration Form</p>
                       <div className="grid grid-cols-2 gap-2">
                         {[
@@ -722,32 +749,14 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                  {form.access_type === "paid" && (
-                    <div className="space-y-3 p-3 bg-muted/40 rounded-xl">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment</p>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs">Amount (₹)</Label>
-                          <NumberInput min={0} prefix="₹" value={form.payment_amount} onValueChange={(n) => upd("payment_amount", typeof n === "number" ? n : 0)} className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">UPI ID</Label>
-                          <Input value={form.upi_id} onChange={(e) => upd("upi_id", e.target.value)} className="mt-1 bg-muted border-border" placeholder="name@upi" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs">Payment Instructions</Label>
-                        <Textarea value={form.payment_instructions} onChange={(e) => upd("payment_instructions", e.target.value)} className="mt-1 bg-muted border-border" rows={2} />
-                      </div>
+                      <p className="text-[10px] text-muted-foreground pt-1">Custom registration fields are coming soon.</p>
                     </div>
                   )}
                 </div>
               </EditorSectionBlock>
 
               <EditorSectionBlock id="live-section-schedule">
+
 
                 <div className="space-y-4">
                   <div className="space-y-1">
@@ -795,7 +804,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                         const active = form.repeat_type === opt.val;
                         return (
                           <button key={opt.val} onClick={() => upd("repeat_type", opt.val as RepeatType)}
-                            className={`text-left p-3 rounded-xl border-2 transition-all ${active ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/40"}`}>
+                            className={`text-left p-3 rounded-xl border-2 transition-all ${active ? "border-primary bg-primary/10 text-primary shadow-[0_0_0_4px_hsl(var(--primary)/0.08)]" : "border-border hover:border-primary/40 hover:bg-muted/40"}`}>
                             <div className="flex items-start gap-2">
                               <opt.icon size={16} className={active ? "text-primary mt-0.5" : "text-muted-foreground mt-0.5"} />
                               <div className="flex-1">
@@ -915,6 +924,15 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           </SelectContent>
                         </Select>
                       </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-border">
+                        <div className="flex-1 pr-3">
+                          <Label className="text-xs font-medium">Allow viewers to skip / fast-forward</Label>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            {form.replay_allow_seek ? "Viewers can scrub the replay timeline." : "Viewers must watch in real-time — no skipping ahead."}
+                          </p>
+                        </div>
+                        <Switch checked={form.replay_allow_seek} onCheckedChange={(v) => upd("replay_allow_seek", v)} />
+                      </div>
                     </div>
                   )}
 
@@ -951,6 +969,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
                 </div>
               </EditorSectionBlock>
               </EditorScrollLayout>
+              </div>
             </div>
           </div>
           );
