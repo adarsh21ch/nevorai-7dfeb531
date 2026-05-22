@@ -272,7 +272,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       return jsonResponse({ error: 'Unauthorized' }, 401)
     }
 
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length).trim() : ''
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length).trim() : ''
     const claims = token ? parseJwtClaims(token) : null
 
     // Internal backend callers (process-email-queue, send-landing-page-confirmation,
