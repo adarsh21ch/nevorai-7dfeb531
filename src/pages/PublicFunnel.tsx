@@ -1451,7 +1451,7 @@ const PublicFunnel = () => {
 
         {paymentSubmitted && (
           <div className="rounded-2xl p-6 text-center max-w-md mx-auto mt-6" style={{ background: tc.bgCard, border: `1px solid ${tc.border}` }}>
-            <Check size={32} className="text-green-500 mx-auto mb-3" />
+            <Check size={32} className="text-[#F97316] mx-auto mb-3" />
             <h3 className="font-heading font-semibold" style={{ color: tc.text }}>Payment Under Review</h3>
             <p className="text-sm mt-1" style={{ color: tc.textMuted }}>Your payment proof has been submitted. You'll be notified once it's verified.</p>
           </div>
