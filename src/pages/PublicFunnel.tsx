@@ -4,7 +4,11 @@ import { supabase, supabaseProjectUrl, supabasePublishableKey } from "@/integrat
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+
+// SSR-safe layout effect: synchronously applies pre-paint changes on the client
+// (prevents theme-flash) and silently no-ops during server render.
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 import { toast } from "sonner";
 import {
   Play, Pause, MessageCircle, Phone as PhoneIcon, Lock, Check,
@@ -695,9 +699,9 @@ const PublicFunnel = () => {
   const [codeGateUnlocked, setCodeGateUnlocked] = useState(false);
   const [privateLeadSubmitted, setPrivateLeadSubmitted] = useState(false);
   const [pubTheme, setPubTheme] = useState<"dark" | "light">("dark");
-  // Hydrate theme from localStorage AFTER mount (avoid SSR/CSR mismatch → React #418).
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  // Hydrate theme from localStorage SYNCHRONOUSLY before paint (no flash of
+  // wrong-theme text — eliminates the "dim text on dark bg" issue users saw).
+  useIsoLayoutEffect(() => {
     try {
       const saved = localStorage.getItem("nevorai-public-theme");
       if (saved === "light" || saved === "dark") setPubTheme(saved);
@@ -707,25 +711,30 @@ const PublicFunnel = () => {
   const togglePubTheme = () => {
     setPubTheme((t) => {
       const next = t === "dark" ? "light" : "dark";
-      localStorage.setItem("nevorai-public-theme", next);
+      try { localStorage.setItem("nevorai-public-theme", next); } catch {}
       return next;
     });
   };
 
-  // Sync app-level html/body background to the PUBLIC funnel theme so the
-  // page underneath the wrapper (painted by #root via app data-theme) doesn't
-  // bleed through and make text on tc.bg invisible.
-  useEffect(() => {
+  // Sync app-level html/body background to the PUBLIC funnel theme so the page
+  // underneath (painted by #root via app data-theme) doesn't bleed through.
+  // Use layout effect so bg + text colors land in the same paint frame.
+  useIsoLayoutEffect(() => {
     const pageBg = pubTheme === "dark" ? "#09090b" : "#ffffff";
-    const prevHtml = document.documentElement.style.backgroundColor;
-    const prevBody = document.body.style.backgroundColor;
+    const pageFg = pubTheme === "dark" ? "#ffffff" : "#0f172a";
+    const prevHtmlBg = document.documentElement.style.backgroundColor;
+    const prevBodyBg = document.body.style.backgroundColor;
+    const prevBodyColor = document.body.style.color;
     document.documentElement.style.backgroundColor = pageBg;
     document.body.style.backgroundColor = pageBg;
+    document.body.style.color = pageFg;
     return () => {
-      document.documentElement.style.backgroundColor = prevHtml;
-      document.body.style.backgroundColor = prevBody;
+      document.documentElement.style.backgroundColor = prevHtmlBg;
+      document.body.style.backgroundColor = prevBodyBg;
+      document.body.style.color = prevBodyColor;
     };
   }, [pubTheme]);
+
 
   const tc = {
     bg: isDark ? "#09090b" : "#ffffff",
