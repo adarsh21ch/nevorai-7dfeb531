@@ -156,8 +156,13 @@ export const MultiStepViewer = ({
         }
       }
       if (Object.keys(map).length) setStepCodeUnlocked((prev) => ({ ...map, ...prev }));
+      // Skip the lead form on revisits: once a prospect has submitted their
+      // details (per browser), remember it so refresh doesn't re-prompt.
+      if (localStorage.getItem(`nf_lead_${funnel.id}`) === "true") {
+        setLeadSubmitted(true);
+      }
     } catch {}
-  }, [steps]);
+  }, [steps, funnel.id]);
 
 
   const [, setTick] = useState(0);
