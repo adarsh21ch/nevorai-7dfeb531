@@ -5,9 +5,9 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 // UpgradeBanner removed from Home — upgrade prompts now live only in Profile/Billing.
 import { MonthlyViewsBanner } from "@/components/MonthlyViewsBanner";
-import { DashboardKpiStrip } from "@/components/dashboard/DashboardKpiStrip";
+import { ViewsOverviewCard } from "@/components/dashboard/ViewsOverviewCard";
 import { DashboardContentRow } from "@/components/dashboard/DashboardContentRow";
-import { Layers, Users, Eye, IndianRupee, TrendingUp, BarChart3, Calendar, Plus, ArrowRight } from "lucide-react";
+import { Layers, Users, Eye, IndianRupee, TrendingUp, Plus, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
@@ -27,8 +27,6 @@ type DashboardSummary = {
   total_leads: number;
   active_live_session: { id: string; title: string } | null;
 };
-import { useMonthlyViews } from "@/hooks/useMonthlyViews";
-import { useDailyViews } from "@/hooks/useDailyViews";
 import { GettingStartedChecklist } from "@/components/dashboard/GettingStartedChecklist";
 import { WatchingNowStrip } from "@/components/dashboard/WatchingNowStrip";
 
@@ -58,8 +56,8 @@ function DashboardPage() {
   useDocumentTitle("Dashboard");
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
-  const monthly = useMonthlyViews();
-  const daily = useDailyViews();
+
+
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -92,11 +90,8 @@ function DashboardPage() {
 
   const totalViews = (funnels as any[]).reduce((a, f) => a + (f.total_views || 0), 0);
   const convRate = totalViews > 0 ? ((leadCount / totalViews) * 100).toFixed(1) : "0";
-  const remainingToday = daily.isUnlimited ? "∞" : Math.max(0, daily.limit - daily.used);
 
   const stats: Array<{ icon: any; label: string; value: string; sub: string; color: StatColor; href: string }> = [
-    { icon: BarChart3, label: "People Watched Today", value: fmt(daily.used), sub: `${remainingToday} remaining`, color: "purple", href: "/insights" },
-    { icon: Calendar, label: "Watched This Month", value: fmt(monthly.used), sub: `of ${monthly.isUnlimited ? "∞" : fmt(monthly.limit)}`, color: "teal", href: "/insights" },
     { icon: IndianRupee, label: "Revenue", value: "₹0", sub: "This month", color: "green", href: "/payments" },
     { icon: Users, label: "New Contacts", value: fmt(leadCount), sub: "All time", color: "blue", href: "/leads" },
     { icon: TrendingUp, label: "Actions Taken", value: `${convRate}%`, sub: "Contacts / Views", color: "amber", href: "/insights" },
@@ -147,26 +142,14 @@ function DashboardPage() {
           );
         })()}
 
-        {/* Hero KPI: Views Today */}
-        <Link
-          to="/insights"
-          className="block rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-accent/5 p-6 transition-all hover:border-primary/40"
-        >
-          <div className="flex items-center gap-2">
-            <BarChart3 size={16} className="text-primary" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">People Watched Today</span>
-          </div>
-          <div className="mt-2 text-5xl font-heading font-extrabold tracking-tight text-foreground">{fmt(daily.used)}</div>
-          <p className="mt-1 text-sm text-muted-foreground">{remainingToday} remaining today · {daily.isUnlimited ? "Unlimited plan" : `Daily limit ${fmt(daily.limit)}`}</p>
-        </Link>
+        {/* Unified views overview: today + monthly + trend */}
+        <ViewsOverviewCard />
 
         <WatchingNowStrip />
 
-        <DashboardKpiStrip />
-
         {/* Secondary KPIs */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {stats.slice(1, 5).map((s) => (
+          {stats.slice(0, 4).map((s) => (
             <Link
               key={s.label}
               to={s.href}
@@ -182,29 +165,12 @@ function DashboardPage() {
           ))}
         </div>
 
-        {/* Collapsible deeper analytics */}
-        <details className="group rounded-xl border border-border bg-card/40 p-4">
-          <summary className="cursor-pointer list-none text-sm font-semibold text-foreground flex items-center justify-between">
-            <span>View more insights</span>
-            <ArrowRight size={14} className="transition-transform group-open:rotate-90" />
-          </summary>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 pt-4">
-            {[stats[5], stats[4], stats[2]].map((s) => (
-              <Link
-                key={s.label}
-                to={s.href}
-                className={`group flex flex-col gap-1.5 rounded-xl border border-border bg-card/60 p-3 transition-all hover:border-primary/40 ${accentClass[s.color]}`}
-              >
-                <div className="flex items-center gap-2">
-                  <s.icon size={13} className={iconClass[s.color]} />
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</span>
-                </div>
-                <div className="text-xl font-heading font-bold leading-none">{s.value}</div>
-                <p className="text-[10px] text-muted-foreground">{s.sub}</p>
-              </Link>
-            ))}
-          </div>
-        </details>
+        <div className="flex justify-end">
+          <Link to="/insights" className="flex items-center gap-1 text-xs text-primary hover:underline">
+            View more insights <ArrowRight size={12} />
+          </Link>
+        </div>
+
 
         <DashboardContentRow />
 
