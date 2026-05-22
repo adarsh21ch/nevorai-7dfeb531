@@ -92,11 +92,8 @@ function DashboardPage() {
 
   const totalViews = (funnels as any[]).reduce((a, f) => a + (f.total_views || 0), 0);
   const convRate = totalViews > 0 ? ((leadCount / totalViews) * 100).toFixed(1) : "0";
-  const remainingToday = daily.isUnlimited ? "∞" : Math.max(0, daily.limit - daily.used);
 
   const stats: Array<{ icon: any; label: string; value: string; sub: string; color: StatColor; href: string }> = [
-    { icon: BarChart3, label: "People Watched Today", value: fmt(daily.used), sub: `${remainingToday} remaining`, color: "purple", href: "/insights" },
-    { icon: Calendar, label: "Watched This Month", value: fmt(monthly.used), sub: `of ${monthly.isUnlimited ? "∞" : fmt(monthly.limit)}`, color: "teal", href: "/insights" },
     { icon: IndianRupee, label: "Revenue", value: "₹0", sub: "This month", color: "green", href: "/payments" },
     { icon: Users, label: "New Contacts", value: fmt(leadCount), sub: "All time", color: "blue", href: "/leads" },
     { icon: TrendingUp, label: "Actions Taken", value: `${convRate}%`, sub: "Contacts / Views", color: "amber", href: "/insights" },
