@@ -1364,8 +1364,8 @@ const PublicFunnel = () => {
                         className="flex items-start gap-2.5 py-2"
                         style={{ borderBottom: idx < funnel.video_topics.filter((t: string) => t?.trim()).length - 1 ? `1px solid ${tc.border}` : "none" }}
                       >
-                        <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(34,197,94,0.12)" }}>
-                          <Check size={11} className="text-emerald-500" />
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "rgba(249,115,22,0.12)" }}>
+                          <Check size={11} className="text-[#F97316]" />
                         </div>
                         <span className="text-[14px] leading-relaxed" style={{ color: tc.text }}>{topic}</span>
                       </div>

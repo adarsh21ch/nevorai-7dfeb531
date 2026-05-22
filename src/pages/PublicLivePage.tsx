@@ -488,7 +488,7 @@ const PublicLivePage = () => {
         <div className="text-center space-y-2">
           {stateData.state === "live" && <LiveDot label="LIVE NOW" />}
           {stateData.state === "replay" && (
-            <span className="inline-block text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-500">REPLAY</span>
+            <span className="inline-block text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F97316]/15 text-[#F97316]">REPLAY</span>
           )}
           <h1 className="text-2xl sm:text-3xl font-heading font-bold">{session.title}</h1>
           {session.description && <p className="text-sm text-muted-foreground max-w-xl mx-auto">{session.description}</p>}
@@ -509,8 +509,8 @@ const PublicLivePage = () => {
               <div className="glass-card p-6 sm:p-8 text-center space-y-5">
                 {/* "Just ended" banner — shown only when a previous slot ended recently and there's a next one */}
                 {stateData.last_ended_slot && stateData.next_slot && (
-                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-left">
-                    <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">✅ Session just ended</p>
+                  <div className="rounded-lg border border-[#F97316]/30 bg-[#F97316]/10 px-4 py-3 text-left">
+                    <p className="text-xs font-bold text-[#FB923C] uppercase tracking-wider">✅ Session just ended</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {session.replay_enabled
                         ? "Watch the replay below or wait for the next live session."
@@ -546,7 +546,7 @@ const PublicLivePage = () => {
                 <div className="border-t border-border pt-4">
                   <p className="text-[11px] text-muted-foreground mb-2 uppercase tracking-wider">Invite a friend</p>
                   <div className="flex items-center justify-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="text-emerald-500"><MessageCircle size={14} /> WhatsApp</Button>
+                    <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="text-[#F97316]"><MessageCircle size={14} /> WhatsApp</Button>
                     <Button variant="outline" size="sm" onClick={handleCopy}><Copy size={14} /> Copy</Button>
                     {typeof navigator !== "undefined" && (navigator as any).share && (
                       <Button variant="outline" size="sm" onClick={handleShareNative}><Share2 size={14} /> Share</Button>
@@ -851,7 +851,7 @@ const PublicLivePage = () => {
                 <p className="text-sm font-semibold">{format(new Date(stateData.next_slot), "EEE, MMM d 'at' h:mm a")}</p>
                 <div className="flex items-center justify-center gap-2 pt-1">
                   <Button variant="outline" size="sm" onClick={() => addToCalendar("google")}><CalendarPlus size={14} /> Add to calendar</Button>
-                  <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="text-emerald-500"><MessageCircle size={14} /> Invite</Button>
+                  <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="text-[#F97316]"><MessageCircle size={14} /> Invite</Button>
                 </div>
               </div>
             )}
@@ -886,7 +886,7 @@ const PublicLivePage = () => {
                   v.onratechange = () => { if (!replayAllowSpeed && v.playbackRate !== 1) v.playbackRate = 1; };
                 }}
               />
-              <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-emerald-500/90 text-white text-[11px] font-bold shadow">
+              <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-[#F97316]/90 text-white text-[11px] font-bold shadow">
                 REPLAY
               </div>
               <button
@@ -928,7 +928,7 @@ const PublicLivePage = () => {
             )}
 
             <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="text-emerald-500"><MessageCircle size={14} /> Share replay</Button>
+              <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="text-[#F97316]"><MessageCircle size={14} /> Share replay</Button>
               <Button variant="outline" size="sm" onClick={handleCopy}><Copy size={14} /> Copy link</Button>
             </div>
           </div>
