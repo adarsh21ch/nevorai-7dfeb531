@@ -996,11 +996,13 @@ const LiveDot = ({ label = "Live Now" }: { label?: string }) => (
 );
 
 const RegistrationForm = ({
-  session, form, setForm, onSubmit, submitting, errors, setErrors, fieldRefs,
+  session, form, setForm, customValues, setCustomValues, onSubmit, submitting, errors, setErrors, fieldRefs,
 }: {
   session: any;
   form: { name: string; phone: string; email: string; city: string };
   setForm: (f: any) => void;
+  customValues: Record<string, any>;
+  setCustomValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   onSubmit: () => void;
   submitting: boolean;
   errors: Record<string, string | null>;
@@ -1011,9 +1013,24 @@ const RegistrationForm = ({
     setForm({ ...form, [k]: v });
     if (errors[k]) setErrors((p) => ({ ...p, [k]: null }));
   };
+  const setCustom = (id: string, v: any) => {
+    setCustomValues((prev) => ({ ...prev, [id]: v }));
+    const k = `cf_${id}`;
+    if (errors[k]) setErrors((p) => ({ ...p, [k]: null }));
+  };
   const errEl = (k: string) =>
     errors[k] ? <p className="text-xs text-destructive mt-1">{errors[k]}</p> : null;
   const errCls = (k: string) => (errors[k] ? "border-destructive" : "");
+  const req = (k: "name" | "phone" | "email" | "city") => {
+    if (k === "name") return session.name_required !== false;
+    if (k === "phone") return session.phone_required !== false;
+    if (k === "email") return session.email_required === true;
+    if (k === "city") return session.city_required === true;
+    return false;
+  };
+  const star = (on: boolean) => on ? <span className="text-destructive">*</span> : null;
+  const customFields: any[] = Array.isArray(session?.custom_fields) ? session.custom_fields : [];
+
   return (
     <div className="glass-card p-6 space-y-4">
       <div className="text-center">
@@ -1023,14 +1040,14 @@ const RegistrationForm = ({
       <div className="space-y-3">
         {session.show_name !== false && (
           <div>
-            <Label className="text-xs">Name</Label>
+            <Label className="text-xs">Name {star(req("name"))}</Label>
             <Input ref={(el) => { fieldRefs.current.name = el; }} {...nameInputProps} value={form.name} onChange={(e) => setField("name", e.target.value)} onBlur={(e) => setField("name", trimSmart(e.target.value))} aria-invalid={!!errors.name} className={`mt-1 bg-muted border-border ${errCls("name")}`} />
             {errEl("name")}
           </div>
         )}
         {session.show_phone !== false && (
           <div>
-            <Label className="text-xs">Phone</Label>
+            <Label className="text-xs">Phone {star(req("phone"))}</Label>
             <div className="flex gap-2 mt-1">
               <div className="flex items-center px-3 rounded-md text-sm shrink-0 bg-muted border border-border text-muted-foreground">+91</div>
               <Input ref={(el) => { fieldRefs.current.phone = el; }} {...phoneInputProps} value={form.phone} onChange={(e) => setField("phone", normalizePhone(e.target.value))} aria-invalid={!!errors.phone} className={`bg-muted border-border ${errCls("phone")}`} placeholder="9876543210" />
@@ -1040,18 +1057,85 @@ const RegistrationForm = ({
         )}
         {session.show_email !== false && (
           <div>
-            <Label className="text-xs">Email</Label>
+            <Label className="text-xs">Email {star(req("email"))}</Label>
             <Input ref={(el) => { fieldRefs.current.email = el; }} {...emailInputProps} value={form.email} onChange={(e) => setField("email", e.target.value)} onBlur={(e) => setField("email", e.target.value.trim())} aria-invalid={!!errors.email} className={`mt-1 bg-muted border-border ${errCls("email")}`} />
             {errEl("email")}
           </div>
         )}
         {session.show_city && (
           <div>
-            <Label className="text-xs">City</Label>
+            <Label className="text-xs">City {star(req("city"))}</Label>
             <Input ref={(el) => { fieldRefs.current.city = el; }} {...cityInputProps} value={form.city} onChange={(e) => setField("city", e.target.value)} onBlur={(e) => setField("city", trimSmart(e.target.value))} aria-invalid={!!errors.city} className={`mt-1 bg-muted border-border ${errCls("city")}`} />
             {errEl("city")}
           </div>
         )}
+
+        {customFields.map((cf) => {
+          const key = `cf_${cf.id}`;
+          const val = customValues[cf.id];
+          const setRef = (el: HTMLElement | null) => { fieldRefs.current[key] = el; };
+          const common = { "aria-invalid": !!errors[key] };
+          return (
+            <div key={cf.id}>
+              <Label className="text-xs">{cf.label} {star(!!cf.required)}</Label>
+              {cf.type === "long_text" ? (
+                <textarea
+                  ref={setRef as any}
+                  value={val ?? ""}
+                  placeholder={cf.placeholder || ""}
+                  onChange={(e) => setCustom(cf.id, e.target.value)}
+                  rows={3}
+                  {...common}
+                  className={`mt-1 w-full rounded-md bg-muted border border-border px-3 py-2 text-sm ${errCls(key)}`}
+                />
+              ) : cf.type === "dropdown" ? (
+                <select
+                  ref={setRef as any}
+                  value={val ?? ""}
+                  onChange={(e) => setCustom(cf.id, e.target.value)}
+                  {...common}
+                  className={`mt-1 w-full h-9 rounded-md bg-muted border border-border px-3 text-sm ${errCls(key)}`}
+                >
+                  <option value="">Select…</option>
+                  {(cf.options || []).map((o: string) => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              ) : cf.type === "multi_choice" ? (
+                <div ref={setRef as any} className={`mt-1 space-y-1.5 rounded-md border border-border bg-muted px-3 py-2 ${errCls(key)}`}>
+                  {(cf.options || []).map((o: string) => {
+                    const arr: string[] = Array.isArray(val) ? val : [];
+                    const checked = arr.includes(o);
+                    return (
+                      <label key={o} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const next = e.target.checked ? [...arr, o] : arr.filter((x) => x !== o);
+                            setCustom(cf.id, next);
+                          }}
+                        />
+                        {o}
+                      </label>
+                    );
+                  })}
+                </div>
+              ) : (
+                <Input
+                  ref={setRef as any}
+                  type={cf.type === "number" ? "number" : cf.type === "date" ? "date" : cf.type === "email" ? "email" : cf.type === "phone" ? "tel" : "text"}
+                  value={val ?? ""}
+                  placeholder={cf.placeholder || ""}
+                  onChange={(e) => setCustom(cf.id, e.target.value)}
+                  {...common}
+                  className={`mt-1 bg-muted border-border ${errCls(key)}`}
+                />
+              )}
+              {errEl(key)}
+            </div>
+          );
+        })}
       </div>
       <Button variant="hero" className="w-full" onClick={onSubmit} disabled={submitting}>
         {submitting ? <><Loader2 size={16} className="animate-spin mr-2 inline" /> Submitting…</> : "Register & Continue"}
