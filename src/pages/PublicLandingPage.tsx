@@ -38,6 +38,7 @@ const PublicLandingPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [emailDeliveryState, setEmailDeliveryState] = useState<{ attempted: boolean; sent: boolean; reason?: string } | null>(null);
   const [honeypot, setHoneypot] = useState("");
   const [pageUnlocked, setPageUnlocked] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({});
@@ -164,6 +165,7 @@ const PublicLandingPage = () => {
       localStorage.setItem(`nf_registered_${page.id}`, JSON.stringify({
         name: formData.name, email: formData.email, submittedAt: Date.now(),
       }));
+      setEmailDeliveryState(data?.email_delivery ?? null);
       const emailSent = data?.email_delivery?.sent === true;
       toast.success(
         emailSent
@@ -334,7 +336,7 @@ const PublicLandingPage = () => {
                   <Check className="text-primary" size={32} />
                 </div>
                 <h2 className="text-2xl font-bold">You're Registered!</h2>
-                {formData.email ? (
+                {formData.email && emailDeliveryState?.sent ? (
                   <>
                     <p className="text-muted-foreground">
                       Thank you for registering. We've sent a confirmation to{" "}
@@ -342,6 +344,16 @@ const PublicLandingPage = () => {
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Please check your inbox (and the spam folder) for next steps.
+                    </p>
+                  </>
+                ) : formData.email ? (
+                  <>
+                    <p className="text-muted-foreground">
+                      Thank you for registering. Your spot is confirmed for{" "}
+                      <strong className="text-foreground">{formData.email}</strong>.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      We could not send the confirmation email just now, but your registration was saved successfully.
                     </p>
                   </>
                 ) : (
