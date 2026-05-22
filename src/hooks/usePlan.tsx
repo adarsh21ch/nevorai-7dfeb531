@@ -83,21 +83,21 @@ export const usePlan = () => {
     gcTime: 15 * 60 * 1000,
   });
 
-  // Free-tier limits live in plan_config (admin-driven). Read once and fall
-  // back to constants if the row is missing so usePlan never returns null.
-  const { data: freePlanCfg } = useQuery({
-    queryKey: ["plan-config-free"],
+  // All plan_config rows — single source of truth for admin-managed feature
+  // toggles like `multilevel_funnel_enabled`. Used to gate features per tier.
+  const { data: allPlanCfgs = [] } = useQuery({
+    queryKey: ["plan-config-all"],
     queryFn: async () => {
       const { data } = await (supabase as any)
         .from("plan_config")
-        .select("max_funnels, max_storage_mb, max_landing_pages, max_live_sessions, multilevel_funnel_enabled")
-        .eq("plan_name", "free")
-        .maybeSingle();
-      return data;
+        .select("plan_name, max_funnels, max_storage_mb, max_landing_pages, max_live_sessions, multilevel_funnel_enabled");
+      return (data || []) as any[];
     },
     staleTime: 10 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
   });
+  const freePlanCfg = allPlanCfgs.find((c: any) => c.plan_name === "free");
+
 
   const freeLimits: PlanLimits = freePlanCfg ? {
     funnel_limit: freePlanCfg.max_funnels ?? FREE_LIMITS_FALLBACK.funnel_limit,
@@ -122,7 +122,7 @@ export const usePlan = () => {
   // so admin toggles take effect immediately for every user without needing
   // a duplicate column on admin_subscription_plans.
   const lookupTierForConfig = tier === "trial" ? "pro" : (isPaid ? (subscription?.tier || "free") : "free");
-  const tierPlanCfg = planConfigs.find((c) => (c as any).plan_name === lookupTierForConfig);
+  const tierPlanCfg = allPlanCfgs.find((c: any) => c.plan_name === lookupTierForConfig);
   const multiStepEnabled = tierPlanCfg
     ? !!(tierPlanCfg as any).multilevel_funnel_enabled
     : freeLimits.multi_step_funnel_enabled;
