@@ -24,13 +24,13 @@ const ToolsPage = () => {
     ...(features.landingPages ? [{ key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage }] : []),
     ...(features.goLive ? [{ key: "live", label: "Live", icon: Radio, Component: LivePage }] : []),
   ], [features.landingPages, features.goLive]);
-  const [activeTab, setActiveTab] = useState<string>(() =>
-    typeof window === "undefined" ? "funnels" : parseTab(window.location.search)
-  );
+  const [activeTab, setActiveTab] = useState<string>("funnels");
 
   // Keep tab in sync with URL ?tab= so sidebar Link clicks switch instantly.
+  // Read from window on mount (post-hydration) to avoid SSR/CSR mismatch.
   useEffect(() => {
-    const next = parseTab(location.search || "");
+    const search = location.search || (typeof window !== "undefined" ? window.location.search : "");
+    const next = parseTab(search);
     setActiveTab((prev) => (prev === next ? prev : next));
   }, [location.search]);
 
