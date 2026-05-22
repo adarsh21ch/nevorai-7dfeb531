@@ -1,4 +1,4 @@
-import { Play, Lock, Eye, ExternalLink, Share2 } from "lucide-react";
+import { Play, Lock, Eye, ExternalLink, Share2, Check } from "lucide-react";
 
 interface PreviewStep {
   title: string;
