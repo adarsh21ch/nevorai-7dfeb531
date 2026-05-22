@@ -129,8 +129,9 @@ Deno.serve(async (req) => {
     }).eq('id', landing_page_id)
 
     // Fire confirmation email — call synchronously so we know the real result.
-    // Use service role key so the downstream function authenticates as backend
-    // (anon key is rejected by send-gmail-email for security).
+    // Authenticate the nested Edge Function call with the service key in the
+    // `apikey` header. Supabase treats secret/service keys as API keys, not
+    // Bearer JWTs, so sending them in Authorization can be rejected upstream.
     let emailDelivery: { attempted: boolean; sent: boolean; reason?: string } = {
       attempted: false,
       sent: false,
@@ -145,7 +146,7 @@ Deno.serve(async (req) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${serviceRoleKey}`,
+            'apikey': serviceRoleKey,
           },
           body: JSON.stringify({
             registration_id: reg.id,

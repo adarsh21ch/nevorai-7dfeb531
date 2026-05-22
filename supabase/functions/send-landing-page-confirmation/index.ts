@@ -36,10 +36,14 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization')
+    const apiKeyHeader = req.headers.get('apikey')
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length).trim() : ''
     const claims = token ? parseJwtClaims(token) : null
-    const isInternalServiceRole = claims?.role === 'service_role' || (token && token === serviceRoleKey)
+    const isInternalServiceRole =
+      claims?.role === 'service_role' ||
+      (token && token === serviceRoleKey) ||
+      (apiKeyHeader && apiKeyHeader === serviceRoleKey)
 
     if (!isInternalServiceRole) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -182,8 +186,8 @@ Deno.serve(async (req) => {
 </body>
 </html>`
 
-    // Send via Gmail edge function. Authenticate as backend by sending the
-    // project's service role key in the Authorization header.
+    // Send via Gmail edge function. Authenticate as backend with the service
+    // key in the apikey header so the gateway treats it as a service API key.
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
@@ -191,7 +195,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${serviceRoleKey}`,
+        'apikey': serviceRoleKey,
       },
       body: JSON.stringify({
         to: reg.email,
