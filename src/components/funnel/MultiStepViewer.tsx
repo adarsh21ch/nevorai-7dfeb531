@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   Play, Lock, Check, CheckCircle2, Circle, ExternalLink,
   Calendar, CreditCard, ClipboardList, UserCheck, ChevronRight,
-  Loader2, MessageCircle, Phone as PhoneIcon, BadgeCheck, Info, Sparkles
+  Loader2, MessageCircle, Phone as PhoneIcon, BadgeCheck, Info, Sparkles, Instagram
 } from "lucide-react";
 
 import { CopyNflowLinkButton } from "@/components/CopyNflowLinkButton";
@@ -504,7 +504,10 @@ export const MultiStepViewer = ({
     stepBarInactive: isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.6)",
   };
 
-  const hasContact = funnel.show_contact_buttons && (funnel.contact_whatsapp || funnel.contact_phone);
+  const waOn = funnel.contact_whatsapp_enabled && !!funnel.contact_whatsapp;
+  const phoneOn = funnel.contact_phone_enabled && !!funnel.contact_phone;
+  const igOn = funnel.contact_instagram_enabled && !!funnel.contact_instagram;
+  const hasContact = funnel.show_contact_buttons && (waOn || phoneOn || igOn);
 
   const JourneySidebar = () => (
     <div className="hidden lg:flex flex-col w-[280px] min-w-[280px] shrink-0 h-screen sticky top-0 border-r"
@@ -579,18 +582,29 @@ export const MultiStepViewer = ({
         <div className="shrink-0 px-3 py-3" style={{ borderTop: `1px solid ${sc.border}`, background: sc.bg }}>
           <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-2.5 px-1" style={{ color: sc.textDim }}>Contact Creator</p>
           <div className="space-y-2">
-            {funnel.contact_whatsapp && (
+            {waOn && (
               <button onClick={() => window.open(`https://wa.me/${funnel.contact_whatsapp?.replace(/\D/g, "")}`)}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90"
                 style={{ background: "rgba(37,211,102,0.15)", color: "#25d366", border: "1px solid rgba(37,211,102,0.2)" }}>
                 <MessageCircle size={15} /> WhatsApp
               </button>
             )}
-            {funnel.contact_phone && (
+            {phoneOn && (
               <button onClick={() => window.open(`tel:${funnel.contact_phone}`)}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90"
                 style={{ background: sc.itemIconBg, color: sc.text, border: `1px solid ${sc.border}` }}>
                 <PhoneIcon size={15} /> Call
+              </button>
+            )}
+            {igOn && (
+              <button onClick={() => {
+                const v = funnel.contact_instagram!.trim();
+                const url = v.startsWith("http") ? v : `https://instagram.com/${v.replace(/^@/, "")}`;
+                window.open(url, "_blank");
+              }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, rgba(225,48,108,0.15), rgba(253,29,29,0.15))", color: "#e1306c", border: "1px solid rgba(225,48,108,0.25)" }}>
+                <Instagram size={15} /> Instagram
               </button>
             )}
           </div>

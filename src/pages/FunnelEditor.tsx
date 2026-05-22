@@ -154,7 +154,8 @@ const FunnelEditor = () => {
     cta_enabled: true, cta_text: "Get Started", cta_timing_seconds: 60, cta_url: "",
     video_access_minutes: null as number | null,
     show_contact_buttons: false, contact_whatsapp: "", contact_phone: "", contact_instagram: "",
-    show_contact_after_cta: true, whatsapp_auto_message: false, whatsapp_message_template: "Hi {name}, thanks for watching!",
+    contact_whatsapp_enabled: false, contact_phone_enabled: false, contact_instagram_enabled: false,
+    show_contact_after_cta: false, whatsapp_auto_message: false, whatsapp_message_template: "Hi {name}, thanks for watching!",
     audio_note_url: "", audio_note_timing: "before", audio_note_autoplay: false, audio_lock_video: false,
     payment_enabled: false, upi_id: "", qr_code_url: "", payment_instructions: "",
     is_live_broadcast: false, broadcast_scheduled_at: "", broadcast_password: "", broadcast_replay_enabled: true,
@@ -213,9 +214,13 @@ const FunnelEditor = () => {
         lock_cta: f.lock_cta || false, cta_enabled: (f as any).cta_enabled ?? true,
         cta_text: f.cta_text || "Get Started", cta_timing_seconds: f.cta_timing_seconds || 60,
         cta_url: f.cta_url || "", video_access_minutes: f.video_access_minutes || null,
-        show_contact_buttons: f.show_contact_buttons ?? true,
+        show_contact_buttons: f.show_contact_buttons ?? false,
         contact_whatsapp: f.contact_whatsapp || "", contact_phone: f.contact_phone || "",
-        contact_instagram: f.contact_instagram || "", show_contact_after_cta: f.show_contact_after_cta ?? true,
+        contact_instagram: f.contact_instagram || "",
+        contact_whatsapp_enabled: (f as any).contact_whatsapp_enabled ?? !!f.contact_whatsapp,
+        contact_phone_enabled: (f as any).contact_phone_enabled ?? !!f.contact_phone,
+        contact_instagram_enabled: (f as any).contact_instagram_enabled ?? !!f.contact_instagram,
+        show_contact_after_cta: f.show_contact_after_cta ?? false,
         whatsapp_auto_message: f.whatsapp_auto_message ?? true,
         whatsapp_message_template: f.whatsapp_message_template || "Hi {name}, thanks for watching!",
         payment_enabled: f.payment_enabled || false, upi_id: f.upi_id || "",
@@ -318,6 +323,9 @@ const FunnelEditor = () => {
       show_contact_buttons: funnel.show_contact_buttons,
       contact_whatsapp: funnel.contact_whatsapp || null, contact_phone: funnel.contact_phone || null,
       contact_instagram: funnel.contact_instagram || null, show_contact_after_cta: funnel.show_contact_after_cta,
+      contact_whatsapp_enabled: funnel.contact_whatsapp_enabled,
+      contact_phone_enabled: funnel.contact_phone_enabled,
+      contact_instagram_enabled: funnel.contact_instagram_enabled,
       whatsapp_auto_message: funnel.whatsapp_auto_message,
       whatsapp_message_template: funnel.whatsapp_message_template ? s(funnel.whatsapp_message_template) : null,
       payment_enabled: funnel.payment_enabled, upi_id: funnel.upi_id || null,
@@ -363,12 +371,12 @@ const FunnelEditor = () => {
       }
       let funnelId: string;
       if (isEdit) {
-        const { error } = await supabase.from("funnels").update(payload).eq("id", id);
+        const { error } = await (supabase.from("funnels") as any).update(payload).eq("id", id);
         if (error) throw error;
         await (supabase.from("funnel_lead_form_config") as any).upsert({ funnel_id: id, ...leadForm }, { onConflict: "funnel_id" });
         funnelId = id!;
       } else {
-        const { data, error } = await supabase.from("funnels").insert(payload).select("id").single();
+        const { data, error } = await (supabase.from("funnels") as any).insert(payload).select("id").single();
         if (error) throw error;
         await (supabase.from("funnel_lead_form_config") as any).insert({ funnel_id: data.id, ...leadForm });
         funnelId = data.id;
@@ -438,7 +446,7 @@ const FunnelEditor = () => {
       if (!payload || !payload.title) return;
       try {
         setIsAutoSaving(true);
-        await supabase.from("funnels").update(payload).eq("id", id);
+        await (supabase.from("funnels") as any).update(payload).eq("id", id);
         await (supabase.from("funnel_lead_form_config") as any).upsert({ funnel_id: id, ...leadForm }, { onConflict: "funnel_id" });
         setLastSavedAt(new Date());
       } catch {
@@ -1201,17 +1209,47 @@ const FunnelEditor = () => {
       <div className="space-y-4 mt-4">
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl"><div><Label className="font-semibold">Show Contact Buttons</Label></div><Switch checked={funnel.show_contact_buttons} onCheckedChange={(v) => update("show_contact_buttons", v)} /></div>
         {funnel.show_contact_buttons && (
-          <div className="space-y-3 p-4 bg-muted/50 rounded-xl">
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1">WhatsApp Number</Label>
-              <div className="flex gap-2">
-                <div className="flex items-center px-3 bg-muted border border-border rounded-md text-sm text-muted-foreground shrink-0">+91</div>
-                <Input placeholder="9876543210" value={funnel.contact_whatsapp?.replace(/^\+91/, "")} onChange={(e) => update("contact_whatsapp", "+91" + e.target.value.replace(/\D/g, ""))} className="bg-muted border-border" />
+          <div className="space-y-3">
+            {/* WhatsApp channel */}
+            <div className="p-4 bg-muted/50 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold">WhatsApp</Label>
+                <Switch checked={funnel.contact_whatsapp_enabled} onCheckedChange={(v) => update("contact_whatsapp_enabled", v)} />
               </div>
+              {funnel.contact_whatsapp_enabled && (
+                <div className="flex gap-2">
+                  <div className="flex items-center px-3 bg-muted border border-border rounded-md text-sm text-muted-foreground shrink-0">+91</div>
+                  <Input placeholder="9876543210" value={funnel.contact_whatsapp?.replace(/^\+91/, "")} onChange={(e) => update("contact_whatsapp", "+91" + e.target.value.replace(/\D/g, ""))} className="bg-muted border-border" />
+                </div>
+              )}
             </div>
-            <Input placeholder="Phone Number" value={funnel.contact_phone} onChange={(e) => update("contact_phone", e.target.value)} className="bg-muted border-border" />
-            <Input placeholder="Instagram Handle" value={funnel.contact_instagram} onChange={(e) => update("contact_instagram", e.target.value)} className="bg-muted border-border" />
-            <div className="flex items-center justify-between"><Label className="text-sm">Show Only After CTA</Label><Switch checked={funnel.show_contact_after_cta} onCheckedChange={(v) => update("show_contact_after_cta", v)} /></div>
+
+            {/* Call (phone) channel */}
+            <div className="p-4 bg-muted/50 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold">Call (Phone Number)</Label>
+                <Switch checked={funnel.contact_phone_enabled} onCheckedChange={(v) => update("contact_phone_enabled", v)} />
+              </div>
+              {funnel.contact_phone_enabled && (
+                <Input placeholder="e.g. +91 9876543210" value={funnel.contact_phone} onChange={(e) => update("contact_phone", e.target.value)} className="bg-muted border-border" />
+              )}
+            </div>
+
+            {/* Instagram channel */}
+            <div className="p-4 bg-muted/50 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold">Instagram</Label>
+                <Switch checked={funnel.contact_instagram_enabled} onCheckedChange={(v) => update("contact_instagram_enabled", v)} />
+              </div>
+              {funnel.contact_instagram_enabled && (
+                <Input placeholder="https://instagram.com/yourhandle" value={funnel.contact_instagram} onChange={(e) => update("contact_instagram", e.target.value)} className="bg-muted border-border" />
+              )}
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
+              <Label className="text-sm">Show Only After CTA</Label>
+              <Switch checked={funnel.show_contact_after_cta} onCheckedChange={(v) => update("show_contact_after_cta", v)} />
+            </div>
           </div>
         )}
         <div className="p-4 bg-muted/50 rounded-xl space-y-3">
