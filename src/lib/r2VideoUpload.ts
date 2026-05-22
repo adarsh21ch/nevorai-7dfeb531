@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFilename, hasDoubleExtension } from "@/lib/sanitize";
 
+type UploadPurpose = "video-asset" | "academy-video" | "academy-thumbnail";
+
 interface UploadVideoToR2Options {
   file: File;
   title?: string;
@@ -14,6 +16,23 @@ interface UploadVideoToR2Options {
 interface UploadVideoToR2Result {
   publicUrl: string;
   videoId: string;
+}
+
+interface UploadFileToR2Options {
+  file: File;
+  purpose: UploadPurpose;
+  title?: string;
+  timeoutMs?: number;
+  onProgress?: (
+    percent: number,
+    meta?: { loaded: number; total: number }
+  ) => void;
+}
+
+interface UploadFileToR2Result {
+  publicUrl: string;
+  r2Key?: string;
+  videoId?: string;
 }
 
 const getErrorMessage = (error: unknown) => {
@@ -37,6 +56,31 @@ export const uploadVideoToR2 = async ({
   timeoutMs = 30 * 60 * 1000,
   onProgress,
 }: UploadVideoToR2Options): Promise<UploadVideoToR2Result> => {
+  const result = await uploadFileToR2({
+    file,
+    title,
+    timeoutMs,
+    onProgress,
+    purpose: "video-asset",
+  });
+
+  if (!result.videoId) {
+    throw new Error("Upload finished but video record was not created");
+  }
+
+  return {
+    publicUrl: result.publicUrl,
+    videoId: result.videoId,
+  };
+};
+
+export const uploadFileToR2 = async ({
+  file,
+  purpose,
+  title,
+  timeoutMs = 30 * 60 * 1000,
+  onProgress,
+}: UploadFileToR2Options): Promise<UploadFileToR2Result> => {
   let videoId: string | null = null;
 
   try {
@@ -53,14 +97,15 @@ export const uploadVideoToR2 = async ({
         contentType,
         title: title || safeName,
         fileSize: file.size,
+        purpose,
       },
     });
 
-    if (error || !data?.uploadUrl || !data?.videoId) {
+    if (error || !data?.uploadUrl) {
       throw new Error(data?.error || error?.message || "Failed to start upload");
     }
 
-    videoId = data.videoId;
+    videoId = data.videoId || null;
 
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -90,6 +135,17 @@ export const uploadVideoToR2 = async ({
       xhr.send(file);
     });
 
+    if (data.confirmRequired === false) {
+      if (!data.publicUrl) {
+        throw new Error("Upload finished but no public URL was returned");
+      }
+
+      return {
+        publicUrl: data.publicUrl,
+        r2Key: data.r2Key,
+      };
+    }
+
     const { data: confirmData, error: confirmError } = await supabase.functions.invoke("confirm-r2-upload", {
       body: {
         videoId,
@@ -102,11 +158,12 @@ export const uploadVideoToR2 = async ({
     }
 
     return {
-      videoId: videoId!,
+      videoId: videoId || undefined,
       publicUrl: confirmData.publicUrl,
+      r2Key: data.r2Key,
     };
   } catch (error) {
-    if (videoId) {
+    if (videoId && purpose === "video-asset") {
       try {
         await supabase.functions.invoke("confirm-r2-upload", {
           body: {

@@ -7,8 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase, supabaseProjectUrl, supabasePublishableKey } from "@/integrations/supabase/client";
-import { sanitizeFilename } from "@/lib/sanitize";
+import { supabase } from "@/integrations/supabase/client";
+import { uploadFileToR2 } from "@/lib/r2VideoUpload";
 import { toast } from "sonner";
 import {
   ArrowDown,
@@ -80,8 +80,10 @@ const formatFileSize = (bytes: number) => {
 const normaliseUploadError = (error: unknown, kind: "video" | "thumbnail") => {
   const message = error instanceof Error ? error.message : String(error || "");
 
-  if (/maximum allowed size/i.test(message)) {
-    return "This file is still hitting the current Supabase bucket size limit. Please re-check that the academy-videos bucket was updated in the same project.";
+  if (/maximum allowed size|uploads are capped at 500 mb/i.test(message)) {
+    return kind === "video"
+      ? "This upload is being blocked by the current R2 upload guard. I’m updating Academy to use the R2 flow directly instead of Supabase storage."
+      : "This image is too large for the current upload rule. Try a smaller JPG, PNG, or WebP image.";
   }
 
   if (/mime|content type/i.test(message)) {
@@ -93,66 +95,6 @@ const normaliseUploadError = (error: unknown, kind: "video" | "thumbnail") => {
   }
 
   return message || `${kind === "video" ? "Video" : "Thumbnail"} upload failed.`;
-};
-
-const uploadToAcademyBucket = async ({
-  file,
-  folder,
-  onProgress,
-}: {
-  file: File;
-  folder: "videos" | "thumbnails";
-  onProgress?: (progress: number) => void;
-}) => {
-  const { data: authData } = await supabase.auth.getSession();
-  const accessToken = authData.session?.access_token;
-
-  if (!accessToken) {
-    throw new Error("Unauthorized");
-  }
-
-  const safeName = sanitizeFilename(file.name || `${folder}-file`);
-  const path = ["academy", folder, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`].join("/");
-  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-  const endpoint = `${supabaseProjectUrl}/storage/v1/object/academy-videos/${encodedPath}`;
-
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    xhr.open("POST", endpoint);
-    xhr.timeout = folder === "videos" ? 30 * 60 * 1000 : 10 * 60 * 1000;
-    xhr.setRequestHeader("apikey", supabasePublishableKey);
-    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
-    xhr.setRequestHeader("x-upsert", "false");
-    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-
-    xhr.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      onProgress?.(Math.max(1, Math.round((event.loaded / event.total) * 100)));
-    };
-
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        onProgress?.(100);
-        resolve();
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(xhr.responseText || "{}");
-        reject(new Error(parsed.message || parsed.error || `Upload failed (HTTP ${xhr.status})`));
-      } catch {
-        reject(new Error(`Upload failed (HTTP ${xhr.status})`));
-      }
-    };
-
-    xhr.onerror = () => reject(new Error("Network error while uploading"));
-    xhr.ontimeout = () => reject(new Error("Upload timed out"));
-    xhr.send(file);
-  });
-
-  const { data } = supabase.storage.from("academy-videos").getPublicUrl(path);
-  return data.publicUrl;
 };
 
 export const AcademyTab = () => {
@@ -291,13 +233,14 @@ export const AcademyTab = () => {
     setVideoUpload({ error: null, fileName: file.name, progress: 0, uploading: true });
 
     try {
-      const publicUrl = await uploadToAcademyBucket({
+      const result = await uploadFileToR2({
         file,
-        folder: "videos",
+        purpose: "academy-video",
+        title: form.title.trim() || file.name,
         onProgress: (progress) => setVideoUpload((prev) => ({ ...prev, progress })),
       });
 
-      setForm((prev) => ({ ...prev, video_url: publicUrl }));
+      setForm((prev) => ({ ...prev, video_url: result.publicUrl }));
       setVideoUpload({ error: null, fileName: file.name, progress: 100, uploading: false });
       toast.success("Video uploaded successfully");
     } catch (error) {
@@ -315,13 +258,15 @@ export const AcademyTab = () => {
     setThumbnailUpload({ error: null, fileName: file.name, progress: 0, uploading: true });
 
     try {
-      const publicUrl = await uploadToAcademyBucket({
+      const result = await uploadFileToR2({
         file,
-        folder: "thumbnails",
+        purpose: "academy-thumbnail",
+        title: `${form.title.trim() || "academy-thumbnail"}-thumbnail`,
+        timeoutMs: 10 * 60 * 1000,
         onProgress: (progress) => setThumbnailUpload((prev) => ({ ...prev, progress })),
       });
 
-      setForm((prev) => ({ ...prev, thumbnail_url: publicUrl }));
+      setForm((prev) => ({ ...prev, thumbnail_url: result.publicUrl }));
       setThumbnailUpload({ error: null, fileName: file.name, progress: 100, uploading: false });
       toast.success("Thumbnail uploaded successfully");
     } catch (error) {

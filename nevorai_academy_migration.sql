@@ -1,4 +1,4 @@
--- Nevorai Academy: tutorials + completions + storage bucket
+-- Nevorai Academy: tutorials + completions
 -- Run this in Supabase SQL editor.
 
 -- 1. Tutorials table
@@ -57,27 +57,5 @@ create policy "Users delete own completions"
   on public.academy_completions for delete
   using (auth.uid() = user_id);
 
--- 3. Storage bucket for tutorial videos (public read, admin write)
-insert into storage.buckets (id, name, public)
-values ('academy-videos', 'academy-videos', true)
-on conflict (id) do nothing;
-
-drop policy if exists "Public read academy videos" on storage.objects;
-create policy "Public read academy videos"
-  on storage.objects for select
-  using (bucket_id = 'academy-videos');
-
-drop policy if exists "Admins upload academy videos" on storage.objects;
-create policy "Admins upload academy videos"
-  on storage.objects for insert
-  with check (bucket_id = 'academy-videos' and public.has_role(auth.uid(),'admin'));
-
-drop policy if exists "Admins update academy videos" on storage.objects;
-create policy "Admins update academy videos"
-  on storage.objects for update
-  using (bucket_id = 'academy-videos' and public.has_role(auth.uid(),'admin'));
-
-drop policy if exists "Admins delete academy videos" on storage.objects;
-create policy "Admins delete academy videos"
-  on storage.objects for delete
-  using (bucket_id = 'academy-videos' and public.has_role(auth.uid(),'admin'));
+-- 3. Academy media now uploads directly to Cloudflare R2.
+-- No Supabase Storage bucket is required for tutorial videos or thumbnails.

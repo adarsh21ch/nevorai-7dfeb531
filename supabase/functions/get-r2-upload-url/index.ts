@@ -11,6 +11,7 @@ const R2_ENDPOINT = Deno.env.get("R2_ENDPOINT") || "";
 const R2_ACCESS_KEY_ID = Deno.env.get("R2_ACCESS_KEY_ID") || "";
 const R2_SECRET_ACCESS_KEY = Deno.env.get("R2_SECRET_ACCESS_KEY") || "";
 const R2_BUCKET_NAME = Deno.env.get("R2_BUCKET_NAME") || "";
+const R2_PUBLIC_URL = Deno.env.get("R2_PUBLIC_URL") || "";
 
 function sanitizeFilename(filename: string): string {
   const ext = filename.lastIndexOf(".") >= 0 ? filename.slice(filename.lastIndexOf(".")).toLowerCase() : "";
@@ -38,7 +39,7 @@ Deno.serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { filename, contentType, title, fileSize } = await req.json();
+    const { filename, contentType, title, fileSize, purpose = "video-asset" } = await req.json();
     if (!filename || !contentType) {
       return new Response(
         JSON.stringify({ error: "Missing filename or content type." }),
@@ -46,10 +47,20 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (!["video-asset", "academy-video", "academy-thumbnail"].includes(purpose)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid upload purpose." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const isAcademyVideo = purpose === "academy-video";
+    const isAcademyThumbnail = purpose === "academy-thumbnail";
+
     // Server-side file size cap. Mirrors the client's 500 MB limit so a
     // tampered client cannot presign uploads larger than the platform allows.
     const ABSOLUTE_MAX_BYTES = 500 * 1024 * 1024;
-    if (typeof fileSize === "number" && fileSize > 0 && fileSize > ABSOLUTE_MAX_BYTES) {
+    if (!isAcademyVideo && typeof fileSize === "number" && fileSize > 0 && fileSize > ABSOLUTE_MAX_BYTES) {
       const sizeMb = Math.round(fileSize / (1024 * 1024));
       return new Response(
         JSON.stringify({
@@ -69,7 +80,7 @@ Deno.serve(async (req) => {
     // could bypass it. Here we re-derive the user's plan tier and storage cap
     // from authoritative tables and reject the presign if this upload would
     // push them over their quota.
-    if (typeof fileSize === "number" && fileSize > 0) {
+    if (!isAcademyVideo && !isAcademyThumbnail && typeof fileSize === "number" && fileSize > 0) {
       try {
         // 1) Resolve active plan tier (default free).
         const { data: sub } = await serviceClient
@@ -128,6 +139,64 @@ Deno.serve(async (req) => {
     }
 
     const safeFilename = sanitizeFilename(filename);
+
+    if (isAcademyThumbnail) {
+      const r2Key = `academy/thumbnails/${user.id}/${crypto.randomUUID()}-${safeFilename}`;
+
+      const s3 = new S3Client({
+        region: "auto",
+        endpoint: R2_ENDPOINT,
+        credentials: {
+          accessKeyId: R2_ACCESS_KEY_ID,
+          secretAccessKey: R2_SECRET_ACCESS_KEY,
+        },
+      });
+
+      const command = new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: r2Key,
+        ContentType: contentType,
+      });
+
+      const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      const publicUrl = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${r2Key}` : null;
+
+      return new Response(JSON.stringify({
+        uploadUrl,
+        r2Key,
+        publicUrl,
+        confirmRequired: false,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (isAcademyVideo) {
+      const r2Key = `academy/videos/${user.id}/${crypto.randomUUID()}-${safeFilename}`;
+
+      const s3 = new S3Client({
+        region: "auto",
+        endpoint: R2_ENDPOINT,
+        credentials: {
+          accessKeyId: R2_ACCESS_KEY_ID,
+          secretAccessKey: R2_SECRET_ACCESS_KEY,
+        },
+      });
+
+      const command = new PutObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: r2Key,
+        ContentType: contentType,
+      });
+
+      const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      const publicUrl = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${r2Key}` : null;
+
+      return new Response(JSON.stringify({
+        uploadUrl,
+        r2Key,
+        publicUrl,
+        confirmRequired: false,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const { data: video, error: dbErr } = await serviceClient.from("video_assets").insert({
       owner_id: user.id,
