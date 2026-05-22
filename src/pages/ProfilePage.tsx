@@ -216,6 +216,26 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
+
+        {/* NEVORAI ACADEMY HIGHLIGHT */}
+        <Link
+          to="/help"
+          className="group block rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card to-card p-4 transition-all hover:border-primary/60 hover:shadow-md"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <GraduationCap size={22} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="truncate text-sm font-semibold">Nevorai Academy</p>
+                <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">New</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">Free tutorials to master every feature. Watch and tick them off.</p>
+            </div>
+            <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground" />
+          </div>
+        </Link>
         {cropFile && user && (
           <ProfilePhotoCropModal
             open={!!cropFile}
