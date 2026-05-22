@@ -134,18 +134,22 @@ export const MultiStepViewer = ({
   const [loading, setLoading] = useState(true);
   const sessionId = useRef(getSessionId(funnel.id));
   const progressSaveTimer = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-  const [stepCodeUnlocked, setStepCodeUnlocked] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {};
+  const [stepCodeUnlocked, setStepCodeUnlocked] = useState<Record<string, boolean>>({});
+  // Hydrate from localStorage AFTER mount to avoid SSR/CSR hydration mismatch (React #418).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
       const sid = sessionId.current;
+      const map: Record<string, boolean> = {};
       for (const s of steps) {
         if (s.access_code_enabled && localStorage.getItem(`nf_step_code_${s.id}_${sid}`) === "true") {
           map[s.id] = true;
         }
       }
+      if (Object.keys(map).length) setStepCodeUnlocked((prev) => ({ ...map, ...prev }));
     } catch {}
-    return map;
-  });
+  }, [steps]);
+
 
   const [, setTick] = useState(0);
   useEffect(() => {
