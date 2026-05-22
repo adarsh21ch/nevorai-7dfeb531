@@ -319,6 +319,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
       replay_delay_minutes: form.replay_delay_minutes,
       replay_expires_hours: form.replay_expires_hours,
       replay_per_slot: form.replay_per_slot,
+      replay_allow_seek: form.replay_allow_seek,
       is_published: form.is_published,
       timezone: form.timezone,
       scheduled_times,
