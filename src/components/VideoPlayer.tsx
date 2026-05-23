@@ -366,6 +366,33 @@ function NativeVideoPlayer({
     [togglePlay, showControls],
   );
 
+  // CRITICAL: also reset speed on touchcancel — without this, a long-press
+  // interrupted by a scroll/swipe leaves the video stuck at 2x forever.
+  const onTouchCancel = useCallback(() => {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    const v = videoRef.current;
+    if (v && v.playbackRate !== prevRateRef.current) {
+      v.playbackRate = prevRateRef.current;
+    }
+  }, []);
+
+  // Safety net: if the tab is backgrounded mid-long-press, snap back to 1x.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden) {
+        const v = videoRef.current;
+        if (v && v.playbackRate !== 1 && v.playbackRate !== prevRateRef.current) {
+          v.playbackRate = prevRateRef.current || 1;
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
   const bufferedPct = duration > 0 ? (buffered / duration) * 100 : 0;
   const progressPct = duration > 0 ? (current / duration) * 100 : 0;
   const hoverPct = hoverFrac != null ? hoverFrac * 100 : 0;
