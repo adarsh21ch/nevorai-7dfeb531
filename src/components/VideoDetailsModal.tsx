@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Settings, Info, FastForward, Calendar } from "lucide-react";
+import { Loader2, Settings, Info, FastForward, Calendar, Lock } from "lucide-react";
 import { sanitizeText } from "@/lib/sanitize";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { useNavigate } from "@/lib/router-compat";
 
 interface Props {
   open: boolean;
