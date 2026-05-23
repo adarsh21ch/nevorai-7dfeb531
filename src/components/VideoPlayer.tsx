@@ -25,6 +25,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isYouTubeUrl } from "@/lib/youtube";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 
 export interface VideoPlayerProps {
   src: string;
