@@ -126,6 +126,7 @@ const FEATURE_GROUPS = [
   { group: "Content", items: [
     { field: "feature_funnel_creation", label: "Funnel Creation", icon: Layers },
     { field: "feature_video_upload", label: "Video Upload", icon: Upload },
+    { field: "feature_skip_control", label: "Skip-Forward Control", icon: Zap },
     { field: "feature_youtube_import", label: "YouTube Video Import", icon: Video },
     { field: "feature_video_sharing", label: "Video Sharing", icon: Video },
     { field: "feature_landing_pages", label: "Landing Pages", icon: FileText },
