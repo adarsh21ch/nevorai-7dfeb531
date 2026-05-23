@@ -40,6 +40,7 @@ export interface PlanConfig {
   max_leads?: number;
   plan_badge_text?: string | null;
   feature_custom_form_fields?: boolean;
+  feature_skip_control?: boolean;
   max_custom_form_fields?: number;
 }
 
@@ -129,6 +130,7 @@ export const usePlanLimits = () => {
     contactForm: config.feature_contact_form !== false,
     privacySettings: config.feature_privacy_settings !== false,
     customFormFields: config.feature_custom_form_fields === true,
+    skipControl: config.feature_skip_control === true,
   };
 
   return {

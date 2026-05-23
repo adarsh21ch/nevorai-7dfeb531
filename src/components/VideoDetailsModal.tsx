@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Settings, Info, FastForward, Calendar } from "lucide-react";
+import { Loader2, Settings, Info, FastForward, Calendar, Lock } from "lucide-react";
 import { sanitizeText } from "@/lib/sanitize";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { useNavigate } from "@/lib/router-compat";
 
 interface Props {
   open: boolean;
@@ -20,6 +22,9 @@ interface Props {
 
 export const VideoDetailsModal = ({ open, onClose, videoId, onSuccess }: Props) => {
   const isMobile = useIsMobile();
+  const { features } = usePlanLimits();
+  const navigate = useNavigate();
+  const skipUnlocked = features.skipControl;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [allowSeek, setAllowSeek] = useState(true);
@@ -150,10 +155,28 @@ export const VideoDetailsModal = ({ open, onClose, videoId, onSuccess }: Props) 
                 </div>
                 <Switch
                   id="allow-seek"
-                  checked={allowSeek}
+                  checked={skipUnlocked ? allowSeek : true}
+                  disabled={!skipUnlocked}
                   onCheckedChange={setAllowSeek}
                 />
               </div>
+
+              {!skipUnlocked && (
+                <div className="mt-2 rounded-md border border-primary/30 bg-primary/5 p-2.5 text-[11px] leading-relaxed flex items-start gap-2">
+                  <Lock size={12} className="text-primary mt-0.5 shrink-0" />
+                  <div className="flex-1">
+                    <span className="text-foreground font-medium">Skip-forward control is a paid feature.</span>{" "}
+                    <span className="text-muted-foreground">Upgrade to unlock this on all your videos.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { onClose(); navigate("/pricing"); }}
+                    className="text-[11px] font-semibold text-primary hover:underline shrink-0"
+                  >
+                    Upgrade
+                  </button>
+                </div>
+              )}
 
               {isMobile && showSkipInfo && (
                 <div className="rounded-md bg-background/60 border border-border p-2.5 text-[11px] text-muted-foreground leading-relaxed">

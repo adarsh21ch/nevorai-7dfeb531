@@ -25,6 +25,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 const buildPublicVideoUrl = (v: { id: string; slug?: string | null }) =>
   `${window.location.origin}/v/${v.slug || v.id}`;
@@ -81,6 +83,8 @@ const VideosPage = () => {
   const [detailsVideo, setDetailsVideo] = useState<{ id: string } | null>(null);
   const [deleteVideo, setDeleteVideo] = useState<{ id: string; title: string } | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "ready" | "processing" | "failed">("all");
+  const [skipUpgradeOpen, setSkipUpgradeOpen] = useState(false);
+  const { features, tier } = usePlanLimits();
 
   const { data: ownVideos = [], isLoading, error, refetch } = useQuery({
     queryKey: ["videos", user?.id],
@@ -194,6 +198,10 @@ const VideosPage = () => {
   }
 
   const toggleAllowSeek = async (videoId: string, current: boolean) => {
+    if (!features.skipControl) {
+      setSkipUpgradeOpen(true);
+      return;
+    }
     const next = !current;
     // Optimistic update
     queryClient.setQueryData(["videos", user?.id], (old: any) =>
@@ -588,6 +596,15 @@ const VideosPage = () => {
             onSuccess={invalidateVideos}
           />
         )}
+
+        <UpgradeModal
+          open={skipUpgradeOpen}
+          onClose={() => setSkipUpgradeOpen(false)}
+          type="upgrade"
+          tier={tier}
+        />
+
+
 
         <AlertDialog open={!!deleteVideo} onOpenChange={(o) => !o && setDeleteVideo(null)}>
           <AlertDialogContent>
