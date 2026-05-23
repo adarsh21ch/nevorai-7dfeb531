@@ -94,6 +94,7 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { key: "feature_lead_capture", label: "Lead Capture", type: "boolean", category: "Features", dbField: "feature_lead_capture" },
   { key: "feature_custom_form_fields", label: "Custom Form Fields", type: "boolean", category: "Features", hint: "Let users add custom fields to lead capture forms", dbField: "feature_custom_form_fields" },
   { key: "feature_video_upload", label: "Video Upload", type: "boolean", category: "Features", dbField: "feature_video_upload" },
+  { key: "feature_skip_control", label: "Skip-Forward Control", type: "boolean", category: "Features", hint: "Allow creators to disable viewer skip-forward on their videos", dbField: "feature_skip_control" },
   { key: "feature_youtube_import", label: "YouTube Video Import", type: "boolean", category: "Features", dbField: "feature_youtube_import" },
   { key: "feature_video_sharing", label: "Video Sharing", type: "boolean", category: "Features", dbField: "feature_video_sharing" },
   { key: "feature_landing_pages", label: "Landing Pages", type: "boolean", category: "Features", dbField: "feature_landing_pages" },
