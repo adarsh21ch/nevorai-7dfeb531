@@ -130,6 +130,7 @@ export const usePlanLimits = () => {
     contactForm: config.feature_contact_form !== false,
     privacySettings: config.feature_privacy_settings !== false,
     customFormFields: config.feature_custom_form_fields === true,
+    skipControl: config.feature_skip_control === true,
   };
 
   return {
