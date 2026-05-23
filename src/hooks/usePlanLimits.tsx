@@ -40,6 +40,7 @@ export interface PlanConfig {
   max_leads?: number;
   plan_badge_text?: string | null;
   feature_custom_form_fields?: boolean;
+  feature_skip_control?: boolean;
   max_custom_form_fields?: number;
 }
 
