@@ -25,6 +25,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isYouTubeUrl } from "@/lib/youtube";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 
 export interface VideoPlayerProps {
   src: string;
@@ -84,7 +86,24 @@ function ControlButton({
 }
 
 
-export function VideoPlayer({
+export function VideoPlayer(props: VideoPlayerProps) {
+  // If source is a YouTube link, render the hardened embed instead of the native player.
+  if (isYouTubeUrl(props.src)) {
+    return (
+      <div className="relative w-full h-full bg-black">
+        <YouTubeEmbed
+          src={props.src}
+          autoplay={props.autoplay !== false}
+          initialTime={props.initialTime}
+          title={props.title}
+        />
+      </div>
+    );
+  }
+  return <NativeVideoPlayer {...props} />;
+}
+
+function NativeVideoPlayer({
   src,
   poster,
   allowSeek = true,

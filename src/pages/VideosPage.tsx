@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useRef } from "react";
-import { Search, Grid, List, Link2, Share2, Pencil, Rocket, Upload, Copy, Trash2, RefreshCw, Loader2, Settings, Play, MoreVertical, Users, FastForward } from "lucide-react";
+import { Search, Grid, List, Link2, Share2, Pencil, Rocket, Upload, Copy, Trash2, RefreshCw, Loader2, Settings, Play, MoreVertical, Users, FastForward, Youtube as YoutubeIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -15,6 +15,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { VideoLinkModal } from "@/components/VideoLinkModal";
+import { YouTubeLinkModal } from "@/components/YouTubeLinkModal";
 import { VideoUploadModal } from "@/components/VideoUploadModal";
 import { VideoShareModal } from "@/components/VideoShareModal";
 import { VideoRenameModal } from "@/components/VideoRenameModal";
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { isYouTubeUrl } from "@/lib/youtube";
 
 const buildPublicVideoUrl = (v: { id: string; slug?: string | null }) =>
   `${window.location.origin}/v/${v.slug || v.id}`;
@@ -66,6 +68,8 @@ const VideosPage = () => {
   const debouncedSearch = useDebouncedValue(search, 200);
   const [view, setView] = useState<"grid" | "list">("list");
   const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
+  const [youtubeUpgradeOpen, setYoutubeUpgradeOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
@@ -241,14 +245,27 @@ const VideosPage = () => {
           />
         </div>
 
-        <div className="-mt-2">
+        <div className="-mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
           <button
             onClick={() => setLinkModalOpen(true)}
             className="flex items-center gap-1.5 text-xs text-primary font-medium hover:underline"
           >
             <Link2 size={12} /> Add via Nevorai Link
           </button>
+          <button
+            onClick={() => {
+              if (!features.youtubeImport) {
+                setYoutubeUpgradeOpen(true);
+                return;
+              }
+              setYoutubeModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 text-xs font-medium text-[#FF0000] hover:underline"
+          >
+            <YoutubeIcon size={13} /> Add YouTube Video
+          </button>
         </div>
+
 
         {/* Search */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border">
@@ -569,6 +586,13 @@ const VideosPage = () => {
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ["shared-videos"] })}
         />
 
+        <YouTubeLinkModal
+          open={youtubeModalOpen}
+          onClose={() => setYoutubeModalOpen(false)}
+          onSuccess={invalidateVideos}
+        />
+
+
         {shareVideo && (
           <VideoShareModal
             open={!!shareVideo}
@@ -603,6 +627,14 @@ const VideosPage = () => {
           type="upgrade"
           tier={tier}
         />
+
+        <UpgradeModal
+          open={youtubeUpgradeOpen}
+          onClose={() => setYoutubeUpgradeOpen(false)}
+          type="upgrade"
+          tier={tier}
+        />
+
 
 
 
