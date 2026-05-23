@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { isYouTubeUrl } from "@/lib/youtube";
 
 const buildPublicVideoUrl = (v: { id: string; slug?: string | null }) =>
   `${window.location.origin}/v/${v.slug || v.id}`;
