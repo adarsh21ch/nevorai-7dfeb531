@@ -29,6 +29,7 @@ export const VideoDetailsModal = ({ open, onClose, videoId, onSuccess }: Props) 
   const [description, setDescription] = useState("");
   const [allowSeek, setAllowSeek] = useState(true);
   const [showUploadDate, setShowUploadDate] = useState(true);
+  const [allowCopyLink, setAllowCopyLink] = useState(false);
   const [hydrating, setHydrating] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showSkipInfo, setShowSkipInfo] = useState(false);
