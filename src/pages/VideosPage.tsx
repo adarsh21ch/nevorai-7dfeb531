@@ -628,6 +628,14 @@ const VideosPage = () => {
           tier={tier}
         />
 
+        <UpgradeModal
+          open={youtubeUpgradeOpen}
+          onClose={() => setYoutubeUpgradeOpen(false)}
+          type="upgrade"
+          tier={tier}
+        />
+
+
 
 
         <AlertDialog open={!!deleteVideo} onOpenChange={(o) => !o && setDeleteVideo(null)}>
