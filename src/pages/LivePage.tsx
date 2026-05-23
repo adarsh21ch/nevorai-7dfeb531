@@ -260,6 +260,10 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions]);
 
+  // Pull the user's library directly — sessions can now play any uploaded
+  // video without first being attached to a funnel. We still load funnels in
+  // case we need to derive metadata for legacy sessions, but the picker is
+  // no longer gated on funnel membership.
   const { data: funnels = [] } = useQuery({
     queryKey: ["live-funnel-options", user?.id],
     queryFn: async () => {
@@ -275,34 +279,32 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
     enabled: !!user?.id && creating,
   });
 
+  // Hydrate the selected video's metadata (title / thumbnail / duration)
+  // straight from video_assets so the live editor stays decoupled from funnels.
+  const [selectedVideo, setSelectedVideo] = useState<{ id: string; title: string; thumbnail_url: string | null; duration_seconds: number | null } | null>(null);
+
   useEffect(() => {
+    let cancelled = false;
     const run = async () => {
-      if (!form.funnel_id) return;
-      const f = funnels.find((x: any) => x.id === form.funnel_id);
-      if (!f) return;
-      if (!f.video_asset_id) {
-        upd("video_asset_id", null);
-        upd("video_duration_seconds", null);
-        return;
-      }
+      if (!form.video_asset_id) { setSelectedVideo(null); return; }
       const { data: video } = await supabase
         .from("video_assets")
-        .select("id, duration_seconds")
-        .eq("id", f.video_asset_id)
+        .select("id, title, thumbnail_url, duration_seconds")
+        .eq("id", form.video_asset_id)
         .maybeSingle();
+      if (cancelled) return;
       if (video) {
-        upd("video_asset_id", video.id);
-        upd("video_duration_seconds", video.duration_seconds || null);
+        setSelectedVideo(video as any);
+        if (!form.video_duration_seconds && video.duration_seconds) {
+          upd("video_duration_seconds", video.duration_seconds);
+        }
       }
     };
     run();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.funnel_id]);
+  }, [form.video_asset_id]);
 
-  const selectedFunnel = useMemo(
-    () => funnels.find((f: any) => f.id === form.funnel_id),
-    [funnels, form.funnel_id]
-  );
 
   const editingSession = useMemo(
     () => editingId ? sessions.find((s: any) => s.id === editingId) : null,
