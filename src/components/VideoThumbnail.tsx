@@ -33,11 +33,25 @@ export const VideoThumbnail = ({
           src={thumbnailUrl}
           alt={title}
           loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            // Fallback chain for YouTube thumbnails: hq → mq → default
+            const img = e.currentTarget;
+            const src = img.src;
+            const ytMatch = src.match(/\/vi\/([A-Za-z0-9_-]{11})\/(\w+)\.jpg/);
+            if (!ytMatch) return;
+            const [, id, variant] = ytMatch;
+            const order = ["maxresdefault", "sddefault", "hqdefault", "mqdefault", "default"];
+            const idx = order.indexOf(variant);
+            const next = order[idx + 1];
+            if (next) img.src = `https://i.ytimg.com/vi/${id}/${next}.jpg`;
+          }}
           className="h-full w-full object-cover"
         />
       </div>
     );
   }
+
 
   if (videoUrl) {
     return (
