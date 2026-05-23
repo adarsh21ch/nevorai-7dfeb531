@@ -194,6 +194,39 @@ Deno.serve(async (req) => {
           }
         }
       }
+    } else if (session.video_asset_id) {
+      // Standalone live session (no funnel attached) — load the video directly.
+      const { data: video } = await supabase
+        .from("video_assets")
+        .select("id, public_url, thumbnail_url, duration_seconds, allow_seek, allow_playback_speed")
+        .eq("id", session.video_asset_id)
+        .maybeSingle();
+      if (video) {
+        videoUrl = video.public_url;
+        videoDuration = video.duration_seconds || videoDuration || null;
+        funnelData = {
+          id: null,
+          title: session.title,
+          slug: session.slug,
+          description: session.description || null,
+          video_asset_id: video.id,
+          thumbnail_url: video.thumbnail_url,
+          speaker_mode: false,
+          speaker_name: null,
+          speaker_photo_url: null,
+          speaker_about: null,
+          owner_id: session.owner_id,
+          video_topics: [],
+          video_topics_enabled: false,
+          contact_whatsapp: null,
+          contact_phone: null,
+          cta_text: null,
+          cta_url: null,
+          cta_enabled: false,
+          __video_allow_seek: video.allow_seek !== false,
+          __video_allow_playback_speed: video.allow_playback_speed !== false,
+        } as any;
+      }
     }
 
     const videoAllowSeek = (funnelData as any)?.__video_allow_seek !== false;
