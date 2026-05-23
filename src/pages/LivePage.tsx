@@ -574,7 +574,7 @@ const LivePage = ({ embedded = false }: { embedded?: boolean } = {}) => {
 
         {!authLoading && !isLoading && !error && creating && (() => {
           const liveEditorSections: EditorSection[] = [
-            { id: "live-section-delivery", label: "Delivery", num: 1, icon: Layers, complete: !!form.funnel_id || form.session_type === "external_link" },
+            { id: "live-section-delivery", label: "Delivery", num: 1, icon: Layers, complete: !!form.video_asset_id || form.session_type === "external_link" },
             { id: "live-section-details", label: "Details", num: 2, icon: Pencil, complete: !!form.title },
             { id: "live-section-schedule", label: "Schedule", num: 3, icon: Calendar, complete: !!form.scheduled_times[0] },
             { id: "live-section-replay", label: "Replay & Settings", num: 4, icon: Play, complete: form.is_published },
