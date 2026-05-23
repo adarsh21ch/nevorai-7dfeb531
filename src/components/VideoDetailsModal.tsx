@@ -22,6 +22,9 @@ interface Props {
 
 export const VideoDetailsModal = ({ open, onClose, videoId, onSuccess }: Props) => {
   const isMobile = useIsMobile();
+  const { features } = usePlanLimits();
+  const navigate = useNavigate();
+  const skipUnlocked = features.skipControl;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [allowSeek, setAllowSeek] = useState(true);
