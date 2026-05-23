@@ -454,26 +454,8 @@ export const VideoUploadModal = ({ open, onClose, onSuccess, skipStorageCheck = 
             />
           </div>
 
-          {/* Allow viewers to reuse this video via Nevorai Link */}
-          <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/40 border border-border">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <Copy size={13} className="text-primary shrink-0" />
-                <Label className="text-sm font-medium cursor-pointer" htmlFor="allow-copy-link">
-                  Allow others to reuse this video
-                </Label>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Public viewers see a "Copy Nevorai Link" button so they can add this video to their own gallery. Daily view limits still apply.
-              </p>
-            </div>
-            <Switch
-              id="allow-copy-link"
-              checked={allowCopyLink}
-              onCheckedChange={setAllowCopyLink}
-              disabled={busy}
-            />
-          </div>
+          {/* "Allow others to reuse" lives in Edit Details now (off by default). */}
+
 
           {(uploading || processing) && (
             <div className="space-y-2">
