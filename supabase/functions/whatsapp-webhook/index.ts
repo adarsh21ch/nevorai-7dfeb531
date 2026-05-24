@@ -1,4 +1,4 @@
-// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v5 — Phase 2 + bug fixes: word-boundary matching, intent reordering)
+// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v6 — Phase 2 privacy fix: Gemini cannot leak account info to unverified users)
 //   GET  → token verification handshake
 //   POST → inbound message → user lookup → verification check → personalized reply or Gemini AI → send → log
 //
@@ -710,12 +710,24 @@ function buildGeminiPrompt(
   ctx: UserContext,
   history: ChatTurn[],
 ): string {
-  const userBlock = ctx.isKnown
-    ? `You are speaking with an existing ${BRAND_NAME} user. Be warm and helpful.
+  let userBlock: string;
+  if (ctx.isKnown && ctx.isVerified) {
+    userBlock = `You are speaking with an existing, VERIFIED ${BRAND_NAME} user. Be warm and helpful.
 User name: ${ctx.name || "Unknown"}
-Plan status: ${ctx.plan || "unknown"}
-Treat them as a customer who already trusts the product. Avoid pitching from scratch. Focus on helping them with their question or directing them to the right page.`
-    : `You are speaking with someone who is NOT yet a ${BRAND_NAME} user (a prospect). Be welcoming, explain things simply, and guide them toward signing up if relevant. Do not assume they know ${BRAND_NAME} already.`;
+You may reference their account context if useful.
+Avoid pitching from scratch. Focus on helping them with their question.`;
+  } else if (ctx.isKnown && !ctx.isVerified) {
+    userBlock = `You are speaking with someone whose phone number matches a ${BRAND_NAME} account, but they have NOT verified their identity yet.
+User first name (safe to greet by): ${ctx.name?.split(" ")[0] || "there"}
+
+CRITICAL PRIVACY RULES:
+- DO NOT mention or confirm anything about their plan, billing, trial, views, subscription, expiry, payment, or any account-specific details.
+- DO NOT say things like "you're on free trial" or "your plan is X".
+- If they ask about their account/plan/views/billing: tell them to reply with the email they used to sign up so the bot can verify them first.
+- General product questions (pricing, features, demo, support) are fine to answer.`;
+  } else {
+    userBlock = `You are speaking with someone who is NOT yet a ${BRAND_NAME} user (a prospect). Be welcoming, explain things simply, and guide them toward signing up if relevant. Do not assume they know ${BRAND_NAME} already.`;
+  }
 
   const historyBlock = history.length === 0
     ? "(No prior messages in this chat.)"
