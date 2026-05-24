@@ -157,6 +157,36 @@ Visit: ${NEVORAI_APP_LINK}`,
 6. Team tracking and AI lead assistant`,
   },
 
+  // ── Compare plans (MUST come before Pricing) ──────────────────
+  {
+    match: (t) => includesAny(t, ["compare plan", "compare plans", "basic vs pro", "difference between", "which plan", "best plan", "pro vs basic", "plan comparison"]),
+    reply: () => `Quick comparison:
+
+Basic (${NEVORAI_BASIC_PRICE}): For getting started with video funnels and lead capture. Lower view limits.
+
+Pro (${NEVORAI_PRO_PRICE}): For growing businesses. Higher view limits, more funnels, advanced analytics, and priority support.
+
+Visit ${NEVORAI_APP_LINK}/pricing for full details.`,
+  },
+
+  // ── Free trial (MUST come before Pricing) ─────────────────────
+  {
+    match: (t) => includesAny(t, ["free trial", "trial", "try free", "free version", "try it", "trial period", "trial duration"]),
+    reply: () => `Yes! ${BRAND_NAME} offers a free trial for new users. Sign up at ${NEVORAI_APP_LINK} and you can explore the platform before subscribing.`,
+  },
+
+  // ── Yearly / annual (MUST come before Pricing) ────────────────
+  {
+    match: (t) => includesAny(t, ["yearly", "annual", "year plan", "annual plan", "12 month", "annual discount", "yearly discount"]),
+    reply: () => `${BRAND_NAME} offers yearly plans with a discount over monthly pricing. Check ${NEVORAI_APP_LINK}/pricing for the current yearly rates.`,
+  },
+
+  // ── Discount / offer (MUST come before Pricing) ───────────────
+  {
+    match: (t) => includesAny(t, ["discount", "coupon", "promo", "offer", "promo code", "discount code", "cheaper", "save money"]),
+    reply: () => `We run occasional offers. The biggest saving today is the yearly plan vs monthly. For special discounts, share your business type and our team will see what we can do.`,
+  },
+
   // ── Pricing ───────────────────────────────────────────────────
   {
     match: (t) => includesAny(t, [
@@ -170,24 +200,6 @@ Pro: ${NEVORAI_PRO_PRICE}
 ${NEVORAI_TRIAL_TEXT}
 
 Which product are you interested in: ${BRAND_NAME} or ${BRAND_NAME} Call?`,
-  },
-
-  // ── Free trial ────────────────────────────────────────────────
-  {
-    match: (t) => includesAny(t, ["free trial", "trial", "try free", "free version", "try it"]),
-    reply: () => `Yes! ${BRAND_NAME} offers a free trial for new users. Sign up at ${NEVORAI_APP_LINK} and you can explore the platform before subscribing.`,
-  },
-
-  // ── Compare plans ─────────────────────────────────────────────
-  {
-    match: (t) => includesAny(t, ["compare plan", "basic vs pro", "difference between", "which plan", "best plan"]),
-    reply: () => `Quick comparison:
-
-Basic (${NEVORAI_BASIC_PRICE}): For getting started with video funnels and lead capture. Lower view limits.
-
-Pro (${NEVORAI_PRO_PRICE}): For growing businesses. Higher view limits, more funnels, advanced analytics, and priority support.
-
-Visit ${NEVORAI_APP_LINK}/pricing for full details.`,
   },
 
   // ── Payment / Razorpay ────────────────────────────────────────
@@ -327,10 +339,80 @@ Our team will reach out to confirm.`,
     reply: () => `Our affiliate/partner program is in the works. Share your name and email and we'll add you to the waitlist.`,
   },
 
+  // ── Tutorial / how to use ─────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["tutorial", "how to use", "getting started", "guide", "documentation", "docs", "manual", "walkthrough", "training"]),
+    reply: () => `You can find tutorials inside the app at ${NEVORAI_APP_LINK} once logged in. We also share quick guides on our Instagram and YouTube. Want a personal walkthrough? Just ask for a demo.`,
+  },
+
+  // ── Mobile app ────────────────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["mobile app", "android app", "ios app", "iphone app", "play store", "app store", "download app"]),
+    reply: () => `${BRAND_NAME} works on mobile through the browser at ${NEVORAI_APP_LINK} — fully responsive. A native mobile app is on our roadmap.`,
+  },
+
+  // ── API / integration ────────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["api", "integration", "zapier", "webhook", "developer", "rest api", "third party", "connect with"]),
+    reply: () => `We're working on a public API and integrations. Share what you'd like to connect with (CRM, sheets, etc.) and our team will see if there's a workaround today.`,
+  },
+
+  // ── GST / tax invoice ─────────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["gst", "gst invoice", "tax invoice", "company invoice", "business invoice", "b2b invoice", "company name on invoice"]),
+    reply: () => `Yes, we issue GST invoices. Share your registered email, company name, and GSTIN, and our team will send you a proper tax invoice.`,
+  },
+
+  // ── Custom domain ─────────────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["custom domain", "my own domain", "subdomain", "branded url", "custom url"]),
+    reply: () => `Custom domains are supported on higher plans. After subscribing, you can add your domain from settings. Need help with DNS? Our team will guide you.`,
+  },
+
+  // ── Whitelabel ────────────────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["whitelabel", "white label", "white-label", "remove branding", "remove watermark", "hide nevorai logo"]),
+    reply: () => `Whitelabel/branding removal is available on Pro and above. Once you upgrade, you can hide the "Made with ${BRAND_NAME}" watermark from your funnels and landing pages.`,
+  },
+
+  // ── Data export / backup ──────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["export data", "download data", "backup", "csv export", "export leads", "data download"]),
+    reply: () => `You can export your leads and funnel data as CSV from your dashboard. Higher plans get higher monthly export limits.`,
+  },
+
+  // ── Security / privacy ────────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["security", "privacy", "data privacy", "gdpr", "data protection", "is it safe", "secure"]),
+    reply: () => `${BRAND_NAME} stores your data on secure cloud infrastructure with encryption. We do not sell or share your data. Full policy at ${NEVORAI_APP_LINK}/privacy.`,
+  },
+
+  // ── Time zone ─────────────────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["time zone", "timezone", "ist", "indian time", "indian standard time"]),
+    reply: () => `${BRAND_NAME} runs on IST (Indian Standard Time) for daily/monthly view counting and renewals.`,
+  },
+
   // ── Hindi / language ──────────────────────────────────────────
   {
     match: (t) => includesAny(t, ["hindi", "language", "vernacular", "regional"]),
     reply: () => `${BRAND_NAME} app is in English for now. Hindi support is on our roadmap. You can chat with our team in Hindi via WhatsApp anytime.`,
+  },
+
+  // ── Short acks (OK / yes / no) ────────────────────────────────
+  {
+    match: (t) => /^(ok|okay|k|kk|👍|hmm|hmmm|sure|alright|cool|nice|great)\.?$/i.test(t),
+    reply: () => `Got it! Let me know what you'd like to do next — pricing, demo, signup, or any specific question.`,
+  },
+
+  {
+    match: (t) => /^(yes|yeah|yep|haan|ji|ji haan|sahi|right)\.?$/i.test(t),
+    reply: () => `Great! What would you like to do next? You can ask about pricing, book a demo, or sign up at ${NEVORAI_APP_LINK}.`,
+  },
+
+  {
+    match: (t) => /^(no|nope|nah|nahi)\.?$/i.test(t),
+    reply: () => `No problem. Let me know if you have any other questions about ${BRAND_NAME}.`,
   },
 
   // ── Contact info ──────────────────────────────────────────────
