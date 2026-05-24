@@ -1,4 +1,4 @@
-// Meta WhatsApp Cloud API webhook.
+// Meta WhatsApp Cloud API webhook. (deploy v2)
 //   GET  → token verification handshake
 //   POST → inbound message → rule-based reply → Gemini fallback → send → log
 //

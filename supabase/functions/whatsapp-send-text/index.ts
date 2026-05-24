@@ -1,4 +1,4 @@
-// Free-form WhatsApp text sender — used by the admin WhatsApp test page.
+// Free-form WhatsApp text sender — used by the admin WhatsApp test page. (deploy v2)
 // POST { to, message } → sends a plain text message via Meta Graph API.
 // Uses phone_number_id and access_token from whatsapp_settings table.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
