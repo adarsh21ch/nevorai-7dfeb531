@@ -84,8 +84,10 @@ import { Route as InsightsFunnelsIdRouteImport } from './routes/insights.funnels
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
 import { Route as FSlugMemberRouteImport } from './routes/f.$slug.member'
 import { Route as ApiAdminWhatsappLeadsRouteImport } from './routes/api/admin/whatsapp-leads'
+import { Route as ApiAdminWhatsappAutomationsRouteImport } from './routes/api/admin/whatsapp-automations'
 import { Route as ApiPublicPixelTrackRouteImport } from './routes/api/public/pixel/track'
 import { Route as ApiPublicEmailSendRouteImport } from './routes/api/public/email/send'
+import { Route as ApiAdminWhatsappMessagesLeadIdRouteImport } from './routes/api/admin/whatsapp-messages/$leadId'
 
 const WhatsappTestRoute = WhatsappTestRouteImport.update({
   id: '/whatsapp-test',
@@ -502,6 +504,12 @@ const ApiAdminWhatsappLeadsRoute = ApiAdminWhatsappLeadsRouteImport.update({
   path: '/api/admin/whatsapp-leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminWhatsappAutomationsRoute =
+  ApiAdminWhatsappAutomationsRouteImport.update({
+    id: '/api/admin/whatsapp-automations',
+    path: '/api/admin/whatsapp-automations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPixelTrackRoute = ApiPublicPixelTrackRouteImport.update({
   id: '/api/public/pixel/track',
   path: '/api/public/pixel/track',
@@ -512,6 +520,12 @@ const ApiPublicEmailSendRoute = ApiPublicEmailSendRouteImport.update({
   path: '/api/public/email/send',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminWhatsappMessagesLeadIdRoute =
+  ApiAdminWhatsappMessagesLeadIdRouteImport.update({
+    id: '/api/admin/whatsapp-messages/$leadId',
+    path: '/api/admin/whatsapp-messages/$leadId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -578,6 +592,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
+  '/api/admin/whatsapp-automations': typeof ApiAdminWhatsappAutomationsRoute
   '/api/admin/whatsapp-leads': typeof ApiAdminWhatsappLeadsRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
@@ -589,6 +604,7 @@ export interface FileRoutesByFullPath {
   '/f/$slug/': typeof FSlugIndexRoute
   '/funnels/$id/': typeof FunnelsIdIndexRoute
   '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
+  '/api/admin/whatsapp-messages/$leadId': typeof ApiAdminWhatsappMessagesLeadIdRoute
   '/api/public/email/send': typeof ApiPublicEmailSendRoute
   '/api/public/pixel/track': typeof ApiPublicPixelTrackRoute
 }
@@ -655,6 +671,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/funnels': typeof FunnelsIndexRoute
   '/landing-pages': typeof LandingPagesIndexRoute
+  '/api/admin/whatsapp-automations': typeof ApiAdminWhatsappAutomationsRoute
   '/api/admin/whatsapp-leads': typeof ApiAdminWhatsappLeadsRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
@@ -666,6 +683,7 @@ export interface FileRoutesByTo {
   '/f/$slug': typeof FSlugIndexRoute
   '/funnels/$id': typeof FunnelsIdIndexRoute
   '/landing-pages/$id': typeof LandingPagesIdIndexRoute
+  '/api/admin/whatsapp-messages/$leadId': typeof ApiAdminWhatsappMessagesLeadIdRoute
   '/api/public/email/send': typeof ApiPublicEmailSendRoute
   '/api/public/pixel/track': typeof ApiPublicPixelTrackRoute
 }
@@ -735,6 +753,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
+  '/api/admin/whatsapp-automations': typeof ApiAdminWhatsappAutomationsRoute
   '/api/admin/whatsapp-leads': typeof ApiAdminWhatsappLeadsRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
@@ -746,6 +765,7 @@ export interface FileRoutesById {
   '/f/$slug/': typeof FSlugIndexRoute
   '/funnels/$id/': typeof FunnelsIdIndexRoute
   '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
+  '/api/admin/whatsapp-messages/$leadId': typeof ApiAdminWhatsappMessagesLeadIdRoute
   '/api/public/email/send': typeof ApiPublicEmailSendRoute
   '/api/public/pixel/track': typeof ApiPublicPixelTrackRoute
 }
@@ -816,6 +836,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
+    | '/api/admin/whatsapp-automations'
     | '/api/admin/whatsapp-leads'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
@@ -827,6 +848,7 @@ export interface FileRouteTypes {
     | '/f/$slug/'
     | '/funnels/$id/'
     | '/landing-pages/$id/'
+    | '/api/admin/whatsapp-messages/$leadId'
     | '/api/public/email/send'
     | '/api/public/pixel/track'
   fileRoutesByTo: FileRoutesByTo
@@ -893,6 +915,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/funnels'
     | '/landing-pages'
+    | '/api/admin/whatsapp-automations'
     | '/api/admin/whatsapp-leads'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
@@ -904,6 +927,7 @@ export interface FileRouteTypes {
     | '/f/$slug'
     | '/funnels/$id'
     | '/landing-pages/$id'
+    | '/api/admin/whatsapp-messages/$leadId'
     | '/api/public/email/send'
     | '/api/public/pixel/track'
   id:
@@ -972,6 +996,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
+    | '/api/admin/whatsapp-automations'
     | '/api/admin/whatsapp-leads'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
@@ -983,6 +1008,7 @@ export interface FileRouteTypes {
     | '/f/$slug/'
     | '/funnels/$id/'
     | '/landing-pages/$id/'
+    | '/api/admin/whatsapp-messages/$leadId'
     | '/api/public/email/send'
     | '/api/public/pixel/track'
   fileRoutesById: FileRoutesById
@@ -1048,9 +1074,11 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   FunnelsIndexRoute: typeof FunnelsIndexRoute
   LandingPagesIndexRoute: typeof LandingPagesIndexRoute
+  ApiAdminWhatsappAutomationsRoute: typeof ApiAdminWhatsappAutomationsRoute
   ApiAdminWhatsappLeadsRoute: typeof ApiAdminWhatsappLeadsRoute
   FSlugMemberRoute: typeof FSlugMemberRoute
   FSlugIndexRoute: typeof FSlugIndexRoute
+  ApiAdminWhatsappMessagesLeadIdRoute: typeof ApiAdminWhatsappMessagesLeadIdRoute
   ApiPublicEmailSendRoute: typeof ApiPublicEmailSendRoute
   ApiPublicPixelTrackRoute: typeof ApiPublicPixelTrackRoute
 }
@@ -1582,6 +1610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminWhatsappLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/whatsapp-automations': {
+      id: '/api/admin/whatsapp-automations'
+      path: '/api/admin/whatsapp-automations'
+      fullPath: '/api/admin/whatsapp-automations'
+      preLoaderRoute: typeof ApiAdminWhatsappAutomationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/pixel/track': {
       id: '/api/public/pixel/track'
       path: '/api/public/pixel/track'
@@ -1594,6 +1629,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/email/send'
       fullPath: '/api/public/email/send'
       preLoaderRoute: typeof ApiPublicEmailSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/whatsapp-messages/$leadId': {
+      id: '/api/admin/whatsapp-messages/$leadId'
+      path: '/api/admin/whatsapp-messages/$leadId'
+      fullPath: '/api/admin/whatsapp-messages/$leadId'
+      preLoaderRoute: typeof ApiAdminWhatsappMessagesLeadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1739,12 +1781,24 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   FunnelsIndexRoute: FunnelsIndexRoute,
   LandingPagesIndexRoute: LandingPagesIndexRoute,
+  ApiAdminWhatsappAutomationsRoute: ApiAdminWhatsappAutomationsRoute,
   ApiAdminWhatsappLeadsRoute: ApiAdminWhatsappLeadsRoute,
   FSlugMemberRoute: FSlugMemberRoute,
   FSlugIndexRoute: FSlugIndexRoute,
+  ApiAdminWhatsappMessagesLeadIdRoute: ApiAdminWhatsappMessagesLeadIdRoute,
   ApiPublicEmailSendRoute: ApiPublicEmailSendRoute,
   ApiPublicPixelTrackRoute: ApiPublicPixelTrackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
