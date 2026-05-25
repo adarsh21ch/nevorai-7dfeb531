@@ -59,7 +59,7 @@ const RefundPolicyPage = () => {
                 <li>Email <a href="mailto:teamnevorai@gmail.com" className="text-primary hover:underline">teamnevorai@gmail.com</a> with subject line: "Refund Request — [your email]".</li>
                 <li>Include your registered email and payment date.</li>
                 <li>We will respond within 24 hours on business days.</li>
-                <li>Approved refunds are processed within 5–7 business days back to your original payment method.</li>
+                <li>Approved refunds are processed as add-on credits within 5–7 calendar days back to your original payment method.</li>
               </ol>
             </section>
 
@@ -99,6 +99,7 @@ const RefundPolicyPage = () => {
               <p>
                 Email: <a href="mailto:teamnevorai@gmail.com" className="text-primary hover:underline">teamnevorai@gmail.com</a><br />
                 WhatsApp: <a href="https://wa.me/919329040508" target="_blank" rel="noreferrer" className="text-primary hover:underline">+91 93290 40508</a><br />
+                Address: Chitgiri Colony, Chhatripati, Madhya Pradesh, India<br />
                 Response time: within 24 hours on business days.
               </p>
             </section>
