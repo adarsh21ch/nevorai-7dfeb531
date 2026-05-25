@@ -101,6 +101,12 @@ const defaultFormState = {
   min_age: 18,
   access_code_message: "",
   faq_items: [] as { question: string; answer: string }[],
+  session_link: "",
+  resource_link: "",
+  session_datetime: "" as string | "",
+  email_banner_url: "",
+  attachment_pdf_url: "",
+  redirect_url: "",
 };
 
 const sectionTypes = [
