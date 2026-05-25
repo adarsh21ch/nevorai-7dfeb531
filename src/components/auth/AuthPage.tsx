@@ -168,14 +168,30 @@ export default function AuthPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) { toast.error("Please enter your name"); return; }
+    const cleanPhone = form.phone.replace(/\D/g, "").slice(-10);
+    if (cleanPhone.length !== 10) { toast.error("Enter a valid 10-digit Indian mobile number"); return; }
     if (form.password.length < 8) { toast.error("Password must be at least 8 characters"); return; }
     setSubmitting(true);
     try {
-      const { error } = await signUp(form.email, form.password, form.name, form.phone);
+      // Pre-check: duplicate verified WhatsApp number
+      const { data: dup } = await (supabase as any)
+        .from("profiles")
+        .select("id")
+        .eq("whatsapp_number", cleanPhone)
+        .eq("whatsapp_verified", true)
+        .maybeSingle();
+      if (dup) {
+        toast.error("This WhatsApp number is already registered. Please login instead.");
+        return;
+      }
+      const { error } = await signUp(form.email, form.password, form.name, cleanPhone);
       if (error) { toast.error(error.message); return; }
-      toast.success("Account created! Please check your email to verify.");
+      toast.success("Account created! Verify your WhatsApp to continue.");
+      // The dashboard gate will route to /verify-whatsapp; navigate explicitly.
+      navigate({ to: "/verify-whatsapp", replace: true });
     } finally { setSubmitting(false); }
   };
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
