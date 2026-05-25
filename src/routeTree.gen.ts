@@ -83,6 +83,7 @@ import { Route as InsightsLandingPagesIdRouteImport } from './routes/insights.la
 import { Route as InsightsFunnelsIdRouteImport } from './routes/insights.funnels.$id'
 import { Route as FunnelsIdEditRouteImport } from './routes/funnels.$id.edit'
 import { Route as FSlugMemberRouteImport } from './routes/f.$slug.member'
+import { Route as ApiAdminWhatsappLeadsRouteImport } from './routes/api/admin/whatsapp-leads'
 import { Route as ApiPublicPixelTrackRouteImport } from './routes/api/public/pixel/track'
 import { Route as ApiPublicEmailSendRouteImport } from './routes/api/public/email/send'
 
@@ -496,6 +497,11 @@ const FSlugMemberRoute = FSlugMemberRouteImport.update({
 } as any).lazy(() =>
   import('./routes/f.$slug.member.lazy').then((d) => d.Route),
 )
+const ApiAdminWhatsappLeadsRoute = ApiAdminWhatsappLeadsRouteImport.update({
+  id: '/api/admin/whatsapp-leads',
+  path: '/api/admin/whatsapp-leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPixelTrackRoute = ApiPublicPixelTrackRouteImport.update({
   id: '/api/public/pixel/track',
   path: '/api/public/pixel/track',
@@ -572,6 +578,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
+  '/api/admin/whatsapp-leads': typeof ApiAdminWhatsappLeadsRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/insights/funnels/$id': typeof InsightsFunnelsIdRoute
@@ -648,6 +655,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/funnels': typeof FunnelsIndexRoute
   '/landing-pages': typeof LandingPagesIndexRoute
+  '/api/admin/whatsapp-leads': typeof ApiAdminWhatsappLeadsRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/insights/funnels/$id': typeof InsightsFunnelsIdRoute
@@ -727,6 +735,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/funnels/': typeof FunnelsIndexRoute
   '/landing-pages/': typeof LandingPagesIndexRoute
+  '/api/admin/whatsapp-leads': typeof ApiAdminWhatsappLeadsRoute
   '/f/$slug/member': typeof FSlugMemberRoute
   '/funnels/$id/edit': typeof FunnelsIdEditRoute
   '/insights/funnels/$id': typeof InsightsFunnelsIdRoute
@@ -807,6 +816,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
+    | '/api/admin/whatsapp-leads'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/insights/funnels/$id'
@@ -883,6 +893,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/funnels'
     | '/landing-pages'
+    | '/api/admin/whatsapp-leads'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/insights/funnels/$id'
@@ -961,6 +972,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/funnels/'
     | '/landing-pages/'
+    | '/api/admin/whatsapp-leads'
     | '/f/$slug/member'
     | '/funnels/$id/edit'
     | '/insights/funnels/$id'
@@ -1036,6 +1048,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   FunnelsIndexRoute: typeof FunnelsIndexRoute
   LandingPagesIndexRoute: typeof LandingPagesIndexRoute
+  ApiAdminWhatsappLeadsRoute: typeof ApiAdminWhatsappLeadsRoute
   FSlugMemberRoute: typeof FSlugMemberRoute
   FSlugIndexRoute: typeof FSlugIndexRoute
   ApiPublicEmailSendRoute: typeof ApiPublicEmailSendRoute
@@ -1562,6 +1575,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FSlugMemberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/whatsapp-leads': {
+      id: '/api/admin/whatsapp-leads'
+      path: '/api/admin/whatsapp-leads'
+      fullPath: '/api/admin/whatsapp-leads'
+      preLoaderRoute: typeof ApiAdminWhatsappLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/pixel/track': {
       id: '/api/public/pixel/track'
       path: '/api/public/pixel/track'
@@ -1719,6 +1739,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   FunnelsIndexRoute: FunnelsIndexRoute,
   LandingPagesIndexRoute: LandingPagesIndexRoute,
+  ApiAdminWhatsappLeadsRoute: ApiAdminWhatsappLeadsRoute,
   FSlugMemberRoute: FSlugMemberRoute,
   FSlugIndexRoute: FSlugIndexRoute,
   ApiPublicEmailSendRoute: ApiPublicEmailSendRoute,
@@ -1727,13 +1748,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
