@@ -1,4 +1,4 @@
-// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v13 — fix intent ordering: remove broad "funnel"/"landing page" from generic intent)
+// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v14 — concrete step-by-step funnel/landing how-to replies)
 //   GET  → token verification handshake
 //   POST → inbound message → user lookup → verification check → personalized reply or Gemini AI → send → log
 //
@@ -730,14 +730,14 @@ Our team will reach out to confirm.`,
 
   // ── Funnel creation help ──────────────────────────────────────
   {
-    match: (t) => includesAny(t, ["create funnel", "how to make funnel", "funnel builder", "build funnel"]),
-    reply: () => `Create your first funnel at ${NEVORAI_APP_LINK}/funnels/create. It's a step-by-step builder — add video, add lead form, share the link. Takes a few minutes.`,
+    match: (t) => includesAny(t, ["create funnel", "how to make funnel", "funnel builder", "build funnel", "how to create funnel", "make funnel", "new funnel", "setup funnel", "funnel kaise"]),
+    reply: () => `Here's how to create a funnel in ${BRAND_NAME}:\n\n1. Go to ${NEVORAI_APP_LINK}/funnels and tap *+ New Funnel*.\n2. Pick a type — Video Funnel, Multi-Step, Landing, or Live Session.\n3. Add your *title* and *slug* (this becomes your share link).\n4. Upload your video (or paste a YouTube link).\n5. Toggle *Capture Leads* ON and pick which fields to ask (name, phone, email, state, custom questions).\n6. Optional: add testimonials, WhatsApp button, access code, or a thank-you landing page.\n7. Click *Save* → then *Share* to copy the public link.\n\nLeads + watch analytics show up live at ${NEVORAI_APP_LINK}/funnels/<your-funnel> → Leads tab.\n\nNeed help with a specific step? Just ask.`,
   },
 
   // ── Landing page help ─────────────────────────────────────────
   {
-    match: (t) => includesAny(t, ["create landing", "how to make landing page", "landing builder"]),
-    reply: () => `You can create landing pages at ${NEVORAI_APP_LINK}/landing-pages/create. Easy drag-and-drop. Available on Pro plan.`,
+    match: (t) => includesAny(t, ["create landing", "how to make landing page", "landing builder", "how to create landing", "make landing page", "new landing page", "build landing page", "landing page kaise"]),
+    reply: () => `Here's how to create a landing page in ${BRAND_NAME}:\n\n1. Go to ${NEVORAI_APP_LINK}/landing-pages and tap *+ New Landing Page*.\n2. Add a *title* and *slug* (becomes your public URL).\n3. Fill in *headline*, *subheadline*, and upload a *cover image* or video.\n4. Add your *CTA button* text + link (e.g. WhatsApp, funnel, or external).\n5. Toggle *Capture Leads* ON and choose form fields (name, phone, email, custom).\n6. Optional: testimonials, FAQ, confirmation page after submit.\n7. Click *Save* → *Publish* → copy the share link.\n\nView leads + analytics at ${NEVORAI_APP_LINK}/landing-pages/<your-page>.\n\nStuck on a step? Tell me which one.`,
   },
 
   // ── WhatsApp automation ───────────────────────────────────────
