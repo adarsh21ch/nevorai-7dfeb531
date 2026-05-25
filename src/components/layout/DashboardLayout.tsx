@@ -7,7 +7,7 @@ import {
   Radio, FileText, Crown, GraduationCap, Home, Wrench, Activity,
   GitBranch, Layout,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -48,11 +48,11 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
 
   // WhatsApp verification gate — every dashboard surface enforces this.
   // Free-account abuse closes here: no verified number → no dashboard.
-  const needsWhatsApp = !authLoading && !!user && profile && !(profile as any).whatsapp_verified;
-  if (needsWhatsApp) {
-    // navigate via effect to avoid SSR / render-time navigation issues
-    setTimeout(() => navigate("/verify-whatsapp"), 0);
-  }
+  const needsWhatsApp = !authLoading && !!user && !!profile && !(profile as any).whatsapp_verified;
+  useEffect(() => {
+    if (needsWhatsApp) navigate("/verify-whatsapp");
+  }, [needsWhatsApp, navigate]);
+
 
   const { isAdmin } = useAdmin();
   const [collapsed, setCollapsed] = useState(false);
