@@ -86,7 +86,7 @@ export function WhatsAppMediaTab() {
         .from("whatsapp_media" as any)
         .select("*")
         .order("created_at", { ascending: false });
-      return (data || []) as Media[];
+      return (data || []) as unknown as Media[];
     },
   });
 
@@ -99,7 +99,7 @@ export function WhatsAppMediaTab() {
         .eq("is_published", true)
         .order("category", { ascending: true })
         .order("order_index", { ascending: true });
-      return (data || []) as AcademyTutorial[];
+      return (data || []) as unknown as AcademyTutorial[];
     },
   });
 

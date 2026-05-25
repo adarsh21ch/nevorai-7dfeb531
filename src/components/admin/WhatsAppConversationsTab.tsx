@@ -145,7 +145,7 @@ export function WhatsAppConversationsTab() {
         .eq("phone_number", selectedPhone)
         .order("created_at", { ascending: true })
         .limit(500);
-      return (data || []) as ConversationMessage[];
+      return (data || []) as unknown as ConversationMessage[];
     },
     enabled: !!selectedPhone,
   });

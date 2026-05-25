@@ -59,7 +59,7 @@ export function WhatsAppHelpArticlesTab() {
         .select("*")
         .order("category", { ascending: true })
         .order("title", { ascending: true });
-      return (data || []) as HelpArticle[];
+      return (data || []) as unknown as HelpArticle[];
     },
   });
 
@@ -71,7 +71,7 @@ export function WhatsAppHelpArticlesTab() {
         .select("id, title, category")
         .eq("is_published", true)
         .order("category");
-      return (data || []) as AcademyTutorial[];
+      return (data || []) as unknown as AcademyTutorial[];
     },
   });
 

@@ -83,7 +83,7 @@ export function WhatsAppLeadsTab() {
         .select("*")
         .order("last_message_at", { ascending: false })
         .limit(500);
-      return (data || []) as Lead[];
+      return (data || []) as unknown as Lead[];
     },
   });
 

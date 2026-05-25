@@ -1635,39 +1635,39 @@ Deno.serve(async (req) => {
         replyText = buildPersonalizedReply(sensitive, userCtx);
         replyMethod = "personalized";
       } else {
-        // Normal flow: rule-based → help articles → Gemini fallback
-        const ruleReply = getRuleBasedReply(userText, userCtx);
-        if (ruleReply) {
-          replyText = ruleReply;
+        // Normal flow: help articles (admin-curated) → rule-based → Gemini fallback.
+        // Help articles run FIRST so admin-authored answers win over generic canned
+        // intents like "guide" / "how to use" / "upload help".
+        const article = await searchHelpArticle(supabase, userText);
+        if (article) {
+          replyText = `${article.title}\n\n${article.content}`;
           replyMethod = "rule_based";
-        } else {
-          // Knowledge base lookup
-          const article = await searchHelpArticle(supabase, userText);
-          if (article) {
-            replyText = `${article.title}\n\n${article.content}`;
-            replyMethod = "rule_based"; // structured step-by-step counts as rule-based
-            // If article has a linked academy tutorial, queue it as media to send alongside
-            if (article.academy_tutorial_id) {
-              const academyMedia = await fetchAcademyTutorialAsMedia(supabase, article.academy_tutorial_id);
-              if (academyMedia && settings.phone_number_id && settings.access_token) {
-                await sendWhatsAppMedia(
-                  settings.phone_number_id,
-                  settings.access_token,
-                  from,
-                  academyMedia,
-                );
-              }
-            } else if (article.media_key) {
-              const m = await fetchMedia(supabase, article.media_key);
-              if (m && settings.phone_number_id && settings.access_token) {
-                await sendWhatsAppMedia(
-                  settings.phone_number_id,
-                  settings.access_token,
-                  from,
-                  m,
-                );
-              }
+          if (article.academy_tutorial_id) {
+            const academyMedia = await fetchAcademyTutorialAsMedia(supabase, article.academy_tutorial_id);
+            if (academyMedia && settings.phone_number_id && settings.access_token) {
+              await sendWhatsAppMedia(
+                settings.phone_number_id,
+                settings.access_token,
+                from,
+                academyMedia,
+              );
             }
+          } else if (article.media_key) {
+            const m = await fetchMedia(supabase, article.media_key);
+            if (m && settings.phone_number_id && settings.access_token) {
+              await sendWhatsAppMedia(
+                settings.phone_number_id,
+                settings.access_token,
+                from,
+                m,
+              );
+            }
+          }
+        } else {
+          const ruleReply = getRuleBasedReply(userText, userCtx);
+          if (ruleReply) {
+            replyText = ruleReply;
+            replyMethod = "rule_based";
           } else {
             const ai = await askGemini(userText, userCtx, history);
             replyText = ai.reply;
