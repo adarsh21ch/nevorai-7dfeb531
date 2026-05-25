@@ -18,6 +18,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -32,6 +33,7 @@ import { Route as KycRouteImport } from './routes/kyc'
 import { Route as InstallRouteImport } from './routes/install'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as HelpRouteImport } from './routes/help'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as EnterpriseRouteImport } from './routes/enterprise'
@@ -138,6 +140,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RefundPolicyRoute = RefundPolicyRouteImport.update({
   id: '/refund-policy',
   path: '/refund-policy',
@@ -208,6 +215,11 @@ const InsightsRoute = InsightsRouteImport.update({
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -551,6 +563,7 @@ export interface FileRoutesByFullPath {
   '/enterprise': typeof EnterpriseRoute
   '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
   '/insights': typeof InsightsRouteWithChildren
   '/install': typeof InstallRoute
@@ -565,6 +578,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refund-policy': typeof RefundPolicyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -634,6 +648,7 @@ export interface FileRoutesByTo {
   '/enterprise': typeof EnterpriseRoute
   '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
   '/insights': typeof InsightsRouteWithChildren
   '/install': typeof InstallRoute
@@ -648,6 +663,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refund-policy': typeof RefundPolicyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -716,6 +732,7 @@ export interface FileRoutesById {
   '/enterprise': typeof EnterpriseRoute
   '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/help': typeof HelpRoute
   '/insights': typeof InsightsRouteWithChildren
   '/install': typeof InstallRoute
@@ -730,6 +747,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refund-policy': typeof RefundPolicyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -801,6 +819,7 @@ export interface FileRouteTypes {
     | '/enterprise'
     | '/faq'
     | '/features'
+    | '/forgot-password'
     | '/help'
     | '/insights'
     | '/install'
@@ -815,6 +834,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/refund-policy'
+    | '/reset-password'
     | '/robots.txt'
     | '/settings'
     | '/sitemap.xml'
@@ -884,6 +904,7 @@ export interface FileRouteTypes {
     | '/enterprise'
     | '/faq'
     | '/features'
+    | '/forgot-password'
     | '/help'
     | '/insights'
     | '/install'
@@ -898,6 +919,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/refund-policy'
+    | '/reset-password'
     | '/robots.txt'
     | '/settings'
     | '/sitemap.xml'
@@ -965,6 +987,7 @@ export interface FileRouteTypes {
     | '/enterprise'
     | '/faq'
     | '/features'
+    | '/forgot-password'
     | '/help'
     | '/insights'
     | '/install'
@@ -979,6 +1002,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/refund-policy'
+    | '/reset-password'
     | '/robots.txt'
     | '/settings'
     | '/sitemap.xml'
@@ -1049,6 +1073,7 @@ export interface RootRouteChildren {
   EnterpriseRoute: typeof EnterpriseRoute
   FaqRoute: typeof FaqRoute
   FeaturesRoute: typeof FeaturesRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HelpRoute: typeof HelpRoute
   InsightsRoute: typeof InsightsRouteWithChildren
   InstallRoute: typeof InstallRoute
@@ -1063,6 +1088,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   RefundPolicyRoute: typeof RefundPolicyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1175,6 +1201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/refund-policy': {
       id: '/refund-policy'
       path: '/refund-policy'
@@ -1271,6 +1304,13 @@ declare module '@tanstack/react-router' {
       path: '/help'
       fullPath: '/help'
       preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -1772,6 +1812,7 @@ const rootRouteChildren: RootRouteChildren = {
   EnterpriseRoute: EnterpriseRoute,
   FaqRoute: FaqRoute,
   FeaturesRoute: FeaturesRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HelpRoute: HelpRoute,
   InsightsRoute: InsightsRouteWithChildren,
   InstallRoute: InstallRoute,
@@ -1786,6 +1827,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   RefundPolicyRoute: RefundPolicyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

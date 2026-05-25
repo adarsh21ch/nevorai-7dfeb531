@@ -500,7 +500,7 @@ const PasswordField = ({ form, setForm, showPassword, setShowPassword, showForgo
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label htmlFor="password" className="text-sm">Password <span className="text-destructive">*</span></Label>
-        {showForgot && <Link to="/auth/reset-password" className="text-xs text-primary hover:underline">Forgot password?</Link>}
+        {showForgot && <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>}
       </div>
       <div className="relative">
         <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--color-hero-muted)" }} />
