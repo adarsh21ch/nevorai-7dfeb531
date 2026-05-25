@@ -131,7 +131,84 @@ Deno.serve(async (req) => {
     }
   }
 
-  console.log("Scheduler summary:", JSON.stringify(summary));
+  // ── Landing page session reminders (~24h before session_datetime) ──
+  const reminderSummary = { pages: 0, emailsSent: 0, errors: 0 };
+  try {
+    const now = Date.now();
+    const windowStart = new Date(now + 24 * 3600_000 - 15 * 60_000).toISOString();
+    const windowEnd = new Date(now + 24 * 3600_000 + 15 * 60_000).toISOString();
+
+    const { data: pages, error: pagesErr } = await supabase
+      .from("landing_pages")
+      .select("id, title, session_datetime, session_link, owner_id")
+      .eq("status", "published")
+      .not("session_datetime", "is", null)
+      .gte("session_datetime", windowStart)
+      .lte("session_datetime", windowEnd);
+
+    if (pagesErr) throw pagesErr;
+
+    for (const page of pages || []) {
+      try {
+        reminderSummary.pages++;
+        const { data: regs } = await supabase
+          .from("landing_page_registrations")
+          .select("name, email")
+          .eq("landing_page_id", page.id)
+          .not("email", "is", null);
+
+        const whenLabel = new Date(page.session_datetime).toLocaleString("en-IN", {
+          weekday: "short", day: "numeric", month: "long",
+          hour: "numeric", minute: "2-digit", hour12: true,
+          timeZone: "Asia/Kolkata",
+        });
+
+        for (const r of regs || []) {
+          const email = (r.email || "").toLowerCase().trim();
+          if (!email) continue;
+          const joinBtn = page.session_link
+            ? `<p style="margin:24px 0"><a href="${page.session_link}" style="display:inline-block;background:#7EE83A;color:#0F1424;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700">Join the Session →</a></p>`
+            : "";
+          const html = `
+            <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#111">
+              <h2 style="margin:0 0 12px">Reminder: ${page.title} is tomorrow!</h2>
+              <p>Hi ${r.name || "there"},</p>
+              <p>This is a friendly reminder that <strong>${page.title}</strong> is happening on <strong>${whenLabel}</strong> (IST).</p>
+              ${joinBtn}
+              <p style="color:#6B7280;font-size:12px;margin-top:24px">See you there!</p>
+            </div>`;
+          try {
+            await fetch(`${supabaseUrl}/functions/v1/send-gmail-email`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: serviceRoleKey,
+                Authorization: `Bearer ${serviceRoleKey}`,
+              },
+              body: JSON.stringify({
+                user_id: page.owner_id,
+                to: email,
+                subject: `Reminder: ${page.title} is tomorrow!`,
+                html,
+              }),
+            });
+            reminderSummary.emailsSent++;
+          } catch (e) {
+            reminderSummary.errors++;
+            console.error("Reminder email failed:", (e as Error).message);
+          }
+        }
+      } catch (e) {
+        reminderSummary.errors++;
+        console.error(`Reminder page ${page.id} failed:`, (e as Error).message);
+      }
+    }
+  } catch (e) {
+    console.error("Landing page reminder block failed:", (e as Error).message);
+  }
+
+  console.log("Scheduler summary:", JSON.stringify(summary), "reminders:", JSON.stringify(reminderSummary));
+
 
   return new Response(JSON.stringify({ ok: true, summary }), {
     status: 200,
