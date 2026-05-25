@@ -398,13 +398,46 @@ export default function AuthPage() {
 
           {stage === "login" && (
             <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm">Email</Label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--color-hero-muted)" }} />
-                  <Input className="auth-input pl-9" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-                </div>
+              <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-muted">
+                <button
+                  type="button"
+                  onClick={() => setLoginMode("email")}
+                  className={`text-xs font-medium py-1.5 rounded-md transition-colors ${loginMode === "email" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+                >Login with Email</button>
+                <button
+                  type="button"
+                  onClick={() => setLoginMode("phone")}
+                  className={`text-xs font-medium py-1.5 rounded-md transition-colors ${loginMode === "phone" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+                >Login with Phone</button>
               </div>
+
+              {loginMode === "email" ? (
+                <div className="space-y-2">
+                  <Label className="text-sm">Email</Label>
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--color-hero-muted)" }} />
+                    <Input className="auth-input pl-9" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label className="text-sm">WhatsApp Number</Label>
+                  <div className="flex gap-2">
+                    <span className="inline-flex items-center px-3 rounded-md bg-muted text-sm font-medium border border-input">+91</span>
+                    <Input
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="9876543210"
+                      maxLength={10}
+                      className="auth-input"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
               <PasswordField form={form} setForm={setForm} showPassword={showPassword} setShowPassword={setShowPassword} showForgot />
               <Button variant="hero" className="w-full" size="lg" disabled={submitting} style={{ borderRadius: "12px" }}>
                 {submitting ? (<span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Signing in…</span>) : "Sign In"}
@@ -416,6 +449,7 @@ export default function AuthPage() {
               </div>
             </form>
           )}
+
 
           {stage === "set-password" && (
             <div className="space-y-4">
