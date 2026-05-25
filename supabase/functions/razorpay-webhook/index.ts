@@ -27,16 +27,111 @@ function timingSafeEqual(a: string, b: string): boolean {
   return mismatch === 0;
 }
 
-async function verifyWebhookSignature(body: string, signature: string): Promise<boolean> {
-  if (!signature || !RAZORPAY_WEBHOOK_SECRET) return false;
+async function verifyWebhookSignature(body: string, signature: string, secret: string): Promise<boolean> {
+  if (!signature || !secret) return false;
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
-    "raw", encoder.encode(RAZORPAY_WEBHOOK_SECRET),
+    "raw", encoder.encode(secret),
     { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
   );
   const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
   const expectedSig = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
   return timingSafeEqual(expectedSig, signature.toLowerCase());
+}
+
+// Load webhook secret from DB (admin-editable), fall back to env var.
+async function loadWebhookSecret(serviceClient: any): Promise<string> {
+  try {
+    const { data } = await serviceClient
+      .from("payment_provider_settings")
+      .select("webhook_secret, is_active")
+      .eq("provider", "razorpay")
+      .limit(1)
+      .maybeSingle();
+    if (data?.is_active && data?.webhook_secret) return data.webhook_secret;
+  } catch (e) {
+    console.warn("[razorpay-webhook] DB secret load failed, falling back to env:", e);
+  }
+  return RAZORPAY_WEBHOOK_SECRET ?? "";
+}
+
+// Post-payment hooks: WhatsApp invoice + Meta pixel Purchase + payment_webhook_log.
+async function firePostPaymentHooks(
+  serviceClient: any,
+  userId: string,
+  paymentEntity: any,
+  planKey: string | null,
+) {
+  try {
+    const amount = Number(paymentEntity?.amount ?? 0) / 100;
+    const currency = paymentEntity?.currency ?? "INR";
+    const paymentId = paymentEntity?.id;
+    const { data: profile } = await serviceClient
+      .from("profiles").select("id, full_name, phone, email").eq("id", userId).maybeSingle();
+    const userPhone = profile?.phone || paymentEntity?.contact || null;
+    const userEmail = profile?.email || paymentEntity?.email || null;
+    const userName = profile?.full_name || "there";
+    const planLabel = (planKey || "").split("_")[0] || "Pro";
+    const appLink = Deno.env.get("NEVORAI_APP_LINK") || "https://nevorai.com/dashboard";
+    const invoiceLink = `https://dashboard.razorpay.com/app/payments/${paymentId}`;
+
+    if (userPhone) {
+      const { data: tpl } = await serviceClient
+        .from("whatsapp_templates").select("body")
+        .eq("name", "Payment Confirmation").eq("is_active", true).maybeSingle();
+      if (tpl?.body) {
+        const message = tpl.body
+          .replace(/\{\{\s*name\s*\}\}/g, userName)
+          .replace(/\{\{\s*plan\s*\}\}/g, planLabel)
+          .replace(/\{\{\s*invoice_link\s*\}\}/g, invoiceLink)
+          .replace(/\{\{\s*app_link\s*\}\}/g, appLink);
+        try {
+          await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/whatsapp-send-text`, {
+            method: "POST",
+            headers: { "content-type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+            body: JSON.stringify({ phone: userPhone, message }),
+          });
+        } catch (e) { console.warn("whatsapp-send-text failed:", e); }
+      }
+
+      const { data: onboardAuto } = await serviceClient
+        .from("whatsapp_automations").select("id")
+        .in("trigger_event", ["subscribed", "subscription_activated", "payment_captured"])
+        .eq("is_active", true).limit(1).maybeSingle();
+      if (onboardAuto) {
+        await serviceClient.from("whatsapp_sequence_enrollments").insert({
+          phone_number: userPhone, user_id: userId, automation_id: onboardAuto.id,
+          current_step: 0, next_send_at: new Date().toISOString(), status: "active",
+        });
+      }
+    }
+
+    try {
+      await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/meta-pixel-fire`, {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
+        body: JSON.stringify({
+          event_name: "Purchase", event_id: `purchase_${paymentId}`,
+          user_phone: userPhone, user_email: userEmail,
+          custom_data: { value: amount, currency, plan: planKey ?? "unknown" },
+        }),
+      });
+    } catch (e) { console.warn("meta-pixel-fire failed:", e); }
+
+    await serviceClient.from("payment_webhook_log").insert({
+      event_id: paymentId, event_type: "payment.captured",
+      payload: { user_id: userId, plan_key: planKey, amount, currency }, status: "ok",
+    });
+  } catch (e: any) {
+    console.error("[razorpay-webhook] post-payment hooks failed:", e);
+    try {
+      await serviceClient.from("payment_webhook_log").insert({
+        event_id: paymentEntity?.id ?? null, event_type: "payment.captured",
+        payload: { user_id: userId, plan_key: planKey }, status: "error",
+        error: String(e?.message ?? e),
+      });
+    } catch { /* ignore */ }
+  }
 }
 
 /**
@@ -191,7 +286,8 @@ Deno.serve(async (req) => {
   const signature = req.headers.get("x-razorpay-signature") || "";
 
   try {
-    const isValid = await verifyWebhookSignature(rawBody, signature);
+    const webhookSecret = await loadWebhookSecret(serviceClient);
+    const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
     if (!isValid) {
       console.error("Invalid webhook signature");
       return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 200 });
@@ -248,6 +344,10 @@ Deno.serve(async (req) => {
           );
           if (result.provisioned) {
             console.log("[webhook] subscription provisioned via fallback for", paymentEntity.id);
+          }
+          // Always fire post-payment hooks (WhatsApp invoice + Meta pixel), idempotent on event_id.
+          if (userId) {
+            await firePostPaymentHooks(serviceClient, userId, paymentEntity, planKey ?? null);
           }
         } else if (userId && paymentEntity) {
           // Non-standard order kind: just ensure status flips active if a row exists.
