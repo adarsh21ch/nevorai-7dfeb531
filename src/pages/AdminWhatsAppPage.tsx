@@ -268,62 +268,6 @@ const AdminWhatsAppPage = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="templates" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Template mapping</CardTitle>
-                <CardDescription>
-                  Enter the WhatsApp template name (as approved in Meta Business Manager) for each automation.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {AUTOMATIONS.map((a) => (
-                  <div key={a.id} className="grid sm:grid-cols-[1fr_2fr] gap-3 items-start">
-                    <div>
-                      <p className="text-sm font-medium">{a.label}</p>
-                      <p className="text-xs text-muted-foreground">{a.description}</p>
-                    </div>
-                    <Input
-                      value={templateFor(a.id)}
-                      onChange={(e) => setTemplate(a.id, e.target.value)}
-                      placeholder="approved_template_name"
-                    />
-                  </div>
-                ))}
-                <Button onClick={() => save({})} disabled={saving}>
-                  {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Save templates
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="automations" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Automation triggers</CardTitle>
-                <CardDescription>Toggle each trigger on or off.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {AUTOMATIONS.map((a) => {
-                  const enabled = settings.automations_enabled?.[a.id] ?? false;
-                  return (
-                    <div key={a.id} className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
-                      <div className="pr-3">
-                        <p className="text-sm font-medium">{a.label}</p>
-                        <p className="text-xs text-muted-foreground">{a.description}</p>
-                      </div>
-                      <Switch
-                        checked={enabled}
-                        onCheckedChange={(v) => toggleAutomation(a.id, v)}
-                        disabled={saving}
-                      />
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="logs" className="space-y-4 mt-4">
             <Card>
