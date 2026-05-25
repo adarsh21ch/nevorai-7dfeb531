@@ -225,13 +225,15 @@ Deno.serve(async (req) => {
         .then((r) => ({ key: "creator", data: r.data }))
     );
 
-    // Form config
+    // Form config — select * so newly-added columns (show_state, show_whatsapp,
+    // custom_fields, etc.) are always returned even if this edge fn isn't redeployed.
+    // maybeSingle so a missing config row doesn't error out the whole bundle.
     promises.push(
       supabase
         .from("funnel_lead_form_config")
-        .select("capture_enabled, capture_timing, show_name, name_required, show_phone, phone_required, show_email, email_required, show_city, city_required, show_state, state_required, show_whatsapp, whatsapp_required, show_custom, custom_required, custom_field_label, custom_fields")
+        .select("*")
         .eq("funnel_id", funnel.id)
-        .single()
+        .maybeSingle()
         .then((r) => ({ key: "formConfig", data: r.data }))
     );
 
