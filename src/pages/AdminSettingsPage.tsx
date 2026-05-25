@@ -18,6 +18,11 @@ import { MetaPixelTab } from "@/components/admin/settings/MetaPixelTab";
 import { FormDiagnosticsTab } from "@/components/admin/settings/FormDiagnosticsTab";
 import { Link } from "@/lib/router-compat";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConversationsTab } from "@/components/admin/whatsapp/ConversationsTab";
+import { LeadsTab } from "@/components/admin/whatsapp/LeadsTab";
+import { AutomationsTab } from "@/components/admin/whatsapp/AutomationsTab";
+import { BroadcastsTab } from "@/components/admin/whatsapp/BroadcastsTab";
 
 type TabKey = "gmail" | "announcement" | "maintenance" | "verification" | "creator" | "landing" | "academy" | "whatsapp" | "payments" | "metapixel" | "form_diagnostics";
 
@@ -501,17 +506,29 @@ const AdminSettingsPage = () => {
             {activeTab === "form_diagnostics" && <FormDiagnosticsTab />}
 
             {activeTab === "whatsapp" && (
-              <div className="glass-card p-3 sm:p-6 space-y-3">
+              <div className="glass-card p-3 sm:p-6 space-y-4">
                 <h2 className="text-sm font-heading font-semibold flex items-center gap-2 sm:text-base">
                   <MessageCircle size={16} className="text-primary" /> WhatsApp Console
                 </h2>
                 <p className="text-[11px] text-muted-foreground leading-relaxed sm:text-xs">
                   Manage WhatsApp Business API connection, automations, templates, and message logs.
                 </p>
-                <Link to="/admin/whatsapp">
-                  <Button variant="hero" size="sm" className="min-h-[40px] text-xs">
-                    <ExternalLink size={14} /> Open WhatsApp Console
-                  </Button>
+                <Tabs defaultValue="conversations" className="w-full">
+                  <div className="overflow-x-auto -mx-1 px-1">
+                    <TabsList>
+                      <TabsTrigger value="conversations">Conversations</TabsTrigger>
+                      <TabsTrigger value="leads">Leads</TabsTrigger>
+                      <TabsTrigger value="automations">Automations</TabsTrigger>
+                      <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
+                    </TabsList>
+                  </div>
+                  <TabsContent value="conversations" className="mt-4"><ConversationsTab /></TabsContent>
+                  <TabsContent value="leads" className="mt-4"><LeadsTab /></TabsContent>
+                  <TabsContent value="automations" className="mt-4"><AutomationsTab /></TabsContent>
+                  <TabsContent value="broadcasts" className="mt-4"><BroadcastsTab /></TabsContent>
+                </Tabs>
+                <Link to="/admin/whatsapp" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <MessageCircle size={12} /> Legacy Console <ExternalLink size={12} />
                 </Link>
               </div>
             )}
