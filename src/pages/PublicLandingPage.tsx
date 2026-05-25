@@ -522,6 +522,12 @@ const PublicLandingPage = () => {
                   </Button>
                 </form>
 
+                {Number((page as any).total_registrations) > 5 && (
+                  <p className="text-xs text-center font-medium text-foreground/80">
+                    🔥 {(page as any).total_registrations} people already registered
+                  </p>
+                )}
+
                 <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
                   <Lock size={12} /> Your information is safe with us
                 </p>
