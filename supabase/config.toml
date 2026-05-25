@@ -40,3 +40,12 @@ verify_jwt = false
 [functions.whatsapp-send-text]
 verify_jwt = false
 
+[functions.whatsapp-scheduler]
+verify_jwt = false
+
+[functions.whatsapp-send-otp]
+verify_jwt = false
+
+[functions.whatsapp-verify-otp]
+verify_jwt = false
+
