@@ -199,8 +199,24 @@ export default function AuthPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      let loginEmail = form.email.trim().toLowerCase();
+
+      if (loginMode === "phone") {
+        const cleanPhone = form.phone.replace(/\D/g, "").slice(-10);
+        if (cleanPhone.length !== 10) { toast.error("Enter a valid 10-digit number"); return; }
+        const { data: lookup, error: lkErr } = await supabase.functions.invoke("lookup-email-by-phone", {
+          body: { phone_number: cleanPhone },
+        });
+        if (lkErr || !lookup?.email) {
+          toast.error("No account found with this number.");
+          return;
+        }
+        loginEmail = lookup.email;
+        setForm((f) => ({ ...f, email: loginEmail }));
+      }
+
       try {
-        const { data: lockData } = await supabase.rpc("check_auth_lockout", { _email: form.email, _ip: null as unknown as string });
+        const { data: lockData } = await supabase.rpc("check_auth_lockout", { _email: loginEmail, _ip: null as unknown as string });
         const lock = lockData as { locked?: boolean; unlock_at?: string } | null;
         if (lock?.locked) {
           const unlockAt = lock.unlock_at ? new Date(lock.unlock_at) : null;
@@ -210,20 +226,21 @@ export default function AuthPage() {
         }
       } catch { /* lockout RPC missing — proceed */ }
 
-      const { error } = await signIn(form.email, form.password);
+      const { error } = await signIn(loginEmail, form.password);
       void (async () => {
         try {
-          await supabase.rpc("record_auth_attempt", { _email: form.email, _ip: null as unknown as string, _success: !error });
+          await supabase.rpc("record_auth_attempt", { _email: loginEmail, _ip: null as unknown as string, _success: !error });
         } catch {
           return undefined;
         }
       })();
 
-      if (error) { toast.error("Invalid email or password."); return; }
+      if (error) { toast.error(loginMode === "phone" ? "Wrong password for this number." : "Invalid email or password."); return; }
       toast.success("Welcome back!");
       navigate({ to: redirectWithPlan, replace: true });
     } finally { setSubmitting(false); }
   };
+
 
   const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
