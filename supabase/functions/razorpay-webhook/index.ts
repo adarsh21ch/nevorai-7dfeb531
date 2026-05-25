@@ -272,9 +272,20 @@ async function provisionSubscriptionFromOrder(
   return { provisioned: true };
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "content-type, x-razorpay-signature, authorization, apikey",
+  "Access-Control-Max-Age": "86400",
+};
+const jsonCors = { "content-type": "application/json", ...corsHeaders };
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   const serviceClient = createClient(
