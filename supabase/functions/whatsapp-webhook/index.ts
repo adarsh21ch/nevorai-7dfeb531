@@ -1,4 +1,4 @@
-// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v11 — Knowledge Base: structured step-by-step help articles + video together)
+// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v12 — Academy intent + help article editor bug fix)
 //   GET  → token verification handshake
 //   POST → inbound message → user lookup → verification check → personalized reply or Gemini AI → send → log
 //
@@ -811,6 +811,16 @@ Our team will reach out to confirm.`,
   {
     match: (t) => includesAny(t, ["hindi", "language", "vernacular", "regional"]),
     reply: () => `${BRAND_NAME} app is in English for now. Hindi support is on our roadmap. You can chat with our team in Hindi via WhatsApp anytime.`,
+  },
+
+  // ── Academy / tutorials ───────────────────────────────────────
+  {
+    match: (t) => includesAny(t, ["academy", "academy link", "tutorials link", "all tutorials", "learn nevorai", "nevorai academy", "training videos", "knowledge base"]),
+    reply: () => `📚 Visit Nevorai Academy for all our tutorials in one place:
+
+${NEVORAI_APP_LINK}/academy
+
+You'll find step-by-step guides on funnels, lead capture, billing, and more. Want me to send a specific tutorial? Just ask "how to upload video" or any feature you're stuck on.`,
   },
 
   // ── Short acks (OK / yes / no) ────────────────────────────────

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -213,33 +213,44 @@ function ArticleEditor({
   const [content, setContent] = useState("");
   const [keywords, setKeywords] = useState("");
   const [category, setCategory] = useState("general");
-  const [tutorialId, setTutorialId] = useState<string>("");
+  const [tutorialId, setTutorialId] = useState<string>("none");
   const [isPublished, setIsPublished] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Sync state with selected article
-  useState(() => {
-    if (article) {
-      setSlug(article.slug);
-      setTitle(article.title);
-      setContent(article.content);
-      setKeywords(article.keywords.join(", "));
-      setCategory(article.category);
-      setTutorialId(article.academy_tutorial_id || "");
-      setIsPublished(article.is_published);
-    }
-  });
-
-  // Re-sync if article changes
-  if (article && article.id && slug !== article.slug && title !== article.title) {
+  // Sync state with selected article whenever it changes (or when modal opens)
+  useEffect(() => {
+    if (!article) return;
     setSlug(article.slug);
     setTitle(article.title);
     setContent(article.content);
     setKeywords(article.keywords.join(", "));
     setCategory(article.category);
-    setTutorialId(article.academy_tutorial_id || "");
+    setTutorialId(article.academy_tutorial_id || "none");
     setIsPublished(article.is_published);
-  }
+  }, [article?.id, creating]);
+
+  // Auto-suggest academy videos based on current keywords + title
+  const suggestedTutorials = useMemo(() => {
+    if (!tutorials || tutorials.length === 0) return [];
+    const tokens = [
+      ...title.toLowerCase().split(/\s+/),
+      ...keywords.toLowerCase().split(/[\s,]+/),
+    ].filter((t) => t.length >= 4);
+    if (tokens.length === 0) return tutorials.slice(0, 5);
+    const scored = tutorials.map((t) => {
+      const titleL = t.title.toLowerCase();
+      let score = 0;
+      for (const tok of tokens) {
+        if (titleL.includes(tok)) score += 2;
+      }
+      return { t, score };
+    });
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .filter((s) => s.score > 0)
+      .slice(0, 5)
+      .map((s) => s.t);
+  }, [tutorials, title, keywords]);
 
   const handleSave = async () => {
     if (!slug || !title || !content) {
@@ -254,7 +265,7 @@ function ArticleEditor({
         content: content.trim(),
         keywords: keywords.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean),
         category,
-        academy_tutorial_id: tutorialId || null,
+        academy_tutorial_id: tutorialId && tutorialId !== "none" ? tutorialId : null,
         is_published: isPublished,
       };
 
@@ -357,14 +368,40 @@ function ArticleEditor({
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label>Linked Academy video (optional)</Label>
+          <div className="space-y-2 p-3 border rounded-md bg-muted/30">
+            <Label className="text-sm font-medium">📹 Attach Academy video (optional)</Label>
+            <p className="text-xs text-muted-foreground">
+              When the bot sends this article, it can also send a linked Nevorai Academy video alongside.
+            </p>
+
+            {suggestedTutorials.length > 0 && (
+              <div className="space-y-1">
+                <div className="text-[11px] font-medium text-muted-foreground">Suggested from Academy (based on your keywords):</div>
+                <div className="flex flex-wrap gap-1">
+                  {suggestedTutorials.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTutorialId(t.id)}
+                      className={`text-[11px] px-2 py-1 border rounded transition ${
+                        tutorialId === t.id
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      {t.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Select value={tutorialId} onValueChange={setTutorialId}>
               <SelectTrigger>
                 <SelectValue placeholder="None — text only" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None — text only</SelectItem>
+                <SelectItem value="none">None — text only</SelectItem>
                 {tutorials.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
                     [{t.category}] {t.title}
@@ -372,9 +409,6 @@ function ArticleEditor({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[10px] text-muted-foreground">
-              If set, the linked tutorial video is sent alongside the text.
-            </p>
           </div>
 
           <div className="flex gap-2 pt-2">
