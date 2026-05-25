@@ -75,6 +75,39 @@ interface Media {
   created_at: string;
 }
 
+function toAcademyTutorial(row: any): AcademyTutorial {
+  return {
+    id: String(row?.id ?? ""),
+    title: String(row?.title ?? ""),
+    description: String(row?.description ?? ""),
+    video_url: String(row?.video_url ?? ""),
+    thumbnail_url: typeof row?.thumbnail_url === "string" ? row.thumbnail_url : null,
+    category: String(row?.category ?? "general"),
+    duration_seconds: typeof row?.duration_seconds === "number" ? row.duration_seconds : 0,
+    is_published: Boolean(row?.is_published),
+  };
+}
+
+function toMedia(row: any): Media {
+  const rawType = row?.type;
+  const type: Media["type"] =
+    rawType === "video" || rawType === "image" || rawType === "document" || rawType === "audio"
+      ? rawType
+      : "document";
+
+  return {
+    id: String(row?.id ?? ""),
+    key: String(row?.key ?? ""),
+    label: String(row?.label ?? ""),
+    type,
+    url: String(row?.url ?? ""),
+    caption: typeof row?.caption === "string" ? row.caption : null,
+    filename: typeof row?.filename === "string" ? row.filename : null,
+    is_active: Boolean(row?.is_active),
+    created_at: String(row?.created_at ?? ""),
+  };
+}
+
 export function WhatsAppMediaTab() {
   const qc = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
@@ -86,7 +119,9 @@ export function WhatsAppMediaTab() {
         .from("whatsapp_media" as any)
         .select("*")
         .order("created_at", { ascending: false });
-      return (data || []) as unknown as Media[];
+
+      const rows = Array.isArray(data) ? data : [];
+      return rows.map(toMedia);
     },
   });
 
@@ -99,7 +134,9 @@ export function WhatsAppMediaTab() {
         .eq("is_published", true)
         .order("category", { ascending: true })
         .order("order_index", { ascending: true });
-      return (data || []) as unknown as AcademyTutorial[];
+
+      const rows = Array.isArray(data) ? data : [];
+      return rows.map(toAcademyTutorial);
     },
   });
 
