@@ -658,6 +658,95 @@ const LandingPageEditor = () => {
                 <Textarea value={form.email_footer_text} onChange={(e) => updateField("email_footer_text", e.target.value)} rows={2} className="mt-1.5 bg-muted border-border" />
               </div>
             </div>
+
+            <div className="p-4 bg-muted/50 rounded-xl space-y-4">
+              <h3 className="font-semibold text-sm">Session details (optional)</h3>
+
+              <div>
+                <Label>Session Link (Zoom / Google Meet)</Label>
+                <Input
+                  value={form.session_link || ""}
+                  onChange={(e) => updateField("session_link", e.target.value)}
+                  placeholder="Paste your Zoom or Meet link"
+                  className="mt-1.5 bg-muted border-border"
+                />
+              </div>
+
+              <div>
+                <Label>Resource / Video Link (YouTube etc.)</Label>
+                <Input
+                  value={form.resource_link || ""}
+                  onChange={(e) => updateField("resource_link", e.target.value)}
+                  placeholder="Paste a YouTube or any link"
+                  className="mt-1.5 bg-muted border-border"
+                />
+              </div>
+
+              <div>
+                <Label>Session Date &amp; Time</Label>
+                <Input
+                  type="datetime-local"
+                  value={form.session_datetime ? new Date(form.session_datetime).toISOString().slice(0, 16) : ""}
+                  onChange={(e) => updateField("session_datetime", e.target.value ? new Date(e.target.value).toISOString() : "")}
+                  className="mt-1.5 bg-muted border-border"
+                />
+              </div>
+
+              <ImageUploadField
+                label="Email Banner Image"
+                value={form.email_banner_url || ""}
+                onChange={(url) => updateField("email_banner_url", url)}
+                bucket="landing-page-banners"
+                folder="banners"
+              />
+
+              <div>
+                <Label>PDF Attachment (max 5MB)</Label>
+                {form.attachment_pdf_url ? (
+                  <div className="mt-1.5 flex items-center gap-2 p-2 rounded-lg border border-border bg-background/40">
+                    <FileText size={14} className="text-primary shrink-0" />
+                    <a href={form.attachment_pdf_url} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs truncate text-primary hover:underline">
+                      {form.attachment_pdf_url.split("/").pop()}
+                    </a>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => updateField("attachment_pdf_url", "")}>
+                      <X size={14} />
+                    </Button>
+                  </div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    className="mt-1.5 block text-xs"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      e.currentTarget.value = "";
+                      if (!f) return;
+                      if (f.type !== "application/pdf") { toast.error("PDF only"); return; }
+                      if (f.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
+                      const path = `pdfs/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.pdf`;
+                      const { error } = await supabase.storage
+                        .from("landing-page-attachments")
+                        .upload(path, f, { cacheControl: "3600", upsert: false, contentType: "application/pdf" });
+                      if (error) { toast.error(error.message); return; }
+                      const { data } = supabase.storage.from("landing-page-attachments").getPublicUrl(path);
+                      updateField("attachment_pdf_url", data.publicUrl);
+                      toast.success("PDF uploaded");
+                    }}
+                  />
+                )}
+              </div>
+
+              <div>
+                <Label>Redirect after registration (optional)</Label>
+                <Input
+                  value={form.redirect_url || ""}
+                  onChange={(e) => updateField("redirect_url", e.target.value)}
+                  placeholder="https://..."
+                  className="mt-1.5 bg-muted border-border"
+                />
+                <p className="text-xs text-muted-foreground mt-1">If set, prospect is redirected here after submitting the form.</p>
+              </div>
+            </div>
           </div>
         )}
       </div>
