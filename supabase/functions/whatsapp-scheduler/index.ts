@@ -210,8 +210,9 @@ Deno.serve(async (req) => {
   console.log("Scheduler summary:", JSON.stringify(summary), "reminders:", JSON.stringify(reminderSummary));
 
 
-  return new Response(JSON.stringify({ ok: true, summary }), {
+  return new Response(JSON.stringify({ ok: true, summary, reminders: reminderSummary }), {
     status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+
 });
