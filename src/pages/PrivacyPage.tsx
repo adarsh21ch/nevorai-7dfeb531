@@ -11,6 +11,9 @@ const PrivacyPage = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 pb-8 border-b border-border">
             <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">Privacy Policy</h1>
             <p className="text-sm text-muted-foreground mb-6">Last updated: May 2026</p>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+              <strong className="text-foreground">Legal Entity:</strong> Nevorai Technologies
+            </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Nevorai respects your privacy. This policy explains what data we collect, how we use it,
               and how we protect it. We comply with the Information Technology Act, 2000 and its amendments
@@ -22,9 +25,9 @@ const PrivacyPage = () => {
             <section>
               <h2 className="text-lg font-heading font-semibold text-foreground mb-3">1. Who We Are</h2>
               <p className="mb-3">
-                Nevorai is a product of Nevorai. We build a distraction-free video funnel platform for creators,
+                Nevorai is a product of <strong className="text-foreground">Nevorai Technologies</strong>. We build a distraction-free video funnel platform for creators,
                 coaches, and educators. When we say "Nevorai", "we", "us", or "our" in this policy, we mean
-                Nevorai and the Nevorai application.
+                Nevorai Technologies and the Nevorai application.
               </p>
               <p>
                 For any privacy-related concerns, contact us at{" "}
