@@ -928,6 +928,7 @@ const PublicFunnel = () => {
     mutationFn: async () => {
       if (leadForm.website) return;
       const s = (v: string | null | undefined) => (v ? sanitizeText(v) : null);
+      const { getTrackingSessionId } = await import("@/lib/tracking");
       await (supabase.from("funnel_leads") as any).insert({
         funnel_id: funnel!.id,
         name: s(leadForm.name), phone: leadForm.phone ? normalizePhone(leadForm.phone) : null,
@@ -937,6 +938,7 @@ const PublicFunnel = () => {
         custom_value: s(leadForm.custom_value),
         custom_field_values: customFieldValues,
         watch_progress_at_submit: watchSeconds,
+        session_id: getTrackingSessionId(),
         device_type: /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop",
         user_agent: navigator.userAgent,
         ...captureAttribution("funnel", funnel!.id, funnel!.slug),
