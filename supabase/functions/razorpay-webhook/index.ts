@@ -272,9 +272,20 @@ async function provisionSubscriptionFromOrder(
   return { provisioned: true };
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "content-type, x-razorpay-signature, authorization, apikey",
+  "Access-Control-Max-Age": "86400",
+};
+const jsonCors = { "content-type": "application/json", ...corsHeaders };
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   const serviceClient = createClient(
@@ -290,7 +301,7 @@ Deno.serve(async (req) => {
     const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
     if (!isValid) {
       console.error("Invalid webhook signature");
-      return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 200 });
+      return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 200, headers: jsonCors });
     }
 
     const event = JSON.parse(rawBody);
@@ -304,7 +315,7 @@ Deno.serve(async (req) => {
 
     if (existing) {
       console.log("Duplicate webhook, skipping:", idempotencyKey);
-      return new Response(JSON.stringify({ status: "duplicate" }), { status: 200 });
+      return new Response(JSON.stringify({ status: "duplicate" }), { status: 200, headers: jsonCors });
     }
 
     const paymentEntity = payload?.payment?.entity;
@@ -419,9 +430,9 @@ Deno.serve(async (req) => {
         console.log("Unhandled event:", eventType);
     }
 
-    return new Response(JSON.stringify({ status: "ok" }), { status: 200 });
+    return new Response(JSON.stringify({ status: "ok" }), { status: 200, headers: jsonCors });
   } catch (err: any) {
     console.error("Webhook error:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 200 });
+    return new Response(JSON.stringify({ error: err.message }), { status: 200, headers: jsonCors });
   }
 });
