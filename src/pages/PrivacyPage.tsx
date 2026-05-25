@@ -11,6 +11,9 @@ const PrivacyPage = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 pb-8 border-b border-border">
             <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">Privacy Policy</h1>
             <p className="text-sm text-muted-foreground mb-6">Last updated: May 2026</p>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+              <strong className="text-foreground">Legal Entity:</strong> Nevorai Technologies
+            </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Nevorai respects your privacy. This policy explains what data we collect, how we use it,
               and how we protect it. We comply with the Information Technology Act, 2000 and its amendments
