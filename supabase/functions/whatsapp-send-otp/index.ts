@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
-  let body: { phone_number?: string };
+  let body: { phone_number?: string; user_id?: string };
   try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }
 
   const phone = (body.phone_number || "").replace(/\D/g, "");
@@ -42,6 +42,17 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
+  // Duplicate check: another verified profile already owns this number.
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("whatsapp_number", phone)
+    .eq("whatsapp_verified", true)
+    .maybeSingle();
+  if (existing && existing.id !== body.user_id) {
+    return json({ error: "already_registered", message: "This WhatsApp number is already registered. Please login instead." }, 409);
+  }
+
   // Rate limit: 1 OTP per phone per 60 sec
   const sixtySecAgo = new Date(Date.now() - 60_000).toISOString();
   const { data: recent } = await supabase
@@ -51,6 +62,7 @@ Deno.serve(async (req) => {
     .gt("created_at", sixtySecAgo)
     .maybeSingle();
   if (recent) return json({ error: "rate_limit", message: "Please wait 60 seconds before requesting another OTP." }, 429);
+
 
   // Load WhatsApp settings
   const { data: settings } = await supabase
