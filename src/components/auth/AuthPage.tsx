@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/landing/Logo";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { Eye, EyeOff, Mail, Lock, User as UserIcon, Phone, Sparkles, ArrowLeft, ShieldCheck, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User as UserIcon, Sparkles, ArrowLeft, ShieldCheck, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCapsLock } from "@/hooks/useCapsLock";
 import { supabase } from "@/integrations/supabase/client";
