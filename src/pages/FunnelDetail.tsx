@@ -216,7 +216,25 @@ const FunnelDetail = () => {
                 </SelectContent>
               </Select>
               <Button variant="outline" size="sm" onClick={() => {
-                const csv = "Name,Phone,Email,City,Status,Date\n" + leads.map((l: any) => `"${l.name || ""}","${l.phone || ""}","${l.email || ""}","${l.city || ""}","${l.status}","${l.submitted_at}"`).join("\n");
+                const customFieldDefs = Array.isArray((funnel as any)?.custom_fields)
+                  ? (funnel as any).custom_fields
+                  : [];
+                const header = ["Name","Phone","WhatsApp","Email","City","State","Status","Watch %","Last Seen","Submitted",...customFieldDefs.map((f: any) => f.label || f.id)].join(",");
+                const rows = (leads as any[]).map((l) => {
+                  const w = watchBySession[l.session_id];
+                  const live = w && (now - w.lastHeartbeat) < 60_000;
+                  const lastSeen = w?.lastHeartbeat ? new Date(w.lastHeartbeat).toISOString() : "";
+                  const pct = (l.watch_progress_at_submit && video?.duration_seconds)
+                    ? Math.min(100, Math.round((l.watch_progress_at_submit / video.duration_seconds) * 100)) + "%"
+                    : "";
+                  const cfvals = (customFieldDefs as any[]).map((f) => {
+                    const v = l.custom_field_values?.[f.id];
+                    return Array.isArray(v) ? v.join("; ") : (v ?? "");
+                  });
+                  return [l.name, l.phone, l.whatsapp, l.email, l.city, l.state, l.status, live ? "LIVE" : pct, lastSeen, l.submitted_at, ...cfvals]
+                    .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",");
+                });
+                const csv = header + "\n" + rows.join("\n");
                 const blob = new Blob([csv], { type: "text/csv" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a"); a.href = url; a.download = `leads-${funnel.slug}.csv`; a.click();
@@ -247,48 +265,127 @@ const FunnelDetail = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead><tr className="border-b border-border text-muted-foreground">
+                      <th className="w-8 p-3"></th>
                       <th className="text-left p-3 font-medium">Name</th>
                       <th className="text-left p-3 font-medium">Phone</th>
                       <th className="text-left p-3 font-medium hidden md:table-cell">Email</th>
                       <th className="text-left p-3 font-medium hidden lg:table-cell">City</th>
+                      <th className="text-left p-3 font-medium">Watch</th>
+                      <th className="text-left p-3 font-medium hidden md:table-cell">Last Seen</th>
                       <th className="text-left p-3 font-medium">Status</th>
                       <th className="text-left p-3 font-medium">Actions</th>
                     </tr></thead>
                     <tbody>
-                      {filteredLeads.map((l: any) => (
-                        <tr key={l.id} className="border-b border-border/50 hover:bg-muted/50">
-                          <td className="p-3 font-medium">{l.name || "—"}</td>
-                          <td className="p-3">{l.phone || "—"}</td>
-                          <td className="p-3 hidden md:table-cell">{l.email || "—"}</td>
-                          <td className="p-3 hidden lg:table-cell">{l.city || "—"}</td>
-                          <td className="p-3">
-                            <Select value={l.status || "new"} onValueChange={(v) => updateLeadStatus.mutate({ leadId: l.id, status: v })}>
-                              <SelectTrigger className="h-7 text-xs w-28 bg-muted border-border"><SelectValue /></SelectTrigger>
-                              <SelectContent className="bg-card border-border">
-                                <SelectItem value="new">New</SelectItem>
-                                <SelectItem value="contacted">Contacted</SelectItem>
-                                <SelectItem value="interested">Interested</SelectItem>
-                                <SelectItem value="converted">Converted</SelectItem>
-                                <SelectItem value="not_interested">Not Interested</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex gap-1">
-                              {l.phone && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(`https://wa.me/${l.phone?.replace(/\D/g, "")}`)}>
-                                  <MessageCircle size={14} className="text-success" />
-                                </Button>
-                              )}
-                              {l.phone && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(`tel:${l.phone}`)}>
-                                  <Phone size={14} />
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredLeads.map((l: any) => {
+                        const w = l.session_id ? watchBySession[l.session_id] : null;
+                        const live = !!(w && (now - w.lastHeartbeat) < 60_000);
+                        const lastSeenMs = w?.lastHeartbeat || null;
+                        const pct = (l.watch_progress_at_submit && video?.duration_seconds)
+                          ? Math.min(100, Math.round((l.watch_progress_at_submit / video.duration_seconds) * 100))
+                          : null;
+                        const cfvals: Array<[string, any]> = l.custom_field_values && typeof l.custom_field_values === "object"
+                          ? Object.entries(l.custom_field_values) : [];
+                        const isOpen = expandedLead === l.id;
+                        const fmtAgo = (ms: number) => {
+                          const s = Math.max(0, Math.floor((now - ms) / 1000));
+                          if (s < 60) return `${s}s ago`;
+                          if (s < 3600) return `${Math.floor(s/60)}m ago`;
+                          if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+                          return `${Math.floor(s/86400)}d ago`;
+                        };
+                        return (
+                          <React.Fragment key={l.id}>
+                            <tr className="border-b border-border/50 hover:bg-muted/50">
+                              <td className="p-3">
+                                <button onClick={() => setExpandedLead(isOpen ? null : l.id)} className="text-muted-foreground hover:text-foreground">
+                                  {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                </button>
+                              </td>
+                              <td className="p-3 font-medium">{l.name || "—"}</td>
+                              <td className="p-3">{l.phone || "—"}</td>
+                              <td className="p-3 hidden md:table-cell">{l.email || "—"}</td>
+                              <td className="p-3 hidden lg:table-cell">{l.city || "—"}</td>
+                              <td className="p-3">
+                                {live ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500">
+                                    <Radio size={10} className="animate-pulse" /> Live
+                                    {pct !== null && <span className="text-muted-foreground">· {pct}%</span>}
+                                  </span>
+                                ) : pct !== null ? (
+                                  <span className="text-xs">{pct}%</span>
+                                ) : l.watch_progress_at_submit ? (
+                                  <span className="text-xs text-muted-foreground">{Math.round(l.watch_progress_at_submit)}s</span>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">—</span>
+                                )}
+                              </td>
+                              <td className="p-3 hidden md:table-cell text-xs text-muted-foreground">
+                                {lastSeenMs ? fmtAgo(lastSeenMs) : "—"}
+                              </td>
+                              <td className="p-3">
+                                <Select value={l.status || "new"} onValueChange={(v) => updateLeadStatus.mutate({ leadId: l.id, status: v })}>
+                                  <SelectTrigger className="h-7 text-xs w-28 bg-muted border-border"><SelectValue /></SelectTrigger>
+                                  <SelectContent className="bg-card border-border">
+                                    <SelectItem value="new">New</SelectItem>
+                                    <SelectItem value="contacted">Contacted</SelectItem>
+                                    <SelectItem value="interested">Interested</SelectItem>
+                                    <SelectItem value="converted">Converted</SelectItem>
+                                    <SelectItem value="not_interested">Not Interested</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                              <td className="p-3">
+                                <div className="flex gap-1">
+                                  {(l.whatsapp || l.phone) && (
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(`https://wa.me/${(l.whatsapp || l.phone)?.replace(/\D/g, "")}`)}>
+                                      <MessageCircle size={14} className="text-success" />
+                                    </Button>
+                                  )}
+                                  {l.phone && (
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(`tel:${l.phone}`)}>
+                                      <Phone size={14} />
+                                    </Button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                            {isOpen && (
+                              <tr className="border-b border-border/50 bg-muted/30">
+                                <td></td>
+                                <td colSpan={8} className="p-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                                    {l.email && <div><span className="text-muted-foreground">Email: </span>{l.email}</div>}
+                                    {l.whatsapp && <div><span className="text-muted-foreground">WhatsApp: </span>{l.whatsapp}</div>}
+                                    {l.state && <div><span className="text-muted-foreground">State: </span>{l.state}</div>}
+                                    {l.city && <div><span className="text-muted-foreground">City: </span>{l.city}</div>}
+                                    {l.utm_source && <div><span className="text-muted-foreground">Source: </span>{l.utm_source}</div>}
+                                    {l.utm_campaign && <div><span className="text-muted-foreground">Campaign: </span>{l.utm_campaign}</div>}
+                                    {l.device_type && <div><span className="text-muted-foreground">Device: </span>{l.device_type}</div>}
+                                    {l.submitted_at && <div><span className="text-muted-foreground">Submitted: </span>{new Date(l.submitted_at).toLocaleString("en-IN")}</div>}
+                                    {l.watch_progress_at_submit ? (
+                                      <div><span className="text-muted-foreground">Watched at submit: </span>{Math.round(l.watch_progress_at_submit)}s{video?.duration_seconds ? ` (${Math.round((l.watch_progress_at_submit / video.duration_seconds) * 100)}%)` : ""}</div>
+                                    ) : null}
+                                    {lastSeenMs && (
+                                      <div><span className="text-muted-foreground">Last activity: </span>{new Date(lastSeenMs).toLocaleString("en-IN")} {live && <span className="text-emerald-500 font-medium">· watching now</span>}</div>
+                                    )}
+                                    {cfvals.length > 0 && (
+                                      <div className="md:col-span-2 mt-2 pt-2 border-t border-border/40">
+                                        <div className="text-muted-foreground mb-1 font-medium">Custom fields</div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+                                          {cfvals.map(([k, v]) => (
+                                            <div key={k}><span className="text-muted-foreground">{k}: </span>{Array.isArray(v) ? v.join(", ") : String(v ?? "—")}</div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {l.notes && <div className="md:col-span-2"><span className="text-muted-foreground">Notes: </span>{l.notes}</div>}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
