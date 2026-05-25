@@ -35,6 +35,19 @@ interface ConversationMessage {
   created_at: string;
 }
 
+function toConversationMessage(row: any): ConversationMessage {
+  return {
+    id: String(row?.id ?? ""),
+    phone_number: String(row?.phone_number ?? ""),
+    direction: row?.direction === "outbound" ? "outbound" : "inbound",
+    message_body: typeof row?.message_body === "string" ? row.message_body : null,
+    status: String(row?.status ?? ""),
+    reply_method: typeof row?.reply_method === "string" ? row.reply_method : null,
+    ai_model: typeof row?.ai_model === "string" ? row.ai_model : null,
+    created_at: String(row?.created_at ?? ""),
+  };
+}
+
 const REPLY_METHOD_STYLES: Record<string, string> = {
   rule_based: "bg-blue-500/10 text-blue-600 border-blue-500/30",
   ai: "bg-purple-500/10 text-purple-600 border-purple-500/30",
@@ -145,7 +158,9 @@ export function WhatsAppConversationsTab() {
         .eq("phone_number", selectedPhone)
         .order("created_at", { ascending: true })
         .limit(500);
-      return (data || []) as unknown as ConversationMessage[];
+
+      const rows = Array.isArray(data) ? data : [];
+      return rows.map(toConversationMessage);
     },
     enabled: !!selectedPhone,
   });
