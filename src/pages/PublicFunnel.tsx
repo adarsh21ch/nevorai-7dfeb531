@@ -951,13 +951,8 @@ const PublicFunnel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [funnel?.id]);
 
-  useEffect(() => {
-    if (!funnel?.id) return;
-    const fired = milestoneFiredRef.current;
-    const dur = (window as any).__nfDur || 0;
-    // duration is captured via setVideoDuration; read latest from state via closure isn't ideal,
-    // use watchSeconds + a sentinel below
-  }, [funnel?.id]);
+
+
 
 
   const submitLead = useMutation({
