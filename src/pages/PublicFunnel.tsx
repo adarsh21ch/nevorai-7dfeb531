@@ -26,6 +26,8 @@ import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { isYouTubeUrl } from "@/lib/youtube";
 import { sanitizeText } from "@/lib/sanitize";
 import { trackEntityView, captureAttribution } from "@/lib/tracking";
+import { logFunnelEngagement } from "@/lib/funnelEngagement";
+import { trackLead, trackPixel } from "@/lib/pixel";
 import {
   normalizePhone,
   trimSmart,
