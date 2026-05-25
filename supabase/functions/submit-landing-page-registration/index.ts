@@ -147,10 +147,11 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString(),
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
     if (page.send_confirmation_email !== false && email) {
       emailDelivery.attempted = true
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
       try {
         const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-landing-page-confirmation`, {
           method: 'POST',
@@ -181,8 +182,6 @@ Deno.serve(async (req) => {
     }
 
     // ── WhatsApp notifications (best-effort, never blocks) ───────────────
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
     // 1) Notify creator if they have a verified WhatsApp number
     try {
