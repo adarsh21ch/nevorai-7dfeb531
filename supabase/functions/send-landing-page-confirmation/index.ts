@@ -218,7 +218,6 @@ Deno.serve(async (req) => {
     // Send via Gmail edge function. Authenticate as backend with the service
     // key in the apikey header so the gateway treats it as a service API key.
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
     const gmailRes = await fetch(`${supabaseUrl}/functions/v1/send-gmail-email`, {
       method: 'POST',
