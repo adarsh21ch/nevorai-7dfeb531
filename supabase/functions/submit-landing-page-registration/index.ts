@@ -180,15 +180,6 @@ Deno.serve(async (req) => {
       emailDelivery.timestamp = new Date().toISOString()
     }
 
-    // Persist diagnostic to landing_page_registrations.email_send_log
-    try {
-      await supabase
-        .from('landing_page_registrations')
-        .update({ email_send_log: emailDelivery })
-        .eq('id', reg.id)
-    } catch (e: any) {
-      console.error('Failed to persist email_send_log:', e?.message)
-    }
 
 
     return new Response(JSON.stringify({
