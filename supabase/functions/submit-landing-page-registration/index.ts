@@ -129,12 +129,22 @@ Deno.serve(async (req) => {
     }).eq('id', landing_page_id)
 
     // Fire confirmation email — call synchronously so we know the real result.
-    // Authenticate the nested Edge Function call with the service key in the
-    // `apikey` header. Supabase treats secret/service keys as API keys, not
-    // Bearer JWTs, so sending them in Authorization can be rejected upstream.
-    let emailDelivery: { attempted: boolean; sent: boolean; reason?: string } = {
+    let emailDelivery: {
+      attempted: boolean;
+      sent: boolean;
+      reason: string;
+      gmail_status: number | null;
+      resolved_plan_name: string | null;
+      timestamp: string;
+    } = {
       attempted: false,
       sent: false,
+      reason: page.send_confirmation_email === false
+        ? 'disabled_on_page'
+        : (!email ? 'no_email_provided' : ''),
+      gmail_status: null,
+      resolved_plan_name: null,
+      timestamp: new Date().toISOString(),
     }
 
     if (page.send_confirmation_email !== false && email) {
@@ -155,15 +165,31 @@ Deno.serve(async (req) => {
         })
         const emailJson = await emailRes.json().catch(() => ({}))
         emailDelivery.sent = !!emailJson?.sent
+        emailDelivery.gmail_status = emailRes.status
+        emailDelivery.resolved_plan_name = emailJson?.resolved_plan_name ?? null
         if (!emailDelivery.sent) {
           emailDelivery.reason = emailJson?.reason || emailJson?.error || `status_${emailRes.status}`
           console.error('Confirmation email not sent:', emailDelivery.reason)
+        } else {
+          emailDelivery.reason = 'ok'
         }
       } catch (e: any) {
         emailDelivery.reason = e?.message || 'fetch_failed'
         console.error('Confirmation email request failed:', e)
       }
+      emailDelivery.timestamp = new Date().toISOString()
     }
+
+    // Persist diagnostic to landing_page_registrations.email_send_log
+    try {
+      await supabase
+        .from('landing_page_registrations')
+        .update({ email_send_log: emailDelivery })
+        .eq('id', reg.id)
+    } catch (e: any) {
+      console.error('Failed to persist email_send_log:', e?.message)
+    }
+
 
     return new Response(JSON.stringify({
       success: true,
