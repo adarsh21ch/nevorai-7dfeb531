@@ -710,7 +710,7 @@ const PublicFunnel = () => {
   const [watchSeconds, setWatchSeconds] = useState(0);
   const [, setVideoDuration] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);
-  const [leadForm, setLeadForm] = useState({ name: "", phone: "", email: "", city: "", custom_value: "", website: "" });
+  const [leadForm, setLeadForm] = useState({ name: "", phone: "", email: "", city: "", state: "", whatsapp: "", custom_value: "", website: "" });
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | string[]>>({});
   const [leadErrors, setLeadErrors] = useState<Record<string, string | null>>({});
   const leadRefs = useRef<Record<string, HTMLElement | null>>({});
