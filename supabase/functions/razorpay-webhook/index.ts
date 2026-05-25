@@ -286,7 +286,8 @@ Deno.serve(async (req) => {
   const signature = req.headers.get("x-razorpay-signature") || "";
 
   try {
-    const isValid = await verifyWebhookSignature(rawBody, signature);
+    const webhookSecret = await loadWebhookSecret(serviceClient);
+    const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
     if (!isValid) {
       console.error("Invalid webhook signature");
       return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 200 });
@@ -343,6 +344,10 @@ Deno.serve(async (req) => {
           );
           if (result.provisioned) {
             console.log("[webhook] subscription provisioned via fallback for", paymentEntity.id);
+          }
+          // Always fire post-payment hooks (WhatsApp invoice + Meta pixel), idempotent on event_id.
+          if (userId) {
+            await firePostPaymentHooks(serviceClient, userId, paymentEntity, planKey ?? null);
           }
         } else if (userId && paymentEntity) {
           // Non-standard order kind: just ensure status flips active if a row exists.
