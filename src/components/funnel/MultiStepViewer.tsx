@@ -138,7 +138,17 @@ export const MultiStepViewer = ({
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [progressMap, setProgressMap] = useState<Record<string, StepProgress>>({});
   const [leadSubmitted, setLeadSubmitted] = useState(false);
-  const [leadForm, setLeadForm] = useState({ name: "", phone: "", email: "", city: "", custom_value: "", website: "" });
+  const [leadForm, setLeadForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    city: "",
+    state: "",
+    whatsapp: "",
+    custom_value: "",
+    website: "",
+  });
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | string[] | null>>({});
   const [leadErrors, setLeadErrors] = useState<Record<string, string | null>>({});
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const leadRefs = useRef<Record<string, HTMLElement | null>>({});
