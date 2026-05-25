@@ -1,4 +1,4 @@
-// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v12 — Academy intent + help article editor bug fix)
+// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v13 — fix intent ordering: remove broad "funnel"/"landing page" from generic intent)
 //   GET  → token verification handshake
 //   POST → inbound message → user lookup → verification check → personalized reply or Gemini AI → send → log
 //
