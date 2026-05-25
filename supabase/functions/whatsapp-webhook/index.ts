@@ -1,4 +1,4 @@
-// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v12 — Academy intent + help article editor bug fix)
+// Meta WhatsApp Cloud API webhook for Nevorai. (deploy v13 — fix intent ordering: remove broad "funnel"/"landing page" from generic intent)
 //   GET  → token verification handshake
 //   POST → inbound message → user lookup → verification check → personalized reply or Gemini AI → send → log
 //
@@ -526,9 +526,8 @@ Visit: ${NEVORAI_CALL_LINK}`,
   // ── Nevorai App / Video funnel ────────────────────────────────
   {
     match: (t) => includesAny(t, [
-      "nevorai app", "neverai app", "video funnel", "funnel",
-      "landing page", "forms", "lead capture", "video platform",
-      "recorded live", "live session", "youtube", "prospect",
+      "nevorai app", "neverai app", "video funnel", "video platform",
+      "recorded live", "live session", "youtube", "what is nevorai app",
     ]),
     reply: () => `${BRAND_NAME} helps creators, entrepreneurs, and business owners share focused video presentations with prospects.
 
