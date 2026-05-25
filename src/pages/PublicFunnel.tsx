@@ -1146,6 +1146,18 @@ const PublicFunnel = () => {
             {fieldErrEl("city")}
           </div>
         )}
+        {(formConfig as any)?.show_state && (
+          <div>
+            <Input ref={(el) => { leadRefs.current.state = el; }} {...cityInputProps} placeholder="State" value={leadForm.state} onChange={(e) => setLeadField("state", e.target.value)} onBlur={(e) => setLeadField("state", trimSmart(e.target.value))} aria-invalid={!!leadErrors.state} style={{ background: tc.inputBg, borderColor: errBorder("state"), color: tc.inputText }} className="h-12 rounded-xl" />
+            {fieldErrEl("state")}
+          </div>
+        )}
+        {(formConfig as any)?.show_whatsapp && (
+          <div>
+            <Input ref={(el) => { leadRefs.current.whatsapp = el; }} {...phoneInputProps} placeholder="WhatsApp Number" value={leadForm.whatsapp} onChange={(e) => setLeadField("whatsapp", e.target.value)} aria-invalid={!!leadErrors.whatsapp} style={{ background: tc.inputBg, borderColor: errBorder("whatsapp"), color: tc.inputText }} className="h-12 rounded-xl" />
+            {fieldErrEl("whatsapp")}
+          </div>
+        )}
         {formConfig?.show_custom && (
           <div>
             <Input ref={(el) => { leadRefs.current.custom_value = el; }} placeholder={formConfig.custom_field_label || "Additional Info"} value={leadForm.custom_value} onChange={(e) => setLeadField("custom_value", e.target.value)} aria-invalid={!!leadErrors.custom_value} style={{ background: tc.inputBg, borderColor: errBorder("custom_value"), color: tc.inputText }} className="h-12 rounded-xl" />
