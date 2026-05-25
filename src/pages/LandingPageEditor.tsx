@@ -36,6 +36,7 @@ const TEXT_FIELDS = [
   "sender_display_name", "post_submit_video_title", "post_submit_video_description",
   "testimonials_section_title", "field_custom_1_label", "field_custom_2_label",
   "og_title", "og_description",
+  "session_link", "resource_link", "redirect_url",
 ] as const;
 
 const sanitizeLandingPagePayload = (payload: Record<string, any>) => {
