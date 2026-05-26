@@ -335,7 +335,7 @@ export default function AuthPage() {
                     : (<span className="flex items-center gap-2"><ShieldCheck size={16} /> Verify & continue</span>)}
                 </Button>
                 <Button type="button" variant="outline" className="w-full" size="lg" disabled={submitting || resendCooldown > 0 || resendCount >= 3} onClick={handleSendOtp}>
-                  {resendCount >= 3 ? "Too many attempts" : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
+                  {resendCount >= 3 ? "Too many attempts" : resendCooldown > 0 ? `Resend code in 0:${resendCooldown.toString().padStart(2, "0")}` : "Resend code"}
                 </Button>
               </form>
             </div>
