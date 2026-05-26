@@ -188,7 +188,7 @@ export default function AuthPage() {
       }
       const { error } = await signUp(form.email, form.password, form.name, cleanPhone);
       if (error) { toast.error(error.message); return; }
-      toast.success("Account created! Welcome to nFlow.");
+      toast.success("Account created! Welcome to Nevorai.");
       // WhatsApp verification is optional — go straight to dashboard.
       navigate({ to: "/dashboard", replace: true });
     } finally { setSubmitting(false); }

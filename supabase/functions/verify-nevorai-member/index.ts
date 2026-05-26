@@ -3,7 +3,7 @@
 // the email exists in Nevorai at all (any user) and whether they are Pro.
 // In `send_otp` mode generates a 6-digit OTP and queues an email — works for
 // BOTH free and Pro Nevorai users (Pro gets Individual plan on confirm,
-// free just gets a recognized linked nFlow account).
+// free just gets a recognized linked Nevorai account).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
     const exists = inferExists(memberData, { email, phone });
     const isPro = memberData?.isPro === true;
 
-    // Check if an nFlow account already exists for this email — if so, the
+    // Check if an Nevorai account already exists for this email — if so, the
     // user should log in with their password instead of OTP.
     let hasNflowAccount = false;
     const checkEmail = (memberData?.email || email)?.toLowerCase();
@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Recognized Nevorai user but already has an nFlow account → don't send OTP
+    // Recognized Nevorai user but already has an Nevorai account → don't send OTP
     if (hasNflowAccount) {
       return new Response(
         JSON.stringify({
@@ -281,7 +281,7 @@ Deno.serve(async (req) => {
     });
 
     // INSTANT SEND — bypass queue. OTP must arrive in seconds, not minutes.
-    const subject = `Your nFlow verification code: ${code}`;
+    const subject = `Your Nevorai verification code: ${code}`;
     const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:32px 16px;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#1a1a1a;">
@@ -290,10 +290,10 @@ Deno.serve(async (req) => {
     <p style="font-size:40px;font-weight:700;letter-spacing:10px;margin:16px 0 24px;color:#111;">${code}</p>
     <p style="font-size:13px;color:#888;margin:0 0 4px;">This code expires in 10 minutes.</p>
     <p style="font-size:13px;color:#888;margin:0 0 24px;">If you didn't request this, ignore this email.</p>
-    <p style="font-size:13px;color:#aaa;margin:0;">— Team nFlow</p>
+    <p style="font-size:13px;color:#aaa;margin:0;">— Team Nevorai</p>
   </div>
 </body></html>`;
-    const text = `Your verification code: ${code}\n\nThis code expires in 10 minutes.\nIf you didn't request this, ignore this email.\n\n— Team nFlow`;
+    const text = `Your verification code: ${code}\n\nThis code expires in 10 minutes.\nIf you didn't request this, ignore this email.\n\n— Team Nevorai`;
 
     async function sendOnce(): Promise<boolean> {
       const ctrl = new AbortController();
@@ -312,7 +312,7 @@ Deno.serve(async (req) => {
               subject,
               html,
               text,
-              sender_name: "nFlow",
+              sender_name: "Nevorai",
             }),
             signal: ctrl.signal,
           },

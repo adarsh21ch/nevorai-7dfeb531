@@ -30,9 +30,9 @@ function buildWelcomeHtml(name: string, loginUrl: string): string {
 <html><head><meta charset="utf-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a1a;padding:40px 20px;">
   <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e5e5;">
-    <h2 style="font-size:20px;margin:0 0 12px;">🎉 Welcome to nFlow, ${name}!</h2>
+    <h2 style="font-size:20px;margin:0 0 12px;">🎉 Welcome to Nevorai, ${name}!</h2>
     <p style="font-size:15px;line-height:1.6;color:#444;">
-      As a Nevorai Pro member, you have free access to the nFlow Individual plan.
+      As a Nevorai Pro member, you have free access to the Nevorai Individual plan.
     </p>
     <p style="font-size:14px;line-height:1.6;color:#666;">
       Create video funnels, capture leads, and track your prospects — at no extra cost.
@@ -221,9 +221,9 @@ Deno.serve(async (req) => {
         await supabase.from("notifications").insert({
           user_id: profile.id,
           type: "member_welcome",
-          title: "🎉 nFlow Individual access",
+          title: "🎉 Nevorai Individual access",
           message:
-            "Your Nevorai Pro membership includes free nFlow Individual plan access.",
+            "Your Nevorai Pro membership includes free Nevorai Individual plan access.",
           data: { source: "admin_resend" },
         });
 
@@ -231,12 +231,12 @@ Deno.serve(async (req) => {
           queue_name: "transactional_emails",
           payload: {
             to: profile.email,
-            subject: "Your nFlow Individual access",
+            subject: "Your Nevorai Individual access",
             html: buildWelcomeHtml(displayName, loginUrl),
             label: "member_gateway_resend",
             message_id: `member-resend-${crypto.randomUUID()}`,
             queued_at: now,
-            from: "nFlow",
+            from: "Nevorai",
           },
         });
 

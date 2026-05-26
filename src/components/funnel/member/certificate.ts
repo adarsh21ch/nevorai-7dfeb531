@@ -138,7 +138,7 @@ export async function downloadCertificate(opts: {
   const a = document.createElement("a");
   a.href = url;
   const safeName = (memberName || "member").replace(/[^a-z0-9]+/gi, "_").toLowerCase();
-  a.download = `nflow_certificate_${safeName}.png`;
+  a.download = `nevorai_certificate_${safeName}.png`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

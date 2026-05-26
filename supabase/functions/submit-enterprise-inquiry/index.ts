@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
           to,
           subject,
           html,
-          sender_name: "nFlow Notifications",
+          sender_name: "Nevorai Notifications",
         },
       });
       if (res.error) {

@@ -329,7 +329,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Build MIME message. If attachments present, use multipart/mixed.
-    const fromName = sender_name || 'nFlow'
+    const fromName = sender_name || 'Nevorai'
     const fromEmail = tokenRow.gmail_email
     let mimeMessage: string
     if (attachments.length > 0) {

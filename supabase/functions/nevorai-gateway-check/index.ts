@@ -1,6 +1,6 @@
 // nevorai-gateway-check
 // Daily auto-check (cron-driven). For every Nevorai Pro user in the registry:
-//  - If they have an nFlow account but no member access yet → grant it
+//  - If they have an Nevorai account but no member access yet → grant it
 //    (using the current gateway settings) and queue a welcome notification.
 //  - If they already have access with a fixed-day duration:
 //      * Revoke if expires_at has passed
@@ -39,9 +39,9 @@ function buildEmailHtml(name: string, body: string, loginUrl: string): string {
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a1a;padding:40px 20px;">
   <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e5e5;">
     <div style="text-align:center;margin-bottom:20px;">
-      <h1 style="color:#22c55e;font-size:20px;margin:0;">nFlow</h1>
+      <h1 style="color:#22c55e;font-size:20px;margin:0;">Nevorai</h1>
     </div>
-    <h2 style="font-size:20px;margin:0 0 12px;">🎉 Welcome to nFlow, ${name}!</h2>
+    <h2 style="font-size:20px;margin:0 0 12px;">🎉 Welcome to Nevorai, ${name}!</h2>
     <div style="font-size:15px;line-height:1.6;color:#444;">${safeBody}</div>
     <div style="text-align:center;margin:28px 0 8px;">
       <a href="${loginUrl}" style="display:inline-block;background:#22c55e;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">Activate Your Access</a>
@@ -55,15 +55,15 @@ function buildWarningHtml(name: string, daysLeft: number, loginUrl: string): str
 <html><head><meta charset="utf-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a1a;padding:40px 20px;">
   <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e5e5;">
-    <h2 style="font-size:20px;margin:0 0 12px;">Hi ${name}, your nFlow access expires soon</h2>
+    <h2 style="font-size:20px;margin:0 0 12px;">Hi ${name}, your Nevorai access expires soon</h2>
     <p style="font-size:15px;line-height:1.6;color:#444;">
-      Your nFlow Individual access (granted as part of your Nevorai Pro membership) expires in <strong>${daysLeft} day${daysLeft === 1 ? "" : "s"}</strong>.
+      Your Nevorai Individual access (granted as part of your Nevorai Pro membership) expires in <strong>${daysLeft} day${daysLeft === 1 ? "" : "s"}</strong>.
     </p>
     <p style="font-size:14px;line-height:1.6;color:#666;">
-      Renew your Nevorai Pro membership to keep your nFlow access active without interruption.
+      Renew your Nevorai Pro membership to keep your Nevorai access active without interruption.
     </p>
     <div style="text-align:center;margin:24px 0 8px;">
-      <a href="${loginUrl}" style="display:inline-block;background:#22c55e;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">Open nFlow</a>
+      <a href="${loginUrl}" style="display:inline-block;background:#22c55e;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">Open Nevorai</a>
     </div>
   </div>
 </body></html>`;
@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
         const email = row.email?.toLowerCase().trim();
         if (!email) continue;
 
-        // Look up the nFlow profile by email
+        // Look up the Nevorai profile by email
         const { data: profile } = await supabase
           .from("profiles")
           .select(
@@ -203,9 +203,9 @@ Deno.serve(async (req) => {
               await supabase.from("notifications").insert({
                 user_id: profile.id,
                 type: "member_welcome",
-                title: "🎉 Welcome to nFlow!",
+                title: "🎉 Welcome to Nevorai!",
                 message:
-                  "Your Nevorai Pro membership now includes free nFlow Individual plan access.",
+                  "Your Nevorai Pro membership now includes free Nevorai Individual plan access.",
                 data: { source: "auto_check", expires_at: expiresAt },
               });
             }
@@ -220,12 +220,12 @@ Deno.serve(async (req) => {
                   queue_name: "transactional_emails",
                   payload: {
                     to: profile.email,
-                    subject: "🎉 You have free nFlow Individual access",
+                    subject: "🎉 You have free Nevorai Individual access",
                     html: buildEmailHtml(displayName, body, loginUrl),
                     label: "member_gateway_welcome",
                     message_id: `member-welcome-${crypto.randomUUID()}`,
                     queued_at: new Date().toISOString(),
-                    from: "nFlow",
+                    from: "Nevorai",
                   },
                 });
                 await supabase.from("member_access_logs").insert({
@@ -294,12 +294,12 @@ Deno.serve(async (req) => {
                   queue_name: "transactional_emails",
                   payload: {
                     to: profile.email,
-                    subject: `Your nFlow access expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
+                    subject: `Your Nevorai access expires in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
                     html: buildWarningHtml(displayName, daysLeft, loginUrl),
                     label: "member_gateway_expiry_warning",
                     message_id: `member-warn-${crypto.randomUUID()}`,
                     queued_at: new Date().toISOString(),
-                    from: "nFlow",
+                    from: "Nevorai",
                   },
                 });
                 await supabase.from("member_access_logs").insert({

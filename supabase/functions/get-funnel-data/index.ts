@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
             const used = mode === "daily" ? (stats as any)?.daily_used : (stats as any)?.used;
             const lim  = mode === "daily" ? (stats as any)?.daily_limit : (stats as any)?.limit;
 
-            const subject = `⚠️ Your nFlow funnel "${funnel.title}" has reached its view limit`;
+            const subject = `⚠️ Your Nevorai funnel "${funnel.title}" has reached its view limit`;
             const html = `
               <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
                 <h2 style="margin:0 0 12px">Your funnel reached its view limit</h2>
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
                   <li>Upgrade your plan for a higher limit</li>
                   <li>Or buy extra views for this month</li>
                 </ul>
-                <p><a href="https://nflow.nevorai.com/billing" style="display:inline-block;background:#1D4ED8;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Open billing</a></p>
+                <p><a href="https://nevorai.com/billing" style="display:inline-block;background:#1D4ED8;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Open billing</a></p>
                 <p style="color:#64748b;font-size:13px;margin-top:24px">Your existing leads and funnels are safe — only new views are paused.</p>
               </div>
             `;

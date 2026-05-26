@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       }
       return new Response(JSON.stringify(out, null, 2), {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json", "Content-Disposition": `attachment; filename="nflow-data-${userId}.json"` },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Content-Disposition": `attachment; filename="nevorai-data-${userId}.json"` },
       });
     }
 

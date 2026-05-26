@@ -56,7 +56,7 @@ function reminderHtml(opts: {
       <p style="margin:8px 0 0;color:#9CA3AF;font-size:14px">${opts.whenLabel} (IST)</p>
     </div>
     <a href="${opts.link}" style="display:inline-block;background:linear-gradient(90deg,#7EE83A,#1D4ED8);color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600">Join Session</a>
-    <p style="margin:24px 0 0;color:#6B7280;font-size:12px">You're receiving this because you registered for this session on nFlow.</p>
+    <p style="margin:24px 0 0;color:#6B7280;font-size:12px">You're receiving this because you registered for this session on Nevorai.</p>
   </div>`;
 }
 

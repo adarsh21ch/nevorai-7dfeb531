@@ -232,23 +232,23 @@ Deno.serve(async (req: Request) => {
         if (action === "approve") {
           const html = `
             <div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0F172A">
-              <h2 style="margin:0 0 12px">Your nFlow refund has been processed</h2>
+              <h2 style="margin:0 0 12px">Your Nevorai refund has been processed</h2>
               <p>Hi ${targetProfile.full_name || "there"},</p>
               <p>Your refund of <b>₹${refund.amount}</b> has been approved and will reflect in your account within 5–7 business days via your original payment method.</p>
-              <p>We hope to see you back on nFlow soon.</p>
-              <p style="margin-top:24px">— Team nFlow<br/>nFlow by Nevorai</p>
+              <p>We hope to see you back on Nevorai soon.</p>
+              <p style="margin-top:24px">— Team Nevorai<br/>Nevorai by Nevorai</p>
             </div>`;
-          await enqueueEmail(svc, targetProfile.email, "Your nFlow refund has been processed", html);
+          await enqueueEmail(svc, targetProfile.email, "Your Nevorai refund has been processed", html);
         } else {
           const html = `
             <div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0F172A">
-              <h2 style="margin:0 0 12px">Regarding your nFlow refund request</h2>
+              <h2 style="margin:0 0 12px">Regarding your Nevorai refund request</h2>
               <p>Hi ${targetProfile.full_name || "there"},</p>
               <p>We reviewed your refund request. Unfortunately your request does not qualify for our 7-day guarantee${adminNote ? ` because: <b>${adminNote}</b>` : ""}.</p>
               <p>Please contact us on WhatsApp if you have questions.</p>
-              <p style="margin-top:24px">— Team nFlow<br/>nFlow by Nevorai</p>
+              <p style="margin-top:24px">— Team Nevorai<br/>Nevorai by Nevorai</p>
             </div>`;
-          await enqueueEmail(svc, targetProfile.email, "Regarding your nFlow refund request", html);
+          await enqueueEmail(svc, targetProfile.email, "Regarding your Nevorai refund request", html);
         }
       }
 
