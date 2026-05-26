@@ -498,17 +498,31 @@ const PublicLandingPage = () => {
                           };
                           return (
                             <>
-                              <Input
-                                ref={(el) => { fieldRefs.current[k] = el; }}
-                                {...(extra as any)}
-                                type={(extra as any).type || (f as any).type || "text"}
-                                placeholder={(f as any).prefix ? `${(f as any).prefix} ` : ""}
-                                value={formData[k] || ""}
-                                onChange={onChange}
-                                onBlur={onBlur}
-                                aria-invalid={!!err}
-                                className={err ? "border-destructive" : ""}
-                              />
+                              {isPhone ? (
+                                <NPhoneInput
+                                  ref={(el: any) => { fieldRefs.current[k] = el; }}
+                                  value={formData[k] || ""}
+                                  onChange={(v: string | undefined) => {
+                                    setFormData((prev) => ({ ...prev, [k]: v || "" }));
+                                    if (err) setFieldErrors((p) => ({ ...p, [k]: null }));
+                                  }}
+                                  placeholder="Phone number"
+                                  aria-invalid={!!err}
+                                  className={err ? "border-destructive" : ""}
+                                />
+                              ) : (
+                                <Input
+                                  ref={(el) => { fieldRefs.current[k] = el; }}
+                                  {...(extra as any)}
+                                  type={(extra as any).type || (f as any).type || "text"}
+                                  placeholder={(f as any).prefix ? `${(f as any).prefix} ` : ""}
+                                  value={formData[k] || ""}
+                                  onChange={onChange}
+                                  onBlur={onBlur}
+                                  aria-invalid={!!err}
+                                  className={err ? "border-destructive" : ""}
+                                />
+                              )}
                               {err && <p className="text-xs text-destructive mt-1">{err}</p>}
                             </>
                           );
