@@ -219,12 +219,17 @@ export default function VerifyWhatsAppPage() {
                 type="button"
                 variant="outline"
                 size="lg"
-                className="w-full"
+                className={`w-full transition-all ${cooldown > 0 ? "opacity-50" : "animate-pulse-once"}`}
                 disabled={sending || cooldown > 0 || !!locked}
                 onClick={() => sendOtp(phone)}
               >
-                {cooldown > 0 ? `Resend in ${cooldown}s` : sending ? "Sending…" : "Resend OTP"}
+                {cooldown > 0
+                  ? `Resend OTP in 0:${cooldown.toString().padStart(2, "0")}`
+                  : sending ? "Sending…" : "Resend OTP"}
               </Button>
+              <p className="text-center text-[11px]" style={{ color: "var(--color-hero-muted)" }}>
+                Wait 60 seconds between resends to avoid being blocked.
+              </p>
             </>
           )}
 
