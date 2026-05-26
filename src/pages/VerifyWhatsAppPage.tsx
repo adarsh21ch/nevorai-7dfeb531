@@ -47,14 +47,30 @@ export default function VerifyWhatsAppPage() {
     const { data, error } = await supabase.functions.invoke("whatsapp-send-otp", {
       body: { phone_number: clean, user_id: user?.id },
     });
+    // supabase.functions.invoke puts non-2xx responses into `error` and
+    // wipes `data`. Try to read the JSON body from the error response so we
+    // can surface the real backend message ("template not approved", "rate
+    // limit", "already registered", etc.) instead of a generic toast.
+    let payload: any = data;
+    if (!payload && error && (error as any).context?.json) {
+      try { payload = await (error as any).context.json(); } catch { /* noop */ }
+    } else if (!payload && error && (error as any).context instanceof Response) {
+      try { payload = await (error as any).context.clone().json(); } catch { /* noop */ }
+    }
     setSending(false);
-    if (error || data?.error) {
-      const code = data?.error;
+    if (error || payload?.error) {
+      const code = payload?.error;
       if (code === "already_registered") {
-        toast.error("This WhatsApp number is already registered. Please login instead.");
+        toast.error(payload?.message || "This WhatsApp number is already registered. Please login instead.");
         return;
       }
-      toast.error(data?.message || "Could not send OTP. Try again.");
+      if (code === "rate_limit") {
+        toast.error(payload?.message || "Please wait 60 seconds before requesting another OTP.");
+        setCooldown(60);
+        return;
+      }
+      console.error("send-otp failed", { code, payload, error });
+      toast.error(payload?.message || "Could not send OTP. Try again.");
       return;
     }
     toast.success("OTP sent on WhatsApp");
@@ -63,6 +79,7 @@ export default function VerifyWhatsAppPage() {
     setOtp("");
     setTimeout(() => otpRef.current?.focus(), 100);
   }, [user?.id]);
+
 
   // Auto-send when arriving with a phone already on file
   useEffect(() => {
