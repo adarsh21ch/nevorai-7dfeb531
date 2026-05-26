@@ -46,12 +46,8 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
   const router = useRouter();
   const { signOut, user, profile, loading: authLoading } = useAuth();
 
-  // WhatsApp verification gate — every dashboard surface enforces this.
-  // Free-account abuse closes here: no verified number → no dashboard.
-  const needsWhatsApp = !authLoading && !!user && !!profile && !(profile as any).whatsapp_verified;
-  useEffect(() => {
-    if (needsWhatsApp) navigate("/verify-whatsapp");
-  }, [needsWhatsApp, navigate]);
+  // WhatsApp verification is OPTIONAL (temporary hotfix while OTP delivery
+  // is unreliable). Users can still verify via Settings → WhatsApp.
 
 
   const { isAdmin } = useAdmin();

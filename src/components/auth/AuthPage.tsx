@@ -188,9 +188,9 @@ export default function AuthPage() {
       }
       const { error } = await signUp(form.email, form.password, form.name, cleanPhone);
       if (error) { toast.error(error.message); return; }
-      toast.success("Account created! Verify your WhatsApp to continue.");
-      // The dashboard gate will route to /verify-whatsapp; navigate explicitly.
-      navigate({ to: "/verify-whatsapp", replace: true });
+      toast.success("Account created! Welcome to nFlow.");
+      // WhatsApp verification is optional — go straight to dashboard.
+      navigate({ to: "/dashboard", replace: true });
     } finally { setSubmitting(false); }
   };
 
