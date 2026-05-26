@@ -49,6 +49,7 @@ export const WhatsAppVerification = () => {
       return;
     }
     toast.success("OTP sent on WhatsApp");
+    setCooldown(60);
     setStep("otp");
   };
 
