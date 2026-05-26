@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "@/lib/router-compat";
 import { sanitizeText, normalizePhone } from "@/lib/sanitize";
+import { NPhoneInput, isValidPhoneNumber } from "@/components/ui/PhoneInput";
 
 const TEAM_SIZES = ["100-500", "500-1000", "1000-5000", "5000+"];
 
@@ -231,15 +232,14 @@ const EnterpriseInquiryPage = () => {
                       <Label htmlFor="whatsapp_phone" className="text-xs">
                         WhatsApp Number *
                       </Label>
-                      <Input
-                        id="whatsapp_phone"
-                        type="tel"
-                        value={form.whatsapp_phone}
-                        onChange={(e) => update("whatsapp_phone", e.target.value)}
-                        className="mt-1"
-                        placeholder="+91 ..."
-                        aria-invalid={!!errors.whatsapp_phone}
-                      />
+                      <div className="mt-1">
+                        <NPhoneInput
+                          value={form.whatsapp_phone}
+                          onChange={(v: string | undefined) => update("whatsapp_phone", v || "")}
+                          placeholder="WhatsApp number"
+                          aria-invalid={!!errors.whatsapp_phone}
+                        />
+                      </div>
                       {errors.whatsapp_phone && (
                         <p className="text-[11px] text-destructive mt-0.5">{errors.whatsapp_phone}</p>
                       )}
