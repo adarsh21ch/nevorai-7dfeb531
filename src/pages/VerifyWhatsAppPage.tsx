@@ -75,7 +75,7 @@ export default function VerifyWhatsAppPage() {
     }
     toast.success("OTP sent on WhatsApp");
     setStep("otp");
-    setCooldown(30);
+    setCooldown(60);
     setOtp("");
     setTimeout(() => otpRef.current?.focus(), 100);
   }, [user?.id]);
