@@ -53,3 +53,7 @@ verify_jwt = false
 [functions.whatsapp-verify-otp]
 verify_jwt = false
 
+[functions.lookup-email-by-phone]
+verify_jwt = false
+
+
