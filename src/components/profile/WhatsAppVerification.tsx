@@ -14,6 +14,13 @@ export const WhatsAppVerification = () => {
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"input" | "otp" | "verified">("input");
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   useEffect(() => {
     if (p?.whatsapp_verified && p.whatsapp_number) {
