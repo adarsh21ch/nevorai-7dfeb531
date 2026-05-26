@@ -29,13 +29,22 @@ export const WhatsAppVerification = () => {
     if (clean.length < 10) { toast.error("Enter a valid phone"); return; }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("whatsapp-send-otp", {
-      body: { phone_number: clean },
+      body: { phone_number: clean, user_id: user?.id },
     });
     setLoading(false);
-    if (error || data?.error) { toast.error(data?.message || data?.error || "Failed to send OTP"); return; }
+    // Read JSON from error.context when non-2xx so we get the real message
+    let payload: any = data;
+    if (!payload && error && (error as any).context?.json) {
+      try { payload = await (error as any).context.json(); } catch { /* noop */ }
+    }
+    if (error || payload?.error) {
+      toast.error(payload?.message || payload?.error || "Failed to send OTP");
+      return;
+    }
     toast.success("OTP sent on WhatsApp");
     setStep("otp");
   };
+
 
   const verifyOtp = async () => {
     const clean = phone.replace(/\D/g, "");
