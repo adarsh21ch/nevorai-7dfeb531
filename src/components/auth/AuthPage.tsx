@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCapsLock } from "@/hooks/useCapsLock";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { NPhoneInput, isValidPhoneNumber } from "@/components/ui/PhoneInput";
 
 type Stage = "email" | "login" | "signup" | "nevorai-otp" | "set-password";
 
@@ -170,23 +171,24 @@ export default function AuthPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) { toast.error("Please enter your name"); return; }
-    const cleanPhone = form.phone.replace(/\D/g, "").slice(-10);
-    if (cleanPhone.length !== 10) { toast.error("Enter a valid 10-digit Indian mobile number"); return; }
+    if (!isValidPhoneNumber(form.phone)) { toast.error("Enter a valid phone number"); return; }
+    const e164 = form.phone; // already E.164 from NPhoneInput
     if (form.password.length < 8) { toast.error("Password must be at least 8 characters"); return; }
     setSubmitting(true);
     try {
-      // Pre-check: duplicate verified WhatsApp number
+      // Pre-check: duplicate verified WhatsApp number (check both E.164 and legacy 10-digit form)
+      const legacy = e164.replace(/^\+91/, "").replace(/\D/g, "");
       const { data: dup } = await (supabase as any)
         .from("profiles")
         .select("id")
-        .eq("whatsapp_number", cleanPhone)
+        .in("whatsapp_number", [e164, legacy])
         .eq("whatsapp_verified", true)
         .maybeSingle();
       if (dup) {
         toast.error("This WhatsApp number is already registered. Please login instead.");
         return;
       }
-      const { error } = await signUp(form.email, form.password, form.name, cleanPhone);
+      const { error } = await signUp(form.email, form.password, form.name, e164);
       if (error) { toast.error(error.message); return; }
       toast.success("Account created! Welcome to Nevorai.");
       // WhatsApp verification is optional — go straight to dashboard.
@@ -202,10 +204,11 @@ export default function AuthPage() {
       let loginEmail = form.email.trim().toLowerCase();
 
       if (loginMode === "phone") {
-        const cleanPhone = form.phone.replace(/\D/g, "").slice(-10);
-        if (cleanPhone.length !== 10) { toast.error("Enter a valid 10-digit number"); return; }
+        if (!isValidPhoneNumber(form.phone)) { toast.error("Enter a valid phone number"); return; }
+        const e164 = form.phone;
+        const legacy = e164.replace(/^\+91/, "").replace(/\D/g, "");
         const { data: lookup, error: lkErr } = await supabase.functions.invoke("lookup-email-by-phone", {
-          body: { phone_number: cleanPhone },
+          body: { phone_number: e164, phone_legacy: legacy },
         });
         if (lkErr || !lookup?.email) {
           toast.error("No account found with this number.");
@@ -366,21 +369,13 @@ export default function AuthPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-sm">WhatsApp Number <span className="text-destructive">*</span></Label>
-                  <div className="flex gap-2">
-                    <span className="inline-flex items-center px-3 rounded-md bg-muted text-sm font-medium border border-input">+91</span>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="9876543210"
-                      className="auth-input"
-                      maxLength={10}
-                      required
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
-                    />
-                  </div>
-                  <p className="text-[11px]" style={{ color: "var(--color-hero-muted)" }}>You'll verify this on the next step via WhatsApp OTP.</p>
+                  <NPhoneInput
+                    id="phone"
+                    value={form.phone}
+                    onChange={(v) => setForm({ ...form, phone: v || "" })}
+                    placeholder="Enter your WhatsApp number"
+                  />
+                  <p className="text-[11px]" style={{ color: "var(--color-hero-muted)" }}>You can verify this later via WhatsApp OTP from Settings.</p>
                 </div>
 
                 <PasswordField form={form} setForm={setForm} showPassword={showPassword} setShowPassword={setShowPassword} />
@@ -422,19 +417,11 @@ export default function AuthPage() {
               ) : (
                 <div className="space-y-2">
                   <Label className="text-sm">WhatsApp Number</Label>
-                  <div className="flex gap-2">
-                    <span className="inline-flex items-center px-3 rounded-md bg-muted text-sm font-medium border border-input">+91</span>
-                    <Input
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="9876543210"
-                      maxLength={10}
-                      className="auth-input"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
-                      required
-                    />
-                  </div>
+                  <NPhoneInput
+                    value={form.phone}
+                    onChange={(v) => setForm({ ...form, phone: v || "" })}
+                    placeholder="Enter your WhatsApp number"
+                  />
                 </div>
               )}
 
