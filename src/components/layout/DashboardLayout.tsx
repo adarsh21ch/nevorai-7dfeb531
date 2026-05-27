@@ -130,7 +130,7 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
     <div className="h-screen w-full max-w-full overflow-hidden bg-background">
       <div className="flex h-full w-full max-w-full overflow-hidden">
         <aside className={cn(
-          "hidden h-full flex-col border-r border-border bg-sidebar transition-all duration-200 md:flex",
+          "hidden h-full flex-col border-r border-border bg-sidebar transition-all duration-200 lg:flex",
           collapsed ? "w-16" : "w-60"
         )}>
           <div className="h-0.5 w-full bg-gradient-brand-rich" style={{ marginTop: 'env(safe-area-inset-top)' }} />
@@ -230,7 +230,7 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
 
         <main className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
           {!editorMode && (
-            <div className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-sm md:hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+            <div className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-sm lg:hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
               <div className="flex items-center justify-between gap-3 px-3 py-2.5 pt-[5px]">
                 <div className="min-w-0 flex-1">
                   <Logo size="sm" showByline />
@@ -260,8 +260,8 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
           <div className={cn(
             "gradient-bg-subtle flex-1 overflow-x-hidden overflow-y-auto",
             editorMode
-              ? "px-0 pt-0 pb-[env(safe-area-inset-bottom)] md:p-0"
-              : "px-3 pb-[calc(96px+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pb-8 sm:pt-4 md:p-8"
+              ? "px-0 pt-0 pb-[env(safe-area-inset-bottom)] lg:p-0"
+              : "px-3 pb-[calc(96px+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pb-8 sm:pt-4 lg:p-8"
           )}>
             <div className="w-full min-w-0 max-w-full">{children}</div>
           </div>
@@ -269,7 +269,7 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
         {showTrialGate && <TrialExpiredGate trialDays={trialDays} />}
 
         {!editorMode && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md md:hidden safe-area-pb shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md lg:hidden safe-area-pb shadow-[0_-2px_12px_rgba(0,0,0,0.08)]">
           <div className="grid grid-cols-5 items-end">
             {[
               { icon: Home, label: "Home", path: "/dashboard", match: "exact" as const },
