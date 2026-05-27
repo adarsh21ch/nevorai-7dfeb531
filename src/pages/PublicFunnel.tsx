@@ -1,4 +1,5 @@
 import { useParams, Link } from "@/lib/router-compat";
+import { useVideoTracking } from "@/hooks/useVideoTracking";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase, supabaseProjectUrl, supabasePublishableKey } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
