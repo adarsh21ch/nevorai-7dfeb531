@@ -21,6 +21,7 @@ import {
   scrollToFirstError,
 } from "@/lib/leadInputs";
 import { NPhoneInput } from "@/components/ui/PhoneInput";
+import { StateSelect } from "@/components/ui/StateSelect";
 import { PrivacyMicrocopy } from "@/components/funnel/PrivacyMicrocopy";
 
 interface PrivateLeadFormProps {
@@ -297,17 +298,13 @@ export const PrivateLeadForm = ({
             {requiredFields.state && (
               <div>
                 <Label className="text-xs font-medium" style={{ color: textMuted }}>State</Label>
-                <Input
-                  ref={refs.state}
-                  {...cityInputProps}
-                  autoComplete="address-level1"
+                <StateSelect
+                  ref={refs.state as any}
                   value={form.state}
-                  onChange={(e) => setField("state", e.target.value)}
-                  onBlur={(e) => setField("state", trimSmart(e.target.value))}
-                  placeholder="Your state"
+                  onChange={(v: string) => setField("state", v)}
+                  aria-invalid={!!errors.state}
                   className="mt-1 h-11"
                   style={{ background: inputBg, borderColor: errors.state ? errColor : border, color: text }}
-                  aria-invalid={!!errors.state}
                 />
                 {fieldErr("state")}
               </div>
