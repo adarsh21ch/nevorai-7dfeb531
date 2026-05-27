@@ -263,8 +263,8 @@ const AdminPlansPage = () => {
       return;
     }
     // Check active subscriptions.
-    const { count, error: countErr } = await (supabase
-      .from("subscriptions") as any)
+    const { count, error: countErr } = await ((supabase as any)
+      .from("subscriptions"))
       .select("id", { count: "exact", head: true })
       .eq("plan", planName)
       .in("status", ["active", "trial"]);
