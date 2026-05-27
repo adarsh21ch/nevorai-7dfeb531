@@ -793,7 +793,7 @@ export const MultiStepViewer = ({
                   )}
                   {(formConfig as any)?.show_state && (
                     <div>
-                      <Input ref={(el) => { leadRefs.current.state = el; }} {...cityInputProps} autoComplete="address-level1" placeholder="State" value={leadForm.state} onChange={(e) => setLeadField("state", e.target.value)} onBlur={(e) => setLeadField("state", trimSmart(e.target.value))} aria-invalid={!!leadErrors.state} style={{ background: sc.inputBg, borderColor: leadErrors.state ? "#ef4444" : sc.cardBorder, color: sc.text }} className="h-12 rounded-xl" />
+                      <StateSelect value={leadForm.state} onChange={(v) => setLeadField("state", v)} aria-invalid={!!leadErrors.state} style={{ background: sc.inputBg, borderColor: leadErrors.state ? "#ef4444" : sc.cardBorder, color: sc.text }} />
                       {leadErrors.state && <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{leadErrors.state}</p>}
                     </div>
                   )}
