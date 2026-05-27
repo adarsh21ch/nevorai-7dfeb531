@@ -195,8 +195,10 @@ const PricingFullPage = () => {
 
   const freeConfig = planConfigs.find((c: any) => c.plan_name === "free");
   const basicConfig = withBasePrice(planConfigs.find((c: any) => c.plan_name === "basic"), "basic");
+  const growthConfig = withBasePrice(planConfigs.find((c: any) => c.plan_name === "growth"), "growth");
   const proConfig = withBasePrice(planConfigs.find((c: any) => c.plan_name === "pro"), "pro");
   const basicEnabled = basicConfig?.is_enabled !== false;
+  const growthEnabled = !!growthConfig && growthConfig?.is_enabled !== false;
   const proEnabled = proConfig?.is_enabled !== false;
 
   const getPrice = (config: any) => {
