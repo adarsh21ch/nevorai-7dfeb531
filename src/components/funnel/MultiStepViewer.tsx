@@ -921,6 +921,11 @@ export const MultiStepViewer = ({
                         autoplay={true}
                         initialTime={activeProgress?.last_position_seconds || 0}
                         onTimeUpdate={(ct: number, dur: number) => handleVideoTimeUpdate(activeStepIndex, ct, dur)}
+                        tracking={
+                          activeStep.video_asset_id
+                            ? { videoId: activeStep.video_asset_id, sourceType: "funnel", sourceId: funnel.id }
+                            : undefined
+                        }
                       />
                       {activeStep.video_asset_id && activeStep.video_allow_copy_link !== false && (
                         <div className="flex justify-end">
