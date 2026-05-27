@@ -55,7 +55,7 @@ const EditableNumberCell = ({
   );
 };
 
-export const ViewTiersManager = ({ planName }: { planName: "basic" | "growth" | "pro" }) => {
+export const ViewTiersManager = ({ planName }: { planName: string }) => {
   const qc = useQueryClient();
   const confirm = useConfirm();
   const [adding, setAdding] = useState(false);

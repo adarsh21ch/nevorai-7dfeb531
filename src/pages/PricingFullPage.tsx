@@ -380,8 +380,9 @@ const PricingFullPage = () => {
     freeIncluded.push("Upload videos (limited only by your storage)");
   }
   freeIncluded.push("Add videos via Nevorai Video Link");
-  if (freeConfig?.daily_view_limit === -1) freeIncluded.push("Unlimited daily views");
+  if (freeConfig?.daily_view_limit === -1 || freeConfig?.daily_view_limit == null) freeIncluded.push("Unlimited views/day");
   else if ((freeConfig?.daily_view_limit ?? 0) > 0) freeIncluded.push(`${freeConfig.daily_view_limit} views/day total`);
+  else freeIncluded.push("Unlimited views/day");
   freeIncluded.push("Access public content");
   freeIncluded.push("Browse marketplace");
 

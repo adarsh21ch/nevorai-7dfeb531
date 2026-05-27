@@ -1,105 +1,115 @@
-## What's actually failing
+# Fully Dynamic Plan Management
 
-Supabase error:
-```
-ERROR: 23514: new row for relation "plan_view_tiers" violates check constraint "plan_view_tiers_plan_name_check"
-```
+Goal: admin can create / edit / delete plans entirely from the UI. No code edits, no DB CHECK constraints, no hardcoded plan name unions.
 
-This has nothing to do with the `monthly_views` column from last time. The `plan_view_tiers.plan_name` column has a **CHECK constraint** that hard-codes the allowed values (almost certainly `('free','basic','pro','enterprise')`). Inserting `'growth'` is rejected before the row is even written.
+## 1. Database migration
 
-The same kind of CHECK is very likely present on `plan_config.plan_name` and `subscription_plans.tier` / `plan_key`, so the next two INSERTs would fail for the same reason.
-
-## Fix — run this SQL in Supabase (one block)
-
-It drops the old CHECKs, recreates them to include `growth`, then runs the inserts. Idempotent and safe to re-run.
+Run as a migration (schema changes only):
 
 ```sql
-BEGIN;
-
--- 1. Widen CHECK constraints to allow 'growth'
-ALTER TABLE public.plan_view_tiers
-  DROP CONSTRAINT IF EXISTS plan_view_tiers_plan_name_check;
-ALTER TABLE public.plan_view_tiers
-  ADD  CONSTRAINT plan_view_tiers_plan_name_check
-  CHECK (plan_name IN ('free','basic','growth','pro','enterprise'));
-
+-- New metadata columns on plan_config
 ALTER TABLE public.plan_config
-  DROP CONSTRAINT IF EXISTS plan_config_plan_name_check;
+  ADD COLUMN IF NOT EXISTS display_name  TEXT,
+  ADD COLUMN IF NOT EXISTS description   TEXT,
+  ADD COLUMN IF NOT EXISTS display_order INTEGER NOT NULL DEFAULT 100;
+
+-- Drop hardcoded CHECK constraints on plan_name (and any tier siblings)
+ALTER TABLE public.plan_config       DROP CONSTRAINT IF EXISTS plan_config_plan_name_check;
+ALTER TABLE public.plan_view_tiers   DROP CONSTRAINT IF EXISTS plan_view_tiers_plan_name_check;
+ALTER TABLE public.subscription_plans DROP CONSTRAINT IF EXISTS subscription_plans_tier_check;
+
+-- Add lightweight format check (lowercase a-z, digits, underscore)
 ALTER TABLE public.plan_config
-  ADD  CONSTRAINT plan_config_plan_name_check
-  CHECK (plan_name IN ('free','basic','growth','pro','enterprise'));
+  ADD CONSTRAINT plan_config_plan_name_format
+  CHECK (plan_name ~ '^[a-z][a-z0-9_]*$');
 
-ALTER TABLE public.subscription_plans
-  DROP CONSTRAINT IF EXISTS subscription_plans_tier_check;
-ALTER TABLE public.subscription_plans
-  ADD  CONSTRAINT subscription_plans_tier_check
-  CHECK (tier IN ('free','basic','growth','pro','enterprise'));
-
--- 2. plan_config row for Growth
-INSERT INTO public.plan_config (
-  plan_name, is_enabled, view_limit_mode,
-  max_funnels, max_landing_pages, max_live_sessions, max_leads,
-  max_storage_mb, max_team_members, max_custom_form_fields, max_leads_export,
-  daily_view_limit, monthly_views,
-  extra_views_unit_size, extra_views_price_per_unit,
-  feature_funnel_creation, feature_speaker_profile, feature_video_topics,
-  feature_contact_form, feature_privacy_settings, feature_lead_capture,
-  feature_custom_form_fields, feature_video_upload, feature_skip_control,
-  feature_youtube_import, feature_video_sharing,
-  feature_landing_pages, feature_landing_page_email,
-  feature_go_live, feature_whatsapp_automation, feature_smart_reminders,
-  feature_analytics, feature_advanced_analytics, feature_prospect_analytics,
-  feature_insights, multilevel_funnel_enabled,
-  feature_team_analytics, feature_custom_branding, feature_show_branding,
-  feature_priority_support,
-  yearly_validity_days, plan_badge_text
-) VALUES (
-  'growth', true, 'daily',
-  25, 10, 0, 5000,
-  15360, 0, 10, 500,
-  60, 1800,
-  100, 49,
-  true, true, true,
-  true, true, true,
-  true, true, true,
-  true, true,
-  true, true,
-  false, true, true,
-  true, true, false,
-  true, true,
-  false, true, true,
-  false,
-  365, 'For Active Builders'
-)
-ON CONFLICT (plan_name) DO NOTHING;
-
--- 3. plan_view_tiers base row for Growth (NOTE: monthly_views omitted — auto-generated)
-INSERT INTO public.plan_view_tiers (
-  plan_name, daily_views,
-  monthly_price, yearly_price,
-  is_base, is_popular, is_active, display_order
-) VALUES (
-  'growth', 60, 499, 4970, true, false, true, 0
-)
-ON CONFLICT DO NOTHING;
-
--- 4. subscription_plans rows
-INSERT INTO public.subscription_plans (plan_key, price_inr, is_active, billing_type, duration_days, tier)
-VALUES
-  ('growth_monthly', 499,  true, 'monthly', 30,  'growth'),
-  ('growth_yearly',  4970, true, 'yearly',  365, 'growth')
-ON CONFLICT (plan_key) DO UPDATE
-  SET price_inr = EXCLUDED.price_inr, is_active = true, tier = EXCLUDED.tier;
-
-COMMIT;
+-- Backfill display_name / display_order for existing rows
+UPDATE public.plan_config SET display_name = INITCAP(plan_name) WHERE display_name IS NULL;
+UPDATE public.plan_config SET display_order = CASE plan_name
+  WHEN 'free' THEN 10
+  WHEN 'basic' THEN 20
+  WHEN 'growth' THEN 30
+  WHEN 'pro' THEN 40
+  ELSE 100 END
+WHERE display_order = 100;
 ```
 
-If any of the 3 ALTERs errors with "constraint does not exist" — that's fine, `IF EXISTS` swallows it. If it errors with "constraint already exists with different definition" — share the error and I'll adjust the constraint name.
+Backend-only, idempotent. After this, adding a new plan is purely a row insert.
 
-## After the SQL succeeds
+## 2. Type system
 
-Reply "go" and I'll finish the remaining frontend work that was queued from last turn:
-- Growth cards in `PricingFullPage.tsx` + `PricingSection.tsx`
-- Admin filters / grant buttons in `AdminPlansPage.tsx`, `AdminSubscriptionsPage.tsx`, `AdminUsersPage.tsx`
-- `-1 views/day` → "Unlimited daily views" display fix
-- `razorpay-portal/index.ts` PLAN_RANK + allow-list widening (+ redeploy command)
+- `src/config/planFeatures.ts`: change `export type PlanKey = string`. Remove `PLAN_KEYS_ORDER` / `PLAN_LABELS` (now fetched). Keep `PLAN_FEATURES` (column definitions) untouched — those describe `plan_config` columns, not plan names.
+- `src/config/planDisplay.ts`: keep `PLAN_DISPLAY` as a **fallback only** for plans the DB doesn't define metadata for. `planDisplay(key)` first looks up `PLAN_DISPLAY[key]`, otherwise returns a generic default `{ name: titleCase(key), ... }`.
+- `src/lib/planRank.ts`: replace static `PLAN_RANK` with a `usePlanRank()` hook that reads `display_order` from `plan_config`. Provide a `getPlanRank(key, configs)` pure helper for non-React code.
+- Search-and-replace any remaining `'free' | 'basic' | 'growth' | 'pro'` unions with `string`.
+
+## 3. Data hook
+
+New `src/hooks/usePlans.ts`:
+
+```ts
+export function usePlans() {
+  return useQuery({
+    queryKey: ['plans', 'enabled'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('plan_config')
+        .select('*')
+        .eq('is_enabled', true)
+        .order('display_order');
+      return data ?? [];
+    },
+  });
+}
+```
+
+Plus `useAllPlans()` (admin variant, no `is_enabled` filter).
+
+## 4. Pricing page
+
+`src/pages/PricingFullPage.tsx` + `src/components/landing/PricingSection.tsx`:
+
+- Remove all hardcoded references to `free/basic/growth/pro`.
+- Use `usePlans()` + existing `usePlanPricing()` (already keyed by plan name).
+- Render `.map(plan => <PricingCard plan={plan} tiers={tiersFor(plan.plan_name)} />)`.
+- Comparison table columns also derived from the same list.
+- Display fix: `daily_views <= 0 || daily_views == null → "Unlimited views/day"`. Same for `monthly_views`.
+
+## 5. Admin Plans page
+
+`src/pages/AdminPlansPage.tsx`:
+
+- Existing per-plan editors keep working (already iterate `PLAN_FEATURES` against `plan_config`). Just change the source list from hardcoded `PLAN_KEYS_ORDER` to `useAllPlans()`.
+- **New top-bar "Create plan" button** → opens `CreatePlanDialog` with fields:
+  - `plan_name` (validated `^[a-z][a-z0-9_]*$`, uniqueness checked against existing rows)
+  - `display_name`, `plan_badge_text`, `description`, `display_order`
+  - Monthly price, yearly price, daily views (for the base tier row)
+  - All feature toggles + limit fields default to sensible "off / 0" values; admin can edit immediately after create via the existing editor.
+- On submit (single transaction-ish flow via two inserts):
+  1. `INSERT INTO plan_config (plan_name, display_name, description, display_order, ...defaults, is_enabled=true)`
+  2. `INSERT INTO plan_view_tiers (plan_name, daily_views, monthly_price, yearly_price, is_base=true, is_active=true, display_order=1)`
+  3. `INSERT INTO subscription_plans (tier, ...monthly + yearly rows)` — same pattern as growth.
+- **Delete plan button** per plan card:
+  - Confirms with dialog.
+  - Pre-check: `SELECT count(*) FROM subscriptions WHERE plan = $plan AND status IN ('active','trial')`. If > 0 → toast "N active subscriptions reference this plan; cannot delete." Otherwise cascade delete `plan_view_tiers`, `subscription_plans`, then `plan_config` row.
+  - Free plan is protected (cannot delete) — checked by `plan_name === 'free'`.
+
+## 6. Edge function / razorpay-portal
+
+Already reads tier/plan from DB; just remove any hardcoded `PLAN_RANK` allow-list and derive ranks from `plan_config.display_order` at request time. Provide the redeploy command in the final message.
+
+## 7. Verification
+
+After applying:
+
+1. Pricing page renders all `is_enabled` rows from `plan_config` in `display_order`.
+2. Admin → Plans → "Create plan" → add `starter` → appears on `/pricing` after refetch (≤ a few seconds).
+3. Existing Free / Basic / Growth / Pro continue to render identically (display_name backfilled, display_order set 10/20/30/40).
+4. Delete `starter` works; deleting `pro` is blocked if any subscription references it.
+5. `-1` daily/monthly views render as "Unlimited views/day".
+
+## Out of scope
+
+- No visual redesign of pricing cards.
+- No billing / Razorpay code changes beyond removing the static plan allow-list.
+- No new hardcoded plan name anywhere in the codebase.

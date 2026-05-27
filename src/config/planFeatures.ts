@@ -8,7 +8,8 @@
  * `transform` so the admin sees friendly units (e.g. GB) while we store MB.
  */
 
-export type PlanKey = "free" | "basic" | "growth" | "pro";
+/** DB is the source of truth — plans are arbitrary lowercase identifiers. */
+export type PlanKey = string;
 
 export type PlanFeatureCategory = "Limits" | "Features" | "Pricing";
 
@@ -118,10 +119,18 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { key: "plan_badge_text", label: "Badge Text", type: "text", category: "Pricing", hint: "Shown on landing page", dbField: "plan_badge_text", hideFor: ["free"] },
 ];
 
+/**
+ * @deprecated Use `useAllPlans()` from `@/hooks/usePlans` — plan list is now
+ * driven by `plan_config.display_order`. Kept only as a fallback ordering for
+ * code that has no access to React Query state.
+ */
 export const PLAN_KEYS_ORDER: PlanKey[] = ["free", "basic", "growth", "pro"];
 
-// Customer-facing labels. (DB plan_name stays as 'basic'/'growth' — never rename the key.)
-export const PLAN_LABELS: Record<PlanKey, string> = {
+/**
+ * @deprecated Use `display_name` from `plan_config` (via `useAllPlans()` /
+ * `planLabel()`). Fallback labels only.
+ */
+export const PLAN_LABELS: Record<string, string> = {
   free: "Free",
   basic: "Basic",
   growth: "Growth",
