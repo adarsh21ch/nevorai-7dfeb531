@@ -144,12 +144,19 @@ const BillingPage = () => {
 
   const currentTier = plan.tier; // free | basic | pro | trial
 
+  // Plan ordering for upgrade/downgrade logic
+  const TIER_RANK: Record<string, number> = { free: 0, basic: 1, growth: 2, pro: 3, trial: 3 };
+  const currentRank = TIER_RANK[currentTier] ?? 0;
+
   const renderTierCard = (p: PlanRow | undefined, label: string, accent: boolean) => {
     if (!p) return null;
+    const planRank = TIER_RANK[p.plan_name] ?? 0;
     const isCurrent =
-      (p.plan_name === "basic" && currentTier === "basic") ||
-      (p.plan_name === "pro" && (currentTier === "pro" || currentTier === "trial"));
+      (p.plan_name === currentTier) ||
+      (p.plan_name === "pro" && currentTier === "trial");
     const features = buildFeatures(p);
+    // Hide cards strictly below the user's current paid tier (e.g. on Pro, don't show Basic/Growth)
+    const isBelowCurrent = planRank < currentRank && currentTier !== "free" && currentTier !== "trial";
 
     return (
       <div
@@ -184,10 +191,10 @@ const BillingPage = () => {
           <Badge variant="outline" className="w-full justify-center py-2 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
             <CheckCircle2 size={13} className="mr-1.5" /> Current Plan
           </Badge>
-        ) : currentTier === "pro" && p.plan_name === "basic" ? null : (
+        ) : isBelowCurrent ? null : (
           <Link to="/upgrade">
             <Button className="w-full gap-1.5" variant={accent ? "default" : "outline"}>
-              {currentTier === "basic" && p.plan_name === "pro" ? "Upgrade to Pro" : `Upgrade to ${label}`}
+              Upgrade to {label}
               <ArrowRight size={14} />
             </Button>
           </Link>
