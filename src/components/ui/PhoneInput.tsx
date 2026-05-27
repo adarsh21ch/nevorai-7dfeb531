@@ -32,24 +32,21 @@ export type NPhoneInputProps = {
  */
 export const NPhoneInput = React.forwardRef<HTMLInputElement, NPhoneInputProps>(
   ({ value, onChange, placeholder, className, defaultCountry = "IN" as Country, ...rest }, ref) => {
-    const [country, setCountry] = React.useState<Country | undefined>(defaultCountry);
-
-    // Keep our local country state in sync if the value's country changes
-    // (e.g. user pastes a different country's number).
-    const handleCountryChange = (c?: Country) => {
-      setCountry(c || defaultCountry);
-    };
+    // Track the active country only to render the calling code ("+91") in
+    // the picker box via a CSS variable. We do NOT pass `country` to the
+    // library — keeping it uncontrolled guarantees `defaultCountry` is
+    // respected when `value` is empty (controlled mode + empty value caused
+    // the picker to fall back to the first alphabetical country, AF/+93).
+    const [country, setCountry] = React.useState<Country>(defaultCountry);
 
     const callingCode = React.useMemo(() => {
       try {
-        return country ? `+${getCountryCallingCode(country)}` : "";
+        return country ? `+${getCountryCallingCode(country)}` : `+${getCountryCallingCode(defaultCountry)}`;
       } catch {
-        return "";
+        return "+91";
       }
-    }, [country]);
+    }, [country, defaultCountry]);
 
-    // Expose calling code to CSS via a custom property so .PhoneInputCountry
-    // can render it via ::after. Using a CSS var keeps styling self-contained.
     const rootStyle = {
       ["--n-phone-cc" as any]: `"${callingCode}"`,
     } as React.CSSProperties;
@@ -58,16 +55,18 @@ export const NPhoneInput = React.forwardRef<HTMLInputElement, NPhoneInputProps>(
       <div className="n-phone-input-root" style={rootStyle}>
         <PhoneInput
           international={false}
-          country={country}
-          onCountryChange={handleCountryChange}
+          defaultCountry={defaultCountry}
+          onCountryChange={(c) => setCountry((c || defaultCountry) as Country)}
           countryCallingCodeEditable={false}
           addInternationalOption={false}
           value={value || undefined}
           onChange={onChange}
           placeholder={placeholder || "Phone number"}
+          autoComplete="tel-national"
           numberInputProps={{
             ref: ref as any,
             className: cn("n-phone-number-input", className),
+            autoComplete: "tel-national",
             ...rest,
           }}
         />
