@@ -8,7 +8,7 @@
  * `transform` so the admin sees friendly units (e.g. GB) while we store MB.
  */
 
-export type PlanKey = "free" | "basic" | "pro";
+export type PlanKey = "free" | "basic" | "growth" | "pro";
 
 export type PlanFeatureCategory = "Limits" | "Features" | "Pricing";
 
@@ -118,11 +118,12 @@ export const PLAN_FEATURES: PlanFeature[] = [
   { key: "plan_badge_text", label: "Badge Text", type: "text", category: "Pricing", hint: "Shown on landing page", dbField: "plan_badge_text", hideFor: ["free"] },
 ];
 
-export const PLAN_KEYS_ORDER: PlanKey[] = ["free", "basic", "pro"];
+export const PLAN_KEYS_ORDER: PlanKey[] = ["free", "basic", "growth", "pro"];
 
-// Customer-facing labels. (DB plan_name stays as 'basic' — never rename the key.)
+// Customer-facing labels. (DB plan_name stays as 'basic'/'growth' — never rename the key.)
 export const PLAN_LABELS: Record<PlanKey, string> = {
   free: "Free",
   basic: "Basic",
+  growth: "Growth",
   pro: "Pro",
 };
