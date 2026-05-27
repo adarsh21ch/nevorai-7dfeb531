@@ -5,11 +5,12 @@ import { usePlan } from "@/hooks/usePlan";
 
 const FREE_FALLBACK_MB = 1024; // 1 GB
 
-// Map plan.tier ("free" | "basic" | "pro" | "trial") to plan_config.plan_name.
+// Map plan.tier ("free" | "basic" | "growth" | "pro" | "trial") to plan_config.plan_name.
 // Trial users get pro-tier storage while their trial is active.
 const planNameForTier = (tier: string): string => {
   if (tier === "trial") return "pro";
   if (tier === "basic") return "basic";
+  if (tier === "growth") return "growth";
   if (tier === "pro") return "pro";
   return "free";
 };
