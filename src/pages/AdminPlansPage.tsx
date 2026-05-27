@@ -257,23 +257,80 @@ const AdminPlansPage = () => {
     }
   };
 
-  const freeConfig = planConfigs.find(c => c.plan_name === "free");
-  const basicConfig = planConfigs.find(c => c.plan_name === "basic");
-  const proConfig = planConfigs.find(c => c.plan_name === "pro");
+  const handleDeletePlan = useCallback(async (planName: string) => {
+    if (planName === "free") {
+      toast.error("Free plan is protected and cannot be deleted.");
+      return;
+    }
+    // Check active subscriptions.
+    const { count, error: countErr } = await (supabase
+      .from("subscriptions") as any)
+      .select("id", { count: "exact", head: true })
+      .eq("plan", planName)
+      .in("status", ["active", "trial"]);
+    if (countErr) {
+      toast.error(countErr.message || "Could not check active subscriptions");
+      return;
+    }
+    if ((count ?? 0) > 0) {
+      toast.error(`${count} active subscription(s) reference this plan. Cannot delete.`);
+      return;
+    }
 
-  const renderPlanCard = (planName: string, config: any) => {
-    const meta = PLAN_META[planName];
-    if (!meta) return null;
+    const ok = await confirm({
+      title: `Delete plan "${planName}"?`,
+      description: "This removes the plan and its view tiers. This cannot be undone.",
+      confirmLabel: "Delete plan",
+      destructive: true,
+    });
+    if (!ok) return;
+
+    const wipe = async (table: string, filterCol: string) => {
+      const { error } = await adminWrite(() =>
+        (supabase.from(table as any) as any).delete().eq(filterCol, planName).select(),
+        { expectRows: false },
+      );
+      if (error) throw error;
+    };
+
+    try {
+      await wipe("plan_view_tiers", "plan_name");
+      await wipe("subscription_plans", "tier");
+      await wipe("plan_config", "plan_name");
+      toast.success(`Plan "${planName}" deleted.`);
+      ["plans", "admin-plan-configs", "plan-configs", "plan-pricing", "plan-view-tiers", "plan-view-tiers-public"]
+        .forEach(k => queryClient.invalidateQueries({ queryKey: [k] }));
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to delete plan");
+    }
+  }, [confirm, queryClient]);
+
+  const renderPlanCard = (planName: string, config: PlanConfigRow | undefined) => {
+    const label = planLabel(config ?? { plan_name: planName, display_name: null } as any);
+    const badge = PLAN_BADGE_CLASS[planName] ?? defaultBadge;
+    const subtitle = config?.description || config?.plan_badge_text || "—";
     const isDisabled = config?.is_enabled === false;
+    const isProtected = planName === "free";
 
     return (
-      <div className={`glass-card p-3 sm:p-4 space-y-3 transition-opacity ${isDisabled ? "opacity-50" : ""}`}>
+      <div key={planName} className={`glass-card p-3 sm:p-4 space-y-3 transition-opacity ${isDisabled ? "opacity-50" : ""}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold sm:text-xs sm:px-2 ${meta.badge}`}>{meta.label}</span>
-            <span className="text-[10px] text-muted-foreground sm:text-xs truncate">{meta.desc}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold sm:text-xs sm:px-2 ${badge}`}>{label}</span>
+            <span className="text-[10px] text-muted-foreground sm:text-xs truncate">{subtitle}</span>
           </div>
-          <Switch checked={!isDisabled} onCheckedChange={(v) => handleTogglePlan(planName, v)} />
+          <div className="flex items-center gap-1">
+            <Switch checked={!isDisabled} onCheckedChange={(v) => handleTogglePlan(planName, v)} />
+            {!isProtected && (
+              <button
+                onClick={() => handleDeletePlan(planName)}
+                className="text-muted-foreground hover:text-destructive p-1"
+                title="Delete plan"
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
+          </div>
         </div>
 
         <Tabs defaultValue="pricing" className="w-full">
@@ -284,14 +341,17 @@ const AdminPlansPage = () => {
           </TabsList>
 
           <TabsContent value="pricing" className="pt-2 space-y-2">
-            {(planName === "basic" || planName === "pro") ? (
+            {planName !== "free" ? (
               <Suspense fallback={fallback}>
-                <ViewTiersManager planName={planName as "basic" | "pro"} />
+                <ViewTiersManager planName={planName} />
               </Suspense>
             ) : (
-              <p className="text-[11px] text-muted-foreground italic px-1">No pricing fields for this plan.</p>
+              <p className="text-[11px] text-muted-foreground italic px-1">No pricing fields for the Free plan.</p>
             )}
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground pt-3">General</p>
+            <PlanField planName={planName} field="display_name" label="Display Name" type="text" value={config?.display_name || ""} onSave={saveField} disabled={isDisabled} hint="Shown to customers" />
+            <PlanField planName={planName} field="description" label="Description" type="text" value={config?.description || ""} onSave={saveField} disabled={isDisabled} hint="Short tagline" />
+            <PlanField planName={planName} field="display_order" label="Display Order" value={config?.display_order ?? 100} onSave={saveField} disabled={isDisabled} hint="Lower = shown first" />
             <div className="flex items-center justify-between gap-2 px-1 py-1.5 rounded-md bg-muted/30">
               <div className="flex flex-col">
                 <span className="text-xs font-medium">Monthly Validity</span>
@@ -331,12 +391,21 @@ const AdminPlansPage = () => {
 
         {isDisabled && (
           <p className="text-[10px] text-amber-500 bg-amber-500/10 rounded-lg p-2 sm:text-xs sm:p-3">
-            ⚠️ {meta.label} plan is disabled. It won't appear on pricing page.
+            ⚠️ {label} plan is disabled. It won't appear on pricing page.
           </p>
         )}
       </div>
     );
   };
+
+  const visiblePlans = planFilter === "all"
+    ? planConfigs
+    : planConfigs.filter((p) => p.plan_name === planFilter);
+
+  const nextDisplayOrder = useMemo(() => {
+    const max = planConfigs.reduce((m, p) => Math.max(m, p.display_order ?? 0), 0);
+    return max + 10;
+  }, [planConfigs]);
 
   return (
     <AdminLayout>
@@ -348,23 +417,43 @@ const AdminPlansPage = () => {
               Edit limits, features, and pricing for each plan. Changes apply instantly across the app.
             </p>
           </div>
-          <div className="inline-flex rounded-lg border border-border bg-muted/30 p-0.5 text-xs">
-            {(["all", "free", "basic", "pro"] as const).map((k) => (
-              <button key={k} onClick={() => setPlanFilter(k)}
-                className={`px-3 py-1 rounded-md transition-colors capitalize ${
-                  planFilter === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}>
-                {k === "all" ? "All Plans" : k}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-lg border border-border bg-muted/30 p-0.5 text-xs overflow-x-auto max-w-[60vw]">
+              <button
+                key="all"
+                onClick={() => setPlanFilter("all")}
+                className={`px-3 py-1 rounded-md transition-colors ${
+                  planFilter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                All Plans
               </button>
-            ))}
+              {planConfigs.map((p) => (
+                <button
+                  key={p.plan_name}
+                  onClick={() => setPlanFilter(p.plan_name)}
+                  className={`px-3 py-1 rounded-md transition-colors capitalize whitespace-nowrap ${
+                    planFilter === p.plan_name ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {planLabel(p)}
+                </button>
+              ))}
+            </div>
+            <CreatePlanDialog
+              existingPlanNames={planConfigs.map((p) => p.plan_name)}
+              nextDisplayOrder={nextDisplayOrder}
+            />
           </div>
         </div>
 
         <div className={`grid gap-3 ${planFilter === "all" ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"}`}>
-          {(planFilter === "all" || planFilter === "free") && renderPlanCard("free", freeConfig)}
-          {(planFilter === "all" || planFilter === "basic") && renderPlanCard("basic", basicConfig)}
-          {(planFilter === "all" || planFilter === "pro") && renderPlanCard("pro", proConfig)}
+          {visiblePlans.map((p) => renderPlanCard(p.plan_name, p))}
         </div>
+
+        {visiblePlans.length === 0 && (
+          <p className="text-sm text-muted-foreground italic">No plans match this filter.</p>
+        )}
 
         <p className="text-[11px] text-muted-foreground italic mt-2">
           Enterprise plan is managed separately in Subscriptions → Enterprise.
