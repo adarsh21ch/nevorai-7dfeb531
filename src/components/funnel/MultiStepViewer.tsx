@@ -25,6 +25,7 @@ import {
   scrollToFirstError,
 } from "@/lib/leadInputs";
 import { NPhoneInput } from "@/components/ui/PhoneInput";
+import { StateSelect } from "@/components/ui/StateSelect";
 import { PrivacyMicrocopy } from "@/components/funnel/PrivacyMicrocopy";
 
 import { StepCodeGate } from "@/components/funnel/StepCodeGate";
