@@ -110,6 +110,7 @@ type CustomVideoPlayerProps = {
   initialTime?: number;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onPlay?: () => void;
+  tracking?: import("@/hooks/useVideoTracking").VideoTrackingMeta;
 };
 
 const CustomVideoPlayer = (props: CustomVideoPlayerProps) => {
@@ -139,8 +140,10 @@ const NativeCustomVideoPlayer = ({
   initialTime = 0,
   onTimeUpdate,
   onPlay,
+  tracking,
 }: CustomVideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  useVideoTracking(videoRef, tracking);
   const containerRef = useRef<HTMLDivElement>(null);
   const maxWatched = useRef(0);
   const isSeeking = useRef(false);
