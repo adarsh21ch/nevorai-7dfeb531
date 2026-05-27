@@ -347,10 +347,17 @@ const AdminVideosPage = () => {
                     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
                       <span>{formatSize(v.file_size_bytes)}</span>
                       <span>·</span>
-                      <span>{v.view_count || 0} views</span>
+                      <span>{v._stats?.total_views ?? v.view_count ?? 0} views</span>
+                      <span>·</span>
+                      <span>{v._stats?.unique_views ?? 0} unique</span>
                       <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${v.status === "ready" ? "bg-success/10 text-success" : v.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
                         {v.status}
                       </span>
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
+                      <UsageBadges v={v} />
+                      <span>·</span>
+                      <span>Last viewed {formatLastViewed(v._stats?.last_viewed_at)}</span>
                     </div>
                   </div>
                 </div>
