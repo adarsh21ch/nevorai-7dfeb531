@@ -107,13 +107,14 @@ const BillingPage = () => {
       const { data } = await (supabase as any)
         .from("plan_config")
         .select("*")
-        .in("plan_name", ["basic", "pro"]);
+        .in("plan_name", ["basic", "growth", "pro"]);
       return (data ?? []) as PlanRow[];
     },
     staleTime: 5 * 60 * 1000,
   });
 
   const basicPlan = tierPlans?.find(p => p.plan_name === "basic");
+  const growthPlan = tierPlans?.find(p => p.plan_name === "growth");
   const proPlan = tierPlans?.find(p => p.plan_name === "pro");
 
   const startedAt = plan.startedAt ? new Date(plan.startedAt) : null;
