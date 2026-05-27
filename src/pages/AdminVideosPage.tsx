@@ -147,6 +147,34 @@ const AdminVideosPage = () => {
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
+  const formatLastViewed = (iso: string | null | undefined) => {
+    if (!iso) return "Never";
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 30) return `${d}d ago`;
+    return new Date(iso).toLocaleDateString();
+  };
+
+  const UsageBadges = ({ v }: { v: any }) => {
+    const s = v._stats;
+    const f = s?.funnel_uses || 0;
+    const lp = s?.landing_page_uses || 0;
+    const ls = s?.live_session_uses || 0;
+    if (f + lp + ls === 0) return <span className="text-xs text-muted-foreground">Unused</span>;
+    return (
+      <div className="flex flex-wrap gap-1">
+        {f > 0 && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">Funnel ×{f}</span>}
+        {lp > 0 && <span className="rounded bg-info/10 px-1.5 py-0.5 text-[10px] font-medium text-info">LP ×{lp}</span>}
+        {ls > 0 && <span className="rounded bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">Live ×{ls}</span>}
+      </div>
+    );
+  };
+
   return (
     <AdminLayout>
       <div className="w-full min-w-0 space-y-4">
