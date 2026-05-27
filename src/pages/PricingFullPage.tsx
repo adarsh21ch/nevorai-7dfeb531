@@ -195,8 +195,10 @@ const PricingFullPage = () => {
 
   const freeConfig = planConfigs.find((c: any) => c.plan_name === "free");
   const basicConfig = withBasePrice(planConfigs.find((c: any) => c.plan_name === "basic"), "basic");
+  const growthConfig = withBasePrice(planConfigs.find((c: any) => c.plan_name === "growth"), "growth");
   const proConfig = withBasePrice(planConfigs.find((c: any) => c.plan_name === "pro"), "pro");
   const basicEnabled = basicConfig?.is_enabled !== false;
+  const growthEnabled = !!growthConfig && growthConfig?.is_enabled !== false;
   const proEnabled = proConfig?.is_enabled !== false;
 
   const getPrice = (config: any) => {
@@ -311,7 +313,7 @@ const PricingFullPage = () => {
     const planParam = searchParams.get("plan");
     if (!planParam || !user || planConfigs.length === 0) return;
     const target = planParam.toLowerCase();
-    if (target !== "basic" && target !== "pro") return;
+    if (target !== "basic" && target !== "growth" && target !== "pro") return;
     const config = planConfigs.find((c: any) => c.plan_name === target);
     if (!config || config.is_enabled === false) return;
     autoTriggeredRef.current = true;
@@ -328,6 +330,7 @@ const PricingFullPage = () => {
   // (their actual plan record is managed by the gateway; they shouldn't pay
   // for Basic again).
   const effectiveBasic = isCurrentTier("basic") || (!plan.isPaid && isNevoraiMember);
+  const effectiveGrowth = isCurrentTier("growth");
   const effectivePro = isCurrentTier("pro");
 
   // Dynamic comparison table — Free column is now driven by `freeConfig`
@@ -343,24 +346,25 @@ const PricingFullPage = () => {
     const freeLanding = freeConfig?.feature_landing_pages ? limitDisplay(freeConfig?.max_landing_pages) : "—";
     const freeLive = freeConfig?.feature_go_live ? limitDisplay(freeConfig?.max_live_sessions) : "—";
 
-    const rows: { name: string; free: boolean | string; basic: boolean | string; pro: boolean | string }[] = [
-      { name: "Funnels", free: freeFunnels, basic: limitDisplay(basicConfig?.max_funnels), pro: limitDisplay(proConfig?.max_funnels) },
-      { name: "Landing Pages", free: freeLanding, basic: basicConfig?.feature_landing_pages ? limitDisplay(basicConfig?.max_landing_pages) : "—", pro: proConfig?.feature_landing_pages ? limitDisplay(proConfig?.max_landing_pages) : "—" },
-      { name: "Live Sessions", free: freeLive, basic: basicConfig?.feature_go_live ? limitDisplay(basicConfig?.max_live_sessions) : "—", pro: proConfig?.feature_go_live ? limitDisplay(proConfig?.max_live_sessions) : "—" },
-      { name: "Lead Capture", free: !!freeConfig?.feature_lead_capture, basic: !!basicConfig?.feature_lead_capture, pro: !!proConfig?.feature_lead_capture },
-      { name: "Analytics", free: !!freeConfig?.feature_analytics, basic: !!basicConfig?.feature_analytics, pro: !!proConfig?.feature_analytics },
-      { name: "WhatsApp Automation", free: !!freeConfig?.feature_whatsapp_automation, basic: !!basicConfig?.feature_whatsapp_automation, pro: !!proConfig?.feature_whatsapp_automation },
-      { name: "Multi-level Funnels", free: !!freeConfig?.multilevel_funnel_enabled, basic: !!basicConfig?.multilevel_funnel_enabled, pro: !!proConfig?.multilevel_funnel_enabled },
-      { name: "Team Members", free: false, basic: false, pro: proConfig?.max_team_members === -1 ? true : (proConfig?.max_team_members > 0 ? `Up to ${proConfig?.max_team_members}` : false) },
-      { name: "Video Sharing", free: !!freeConfig?.feature_video_sharing, basic: !!basicConfig?.feature_video_sharing, pro: !!proConfig?.feature_video_sharing },
-      { name: "Advanced Analytics", free: !!freeConfig?.feature_advanced_analytics, basic: !!basicConfig?.feature_advanced_analytics, pro: !!proConfig?.feature_advanced_analytics },
-      { name: "Priority Support", free: !!freeConfig?.feature_priority_support, basic: !!basicConfig?.feature_priority_support, pro: !!proConfig?.feature_priority_support },
-      { name: "Team Analytics", free: !!freeConfig?.feature_team_analytics, basic: !!basicConfig?.feature_team_analytics, pro: !!proConfig?.feature_team_analytics },
+    const rows: { name: string; free: boolean | string; basic: boolean | string; growth: boolean | string; pro: boolean | string }[] = [
+      { name: "Funnels", free: freeFunnels, basic: limitDisplay(basicConfig?.max_funnels), growth: limitDisplay(growthConfig?.max_funnels), pro: limitDisplay(proConfig?.max_funnels) },
+      { name: "Landing Pages", free: freeLanding, basic: basicConfig?.feature_landing_pages ? limitDisplay(basicConfig?.max_landing_pages) : "—", growth: growthConfig?.feature_landing_pages ? limitDisplay(growthConfig?.max_landing_pages) : "—", pro: proConfig?.feature_landing_pages ? limitDisplay(proConfig?.max_landing_pages) : "—" },
+      { name: "Live Sessions", free: freeLive, basic: basicConfig?.feature_go_live ? limitDisplay(basicConfig?.max_live_sessions) : "—", growth: growthConfig?.feature_go_live ? limitDisplay(growthConfig?.max_live_sessions) : "—", pro: proConfig?.feature_go_live ? limitDisplay(proConfig?.max_live_sessions) : "—" },
+      { name: "Lead Capture", free: !!freeConfig?.feature_lead_capture, basic: !!basicConfig?.feature_lead_capture, growth: !!growthConfig?.feature_lead_capture, pro: !!proConfig?.feature_lead_capture },
+      { name: "Analytics", free: !!freeConfig?.feature_analytics, basic: !!basicConfig?.feature_analytics, growth: !!growthConfig?.feature_analytics, pro: !!proConfig?.feature_analytics },
+      { name: "WhatsApp Automation", free: !!freeConfig?.feature_whatsapp_automation, basic: !!basicConfig?.feature_whatsapp_automation, growth: !!growthConfig?.feature_whatsapp_automation, pro: !!proConfig?.feature_whatsapp_automation },
+      { name: "Multi-level Funnels", free: !!freeConfig?.multilevel_funnel_enabled, basic: !!basicConfig?.multilevel_funnel_enabled, growth: !!growthConfig?.multilevel_funnel_enabled, pro: !!proConfig?.multilevel_funnel_enabled },
+      { name: "Team Members", free: false, basic: false, growth: false, pro: proConfig?.max_team_members === -1 ? true : (proConfig?.max_team_members > 0 ? `Up to ${proConfig?.max_team_members}` : false) },
+      { name: "Video Sharing", free: !!freeConfig?.feature_video_sharing, basic: !!basicConfig?.feature_video_sharing, growth: !!growthConfig?.feature_video_sharing, pro: !!proConfig?.feature_video_sharing },
+      { name: "Advanced Analytics", free: !!freeConfig?.feature_advanced_analytics, basic: !!basicConfig?.feature_advanced_analytics, growth: !!growthConfig?.feature_advanced_analytics, pro: !!proConfig?.feature_advanced_analytics },
+      { name: "Priority Support", free: !!freeConfig?.feature_priority_support, basic: !!basicConfig?.feature_priority_support, growth: !!growthConfig?.feature_priority_support, pro: !!proConfig?.feature_priority_support },
+      { name: "Team Analytics", free: !!freeConfig?.feature_team_analytics, basic: !!basicConfig?.feature_team_analytics, growth: !!growthConfig?.feature_team_analytics, pro: !!proConfig?.feature_team_analytics },
     ];
     return rows;
   };
 
   const basicFeatures = basicConfig ? buildFeatureList(basicConfig) : [];
+  const growthFeatures = growthConfig ? buildFeatureList(growthConfig) : [];
   const proFeatures = proConfig ? buildFeatureList(proConfig) : [];
 
   // ---- Card builders (rendered into both desktop grid + mobile carousel) ----

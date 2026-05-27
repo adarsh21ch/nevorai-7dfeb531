@@ -107,13 +107,14 @@ const BillingPage = () => {
       const { data } = await (supabase as any)
         .from("plan_config")
         .select("*")
-        .in("plan_name", ["basic", "pro"]);
+        .in("plan_name", ["basic", "growth", "pro"]);
       return (data ?? []) as PlanRow[];
     },
     staleTime: 5 * 60 * 1000,
   });
 
   const basicPlan = tierPlans?.find(p => p.plan_name === "basic");
+  const growthPlan = tierPlans?.find(p => p.plan_name === "growth");
   const proPlan = tierPlans?.find(p => p.plan_name === "pro");
 
   const startedAt = plan.startedAt ? new Date(plan.startedAt) : null;
@@ -143,12 +144,19 @@ const BillingPage = () => {
 
   const currentTier = plan.tier; // free | basic | pro | trial
 
+  // Plan ordering for upgrade/downgrade logic
+  const TIER_RANK: Record<string, number> = { free: 0, basic: 1, growth: 2, pro: 3, trial: 3 };
+  const currentRank = TIER_RANK[currentTier] ?? 0;
+
   const renderTierCard = (p: PlanRow | undefined, label: string, accent: boolean) => {
     if (!p) return null;
+    const planRank = TIER_RANK[p.plan_name] ?? 0;
     const isCurrent =
-      (p.plan_name === "basic" && currentTier === "basic") ||
-      (p.plan_name === "pro" && (currentTier === "pro" || currentTier === "trial"));
+      (p.plan_name === currentTier) ||
+      (p.plan_name === "pro" && currentTier === "trial");
     const features = buildFeatures(p);
+    // Hide cards strictly below the user's current paid tier (e.g. on Pro, don't show Basic/Growth)
+    const isBelowCurrent = planRank < currentRank && currentTier !== "free" && currentTier !== "trial";
 
     return (
       <div
@@ -183,10 +191,10 @@ const BillingPage = () => {
           <Badge variant="outline" className="w-full justify-center py-2 border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
             <CheckCircle2 size={13} className="mr-1.5" /> Current Plan
           </Badge>
-        ) : currentTier === "pro" && p.plan_name === "basic" ? null : (
+        ) : isBelowCurrent ? null : (
           <Link to="/upgrade">
             <Button className="w-full gap-1.5" variant={accent ? "default" : "outline"}>
-              {currentTier === "basic" && p.plan_name === "pro" ? "Upgrade to Pro" : `Upgrade to ${label}`}
+              Upgrade to {label}
               <ArrowRight size={14} />
             </Button>
           </Link>
@@ -303,8 +311,9 @@ const BillingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {renderTierCard(basicPlan, "Basic", false)}
+            {renderTierCard(growthPlan, "Growth", false)}
             {renderTierCard(proPlan, "Pro", true)}
           </div>
 
