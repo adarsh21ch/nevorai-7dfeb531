@@ -26,7 +26,7 @@ export function usePlans() {
         .select("*")
         .eq("is_enabled", true);
       if (error) throw error;
-      return orderRows((data || []) as PlanConfigRow[]);
+      return orderRows((data || []) as unknown as PlanConfigRow[]);
     },
     staleTime: 30_000,
   });
@@ -39,7 +39,7 @@ export function useAllPlans() {
     queryFn: async () => {
       const { data, error } = await supabase.from("plan_config").select("*");
       if (error) throw error;
-      return orderRows((data || []) as PlanConfigRow[]);
+      return orderRows((data || []) as unknown as PlanConfigRow[]);
     },
     staleTime: 15_000,
   });
