@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { isYouTubeUrl } from "@/lib/youtube";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
+import { useVideoTracking, type VideoTrackingMeta } from "@/hooks/useVideoTracking";
 
 export interface VideoPlayerProps {
   src: string;
@@ -45,6 +46,8 @@ export interface VideoPlayerProps {
   onError?: () => void;
   onPlay?: () => void;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
+  /** Optional view-tracking metadata. When provided, view events are recorded. */
+  tracking?: VideoTrackingMeta;
 }
 
 function fmt(t: number) {
@@ -120,6 +123,7 @@ function NativeVideoPlayer({
   onError,
   onPlay,
   onTimeUpdate,
+  tracking,
 }: VideoPlayerProps) {
   const isMobile = useIsMobile();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -127,9 +131,11 @@ function NativeVideoPlayer({
   const progressRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<number | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
-  
+
   const prevRateRef = useRef(1);
   const maxWatchedRef = useRef(0);
+
+  useVideoTracking(videoRef, tracking);
 
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);

@@ -1,4 +1,5 @@
 import { useParams, Link } from "@/lib/router-compat";
+import { useVideoTracking } from "@/hooks/useVideoTracking";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase, supabaseProjectUrl, supabasePublishableKey } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -110,6 +111,7 @@ type CustomVideoPlayerProps = {
   initialTime?: number;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onPlay?: () => void;
+  tracking?: import("@/hooks/useVideoTracking").VideoTrackingMeta;
 };
 
 const CustomVideoPlayer = (props: CustomVideoPlayerProps) => {
@@ -139,8 +141,10 @@ const NativeCustomVideoPlayer = ({
   initialTime = 0,
   onTimeUpdate,
   onPlay,
+  tracking,
 }: CustomVideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  useVideoTracking(videoRef, tracking);
   const containerRef = useRef<HTMLDivElement>(null);
   const maxWatched = useRef(0);
   const isSeeking = useRef(false);
@@ -1377,6 +1381,11 @@ const PublicFunnel = () => {
                   allowSeek={funnel.allow_seek !== false && (videoAsset as any)?.allow_seek !== false}
                   allowSpeed={funnel.allow_speed_change !== false && (videoAsset as any)?.allow_playback_speed !== false}
                   autoplay={true}
+                  tracking={
+                    videoAsset?.id
+                      ? { videoId: videoAsset.id, sourceType: "funnel", sourceId: funnel.id }
+                      : undefined
+                  }
                   onTimeUpdate={(ct, dur) => {
                     setWatchSeconds(Math.floor(ct));
                     setVideoDuration(dur);
