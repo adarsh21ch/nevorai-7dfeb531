@@ -312,18 +312,18 @@ const AdminPlansPage = () => {
       toast.error("Free plan is protected and cannot be deleted.");
       return;
     }
-    // Check users on this plan (profiles.plan is the source of truth).
+    // Best-effort check of active users on this plan. If RLS blocks the count
+    // (e.g. admin can't read profiles), warn but allow the admin to proceed.
     const { count, error: countErr } = await ((supabase as any)
       .from("profiles"))
       .select("id", { count: "exact", head: true })
       .eq("plan", planName);
-    if (countErr) {
-      toast.error(countErr.message || "Could not check users on this plan");
-      return;
-    }
-    if ((count ?? 0) > 0) {
+    if (!countErr && (count ?? 0) > 0) {
       toast.error(`${count} user${count === 1 ? "" : "s"} are on this plan. Migrate them first.`);
       return;
+    }
+    if (countErr) {
+      console.warn("[deletePlan] could not verify user count:", countErr.message);
     }
 
     const ok = await confirm({

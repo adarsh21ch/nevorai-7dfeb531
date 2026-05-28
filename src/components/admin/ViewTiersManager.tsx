@@ -27,23 +27,26 @@ interface Tier {
 const compact = (n: number) => n.toLocaleString("en-IN");
 
 const EditableNumberCell = ({
-  value, prefix = "", onSave,
-}: { value: number; prefix?: string; onSave: (n: number) => Promise<void> }) => {
+  value, prefix = "", onSave, allowNegative = false,
+}: { value: number; prefix?: string; onSave: (n: number) => Promise<void>; allowNegative?: boolean }) => {
   const [v, setV] = useState(String(value ?? ""));
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (!dirty) setV(String(value ?? "")); }, [value, dirty]);
   const save = async () => {
     setSaving(true);
-    await onSave(parseInt(v) || 0);
+    const n = parseInt(v, 10);
+    await onSave(isNaN(n) ? 0 : n);
     setDirty(false);
     setSaving(false);
   };
+  const isUnlimited = allowNegative && !dirty && parseInt(v, 10) === -1;
   return (
     <div className="flex items-center gap-1">
       {prefix && <span className="text-muted-foreground text-xs">{prefix}</span>}
+      {isUnlimited && <span className="text-[9px] px-1 rounded bg-primary/10 text-primary font-semibold">∞</span>}
       <NumberInput
-        min={0}
+        min={allowNegative ? -1 : 0}
         value={v === "" ? "" : Number(v)}
         onValueChange={(n) => { setV(n === "" ? "" : String(n)); setDirty(true); }}
         onBlur={() => dirty && save()}
@@ -117,17 +120,18 @@ export const ViewTiersManager = ({ planName }: { planName: string }) => {
   };
 
   const saveNewTier = async () => {
-    const dv = parseInt(newTier.daily_views);
-    const mp = parseInt(newTier.monthly_price);
-    const yp = parseInt(newTier.yearly_price);
-    if (!dv || !mp || !yp) {
-      toast.error("All numeric fields required");
+    const dv = parseInt(newTier.daily_views, 10);
+    const mp = parseInt(newTier.monthly_price, 10);
+    const yp = parseInt(newTier.yearly_price, 10);
+    if (isNaN(dv) || isNaN(mp) || isNaN(yp) || dv === 0 || dv < -1) {
+      toast.error("All numeric fields required (daily can be -1 for unlimited)");
       return;
     }
     const { error } = await adminWrite(() =>
       (supabase.from("plan_tiers" as any) as any).insert({
         plan_name: planName,
         daily_views: dv,
+        monthly_views: dv === -1 ? -1 : dv * 30,
         monthly_price: mp,
         yearly_price: yp,
         is_popular: newTier.is_popular,
@@ -189,9 +193,9 @@ export const ViewTiersManager = ({ planName }: { planName: string }) => {
               {tiers.map(t => (
                 <tr key={t.id} className="border-b border-border/30">
                   <td className="py-1.5">
-                    <EditableNumberCell value={t.daily_views} onSave={(v) => updateTier(t.id, { daily_views: v })} />
+                    <EditableNumberCell value={t.daily_views} allowNegative onSave={(v) => updateTier(t.id, { daily_views: v, monthly_views: v === -1 ? -1 : v * 30 })} />
                   </td>
-                  <td className="py-1.5 text-muted-foreground">{compact(t.daily_views * 30)}</td>
+                  <td className="py-1.5 text-muted-foreground">{t.daily_views === -1 ? "∞" : compact(t.daily_views * 30)}</td>
                   <td className="py-1.5">
                     <EditableNumberCell value={t.monthly_price} prefix="₹" onSave={(v) => updateTier(t.id, { monthly_price: v })} />
                   </td>
@@ -227,7 +231,7 @@ export const ViewTiersManager = ({ planName }: { planName: string }) => {
           <div className="grid grid-cols-3 gap-1.5">
             <div>
               <Label className="text-[10px]">Daily views</Label>
-              <NumberInput min={1} max={1000000} value={newTier.daily_views === "" ? "" : Number(newTier.daily_views)} onValueChange={(n) => setNewTier(p => ({ ...p, daily_views: n === "" ? "" : String(n) }))} className="h-7 text-xs" placeholder="50" />
+              <NumberInput min={-1} max={1000000} value={newTier.daily_views === "" ? "" : Number(newTier.daily_views)} onValueChange={(n) => setNewTier(p => ({ ...p, daily_views: n === "" ? "" : String(n) }))} className="h-7 text-xs" placeholder="50 (-1=∞)" />
             </div>
             <div>
               <Label className="text-[10px]">Monthly ₹</Label>
