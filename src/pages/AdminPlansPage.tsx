@@ -262,18 +262,17 @@ const AdminPlansPage = () => {
       toast.error("Free plan is protected and cannot be deleted.");
       return;
     }
-    // Check active subscriptions.
+    // Check users on this plan (profiles.plan is the source of truth).
     const { count, error: countErr } = await ((supabase as any)
-      .from("subscriptions"))
+      .from("profiles"))
       .select("id", { count: "exact", head: true })
-      .eq("plan", planName)
-      .in("status", ["active", "trial"]);
+      .eq("plan", planName);
     if (countErr) {
-      toast.error(countErr.message || "Could not check active subscriptions");
+      toast.error(countErr.message || "Could not check users on this plan");
       return;
     }
     if ((count ?? 0) > 0) {
-      toast.error(`${count} active subscription(s) reference this plan. Cannot delete.`);
+      toast.error(`${count} user${count === 1 ? "" : "s"} are on this plan. Migrate them first.`);
       return;
     }
 

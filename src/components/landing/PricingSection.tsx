@@ -286,11 +286,12 @@ export const PricingSection = () => {
   }, [user, profile, planConfigs, navigate, openSupport, refreshPlan]);
 
 
-  const freeConfig = planConfigs.find((c: any) => c.plan_name === "free");
-  const basicConfig = planConfigs.find((c: any) => c.plan_name === "basic");
-  const proConfig = planConfigs.find((c: any) => c.plan_name === "pro");
-  const basicEnabled = basicConfig?.is_enabled !== false && !!basicConfig;
-  const proEnabled = proConfig?.is_enabled !== false && !!proConfig;
+  // Dynamically build a card for every enabled plan in subscription_plans,
+  // ordered by display_order. No special-casing per plan_name — the Free plan
+  // is identified by zero pricing, not by a hardcoded key.
+  const enabledPlans = [...planConfigs]
+    .filter((c: any) => c && c.is_enabled !== false)
+    .sort((a: any, b: any) => (a.display_order ?? 100) - (b.display_order ?? 100));
 
   const cards: {
     name: string;
@@ -303,24 +304,6 @@ export const PricingSection = () => {
     variant: "outline" | "default" | "hero";
     highlight: boolean;
   }[] = [];
-
-  // Free card — fully driven by admin subscription_plans row. Always shown first
-  // when its subscription_plans row is enabled.
-  if (freeConfig && freeConfig.is_enabled !== false) {
-    cards.push({
-      name: "Free",
-      price: "₹0",
-      period: "/forever",
-      daily: freeConfig.daily_view_limit && freeConfig.daily_view_limit > 0
-        ? `${Number(freeConfig.daily_view_limit).toLocaleString("en-IN")} views/day`
-        : "Start building free",
-      badge: freeConfig.plan_badge_text || null,
-      features: buildFreeFeatures(freeConfig),
-      cta: FREE_CTA,
-      variant: FREE_VARIANT,
-      highlight: false,
-    });
-  }
 
   // Replace the generic "X views/day total" feature line with copy that makes
   // it obvious the cap is the *starting* tier and can be upgraded in-app.
@@ -339,39 +322,43 @@ export const PricingSection = () => {
     );
   };
 
-  if (basicEnabled && basicConfig) {
-    const baseTier = getBaseTier("Basic");
-    const price = baseTier?.monthly_price ?? 149;
-    cards.push({
-      name: "Basic",
-      price: `₹${Number(price).toLocaleString("en-IN")}`,
-      period: "/month",
-      daily: baseTier?.daily_views
-        ? `Starts at ${baseTier.daily_views} views/day · upgrade anytime`
-        : "",
-      badge: basicConfig.plan_badge_text || null,
-      features: overrideDailyViewsBase(buildFeatures(basicConfig), baseTier),
-      cta: "Get Basic",
-      variant: "default",
-      highlight: false,
-    });
-  }
+  for (const config of enabledPlans) {
+    const planName = config.plan_name as string;
+    const displayName = (config.display_name && String(config.display_name).trim())
+      || planName.charAt(0).toUpperCase() + planName.slice(1);
 
-  if (proEnabled && proConfig) {
-    const baseTier = getBaseTier("Pro");
-    const price = baseTier?.monthly_price ?? 599;
+    if (planName === "free") {
+      cards.push({
+        name: displayName,
+        price: "₹0",
+        period: "/forever",
+        daily: config.daily_view_limit && config.daily_view_limit > 0
+          ? `${Number(config.daily_view_limit).toLocaleString("en-IN")} views/day`
+          : "Start building free",
+        badge: config.plan_badge_text || null,
+        features: buildFreeFeatures(config),
+        cta: FREE_CTA,
+        variant: FREE_VARIANT,
+        highlight: false,
+      });
+      continue;
+    }
+
+    const baseTier = getBaseTier(planName);
+    const price = baseTier?.monthly_price ?? config.monthly_price ?? 0;
+    const highlight = planName === "pro" || /popular/i.test(config.plan_badge_text || "");
     cards.push({
-      name: "Pro",
+      name: displayName,
       price: `₹${Number(price).toLocaleString("en-IN")}`,
       period: "/month",
       daily: baseTier?.daily_views
         ? `Starts at ${baseTier.daily_views} views/day · upgrade anytime`
         : "",
-      badge: proConfig.plan_badge_text || "Most Popular",
-      features: overrideDailyViewsBase(buildFeatures(proConfig), baseTier),
-      cta: "Go Pro",
-      variant: "hero",
-      highlight: true,
+      badge: config.plan_badge_text || (highlight ? "Most Popular" : null),
+      features: overrideDailyViewsBase(buildFeatures(config), baseTier),
+      cta: `Get ${displayName}`,
+      variant: highlight ? "hero" : "default",
+      highlight,
     });
   }
 
