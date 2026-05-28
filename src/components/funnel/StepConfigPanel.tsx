@@ -117,12 +117,27 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
       <div className={`w-10 h-10 rounded-xl ${meta.bg} flex items-center justify-center`}>
         <Icon size={20} className={meta.color} />
       </div>
-      <div>
+      <div className="flex-1 min-w-0">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">Step {stepIndex + 1} of {totalSteps}</div>
         <div className="font-heading text-lg font-semibold leading-tight">{meta.label} settings</div>
       </div>
+      {/* Step Active pill toggle — top right */}
+      <button
+        type="button"
+        onClick={() => onUpdate("is_active", step.is_active === false)}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition border ${
+          step.is_active !== false
+            ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+            : "bg-rose-500/15 text-rose-600 border-rose-500/30"
+        }`}
+        title={step.is_active !== false ? "Step is active — visible to viewers" : "Step is inactive — hidden from viewers"}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${step.is_active !== false ? "bg-emerald-500" : "bg-rose-500"}`} />
+        {step.is_active !== false ? "Active" : "Inactive"}
+      </button>
     </div>
   );
+
 
   const renderCommon = () => (
     <div className="space-y-3">
