@@ -288,8 +288,11 @@ Deno.serve(async (req) => {
             video_url: s.video_asset_id ? videoMap[s.video_asset_id]?.public_url || null : null,
             video_thumbnail: s.video_asset_id ? videoMap[s.video_asset_id]?.thumbnail_url || null : null,
             video_allow_copy_link: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_copy_link !== false : false,
-            video_allow_seek: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_seek !== false : true,
+            // Per-step skip is independent from the gallery video's allow_seek.
+            video_allow_seek: (s as any).allow_skip !== false,
             video_allow_playback_speed: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_playback_speed !== false : true,
+            lock_next_step: (s as any).lock_next_step !== false,
+            unlock_after_percent: typeof (s as any).unlock_after_percent === "number" ? (s as any).unlock_after_percent : 85,
           }));
 
           return { key: "steps", data: enrichedSteps };
