@@ -295,6 +295,9 @@ const FunnelEditor = () => {
         access_code_plain: s.access_code_plain || "",
         access_code_hash: s.access_code_hash || null,
         access_code_message: s.access_code_message || "",
+        allow_skip: s.allow_skip ?? true,
+        lock_next_step: s.lock_next_step ?? true,
+        unlock_after_percent: typeof s.unlock_after_percent === "number" ? s.unlock_after_percent : 85,
       })));
     }
   }, [existingSteps]);
