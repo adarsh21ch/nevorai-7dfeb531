@@ -378,12 +378,52 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
             <ChevronDown size={15} className={`text-muted-foreground transition-transform ${showExtras ? "rotate-180" : ""}`} />
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4 pt-1 space-y-4">
-            {/* Waiting period */}
+            {/* Lock next step (master toggle) */}
+            {step.step_type === "video" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Lock size={14} className="text-muted-foreground shrink-0" />
+                      <Label className="text-sm font-medium">Lock next step</Label>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground pl-6">Require viewer to watch enough of this video before unlocking the next step</p>
+                  </div>
+                  <Switch
+                    checked={step.lock_next_step !== false}
+                    onCheckedChange={(v) => onUpdate("lock_next_step", v)}
+                  />
+                </div>
+                {step.lock_next_step !== false && (
+                  <div className="pl-6 space-y-2 pt-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-muted-foreground">Unlock after</Label>
+                      <span className="text-xs font-semibold tabular-nums">{step.unlock_after_percent ?? 85}%</span>
+                    </div>
+                    <Slider
+                      value={[step.unlock_after_percent ?? 85]}
+                      min={10}
+                      max={100}
+                      step={5}
+                      onValueChange={([v]) => onUpdate("unlock_after_percent", v)}
+                    />
+                    <p className="text-[11px] text-muted-foreground">Next step unlocks once the viewer watches this % of the video.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step.step_type === "video" && <div className="border-t border-border/60" />}
+
+            {/* Waiting period (time delay) */}
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Clock size={14} className="text-muted-foreground shrink-0" />
-                  <Label className="text-sm font-medium">Waiting period after unlock</Label>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className="text-muted-foreground shrink-0" />
+                    <Label className="text-sm font-medium">Waiting period after unlock</Label>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground pl-6">Add a countdown timer before this step becomes available</p>
                 </div>
                 <Switch checked={delayOn} onCheckedChange={(v) => { onUpdate("time_delay_enabled", v); if (v && (!delayMin || delayMin < 1)) onUpdate("time_delay_minutes", 60); }} />
               </div>
@@ -399,7 +439,6 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
                     placeholder="60"
                     className="h-9"
                   />
-                  <p className="text-[11px] text-muted-foreground">A countdown timer is shown to the viewer. Auto-unlocks after the wait.</p>
                 </div>
               )}
             </div>
@@ -454,20 +493,6 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
                   </div>
                 </div>
               )}
-            </div>
-
-            <div className="border-t border-border/60" />
-
-            {/* Step active toggle */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <Lock size={14} className="text-muted-foreground shrink-0" />
-                  <Label className="text-sm font-medium">Step Active</Label>
-                </div>
-                <p className="text-[11px] text-muted-foreground pl-6">Inactive steps are hidden from viewers</p>
-              </div>
-              <Switch checked={step.is_active !== false} onCheckedChange={(v) => onUpdate("is_active", v)} />
             </div>
           </CollapsibleContent>
         </Collapsible>
