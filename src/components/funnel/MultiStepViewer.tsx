@@ -72,6 +72,9 @@ interface FunnelStep {
   timer_cta_style?: string | null;
   video_topics_step_enabled?: boolean;
   video_topics_step?: string[] | null;
+  allow_skip?: boolean;
+  lock_next_step?: boolean;
+  unlock_after_percent?: number;
 }
 
 interface StepProgress {
