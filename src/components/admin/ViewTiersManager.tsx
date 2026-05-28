@@ -27,23 +27,26 @@ interface Tier {
 const compact = (n: number) => n.toLocaleString("en-IN");
 
 const EditableNumberCell = ({
-  value, prefix = "", onSave,
-}: { value: number; prefix?: string; onSave: (n: number) => Promise<void> }) => {
+  value, prefix = "", onSave, allowNegative = false,
+}: { value: number; prefix?: string; onSave: (n: number) => Promise<void>; allowNegative?: boolean }) => {
   const [v, setV] = useState(String(value ?? ""));
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (!dirty) setV(String(value ?? "")); }, [value, dirty]);
   const save = async () => {
     setSaving(true);
-    await onSave(parseInt(v) || 0);
+    const n = parseInt(v, 10);
+    await onSave(isNaN(n) ? 0 : n);
     setDirty(false);
     setSaving(false);
   };
+  const isUnlimited = allowNegative && !dirty && parseInt(v, 10) === -1;
   return (
     <div className="flex items-center gap-1">
       {prefix && <span className="text-muted-foreground text-xs">{prefix}</span>}
+      {isUnlimited && <span className="text-[9px] px-1 rounded bg-primary/10 text-primary font-semibold">∞</span>}
       <NumberInput
-        min={0}
+        min={allowNegative ? -1 : 0}
         value={v === "" ? "" : Number(v)}
         onValueChange={(n) => { setV(n === "" ? "" : String(n)); setDirty(true); }}
         onBlur={() => dirty && save()}
