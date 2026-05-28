@@ -295,7 +295,6 @@ const AdminPlansPage = () => {
 
     try {
       await wipe("plan_view_tiers", "plan_name");
-      await wipe("subscription_plans", "tier");
       await wipe("plan_config", "plan_name");
       toast.success(`Plan "${planName}" deleted.`);
       ["plans", "admin-plan-configs", "plan-configs", "plan-pricing", "plan-view-tiers", "plan-view-tiers-public"]
