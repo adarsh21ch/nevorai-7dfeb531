@@ -448,7 +448,7 @@ export const PricingSection = () => {
                 transition={{ delay: i * 0.1 }}
               >
                 {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full gradient-primary text-xs font-semibold text-primary-foreground shadow-md whitespace-nowrap z-10">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap z-10 shadow-md" style={{ background: "var(--text-primary)", color: "var(--bg-base)" }}>
                     {plan.badge}
                   </div>
                 )}
