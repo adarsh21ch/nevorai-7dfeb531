@@ -138,32 +138,6 @@ export const CreatePlanDialog = ({ existingPlanNames, nextDisplayOrder, onCreate
       );
       if (tierErr) throw tierErr;
 
-      // 3) Subscription plan rows (monthly + yearly) — same structure as growth.
-      const { error: subErr } = await adminWrite(() =>
-        (supabase.from("subscription_plans" as any) as any).insert([
-          {
-            plan_name: planName,
-            tier: planName,
-            billing_period: "monthly",
-            price: monthly,
-            validity_days: 30,
-            is_active: true,
-          },
-          {
-            plan_name: planName,
-            tier: planName,
-            billing_period: "yearly",
-            price: yearly,
-            validity_days: 365,
-            is_active: true,
-          },
-        ]).select(),
-      );
-      if (subErr) {
-        // Non-fatal: surface but don't roll back; some installs don't use this table.
-        console.warn("subscription_plans insert failed (non-fatal):", subErr);
-      }
-
       toast.success(`Plan "${planName}" created. Tune limits & features below.`);
       ["plans", "admin-plan-configs", "plan-configs", "plan-pricing", "plan-view-tiers", "plan-view-tiers-public"]
         .forEach(k => qc.invalidateQueries({ queryKey: [k] }));
