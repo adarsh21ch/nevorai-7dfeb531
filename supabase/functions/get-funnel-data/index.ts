@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
         (async () => {
           const { data: steps } = await supabase
             .from("funnel_steps")
-            .select("id, step_order, title, description, step_type, video_asset_id, is_active, unlock_rule_type, unlock_rule_value, cta_text, cta_url, booking_url, access_code_enabled, access_code_plain, access_code_message, speaker_mode_step, speaker_name_custom, speaker_title, speaker_bio, speaker_photo_url_custom, time_delay_enabled, time_delay_minutes, timer_cta_enabled, timer_cta_text, timer_cta_url, timer_cta_style, video_topics_step_enabled, video_topics_step")
+            .select("id, step_order, title, description, step_type, video_asset_id, is_active, unlock_rule_type, unlock_rule_value, cta_text, cta_url, booking_url, access_code_enabled, access_code_plain, access_code_message, speaker_mode_step, speaker_name_custom, speaker_title, speaker_bio, speaker_photo_url_custom, time_delay_enabled, time_delay_minutes, timer_cta_enabled, timer_cta_text, timer_cta_url, timer_cta_style, video_topics_step_enabled, video_topics_step, allow_skip, lock_next_step, unlock_after_percent")
             .eq("funnel_id", funnel.id)
             .eq("is_active", true)
             .order("step_order");
@@ -288,8 +288,11 @@ Deno.serve(async (req) => {
             video_url: s.video_asset_id ? videoMap[s.video_asset_id]?.public_url || null : null,
             video_thumbnail: s.video_asset_id ? videoMap[s.video_asset_id]?.thumbnail_url || null : null,
             video_allow_copy_link: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_copy_link !== false : false,
-            video_allow_seek: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_seek !== false : true,
+            // Per-step skip is independent from the gallery video's allow_seek.
+            video_allow_seek: (s as any).allow_skip !== false,
             video_allow_playback_speed: s.video_asset_id ? videoMap[s.video_asset_id]?.allow_playback_speed !== false : true,
+            lock_next_step: (s as any).lock_next_step !== false,
+            unlock_after_percent: typeof (s as any).unlock_after_percent === "number" ? (s as any).unlock_after_percent : 85,
           }));
 
           return { key: "steps", data: enrichedSteps };

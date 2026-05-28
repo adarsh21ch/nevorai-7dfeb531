@@ -57,6 +57,9 @@ export interface FlowStep {
   speaker_title?: string;
   speaker_bio?: string;
   speaker_photo_url_custom?: string;
+  allow_skip?: boolean;
+  lock_next_step?: boolean;
+  unlock_after_percent?: number;
 }
 
 interface StepConfigPanelProps {
@@ -114,12 +117,27 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
       <div className={`w-10 h-10 rounded-xl ${meta.bg} flex items-center justify-center`}>
         <Icon size={20} className={meta.color} />
       </div>
-      <div>
+      <div className="flex-1 min-w-0">
         <div className="text-xs uppercase tracking-wide text-muted-foreground">Step {stepIndex + 1} of {totalSteps}</div>
         <div className="font-heading text-lg font-semibold leading-tight">{meta.label} settings</div>
       </div>
+      {/* Step Active pill toggle — top right */}
+      <button
+        type="button"
+        onClick={() => onUpdate("is_active", step.is_active === false)}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition border ${
+          step.is_active !== false
+            ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+            : "bg-rose-500/15 text-rose-600 border-rose-500/30"
+        }`}
+        title={step.is_active !== false ? "Step is active — visible to viewers" : "Step is inactive — hidden from viewers"}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${step.is_active !== false ? "bg-emerald-500" : "bg-rose-500"}`} />
+        {step.is_active !== false ? "Active" : "Inactive"}
+      </button>
     </div>
   );
+
 
   const renderCommon = () => (
     <div className="space-y-3">
@@ -132,7 +150,6 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
 
   // VIDEO
   const renderVideo = () => {
-    const pct = step.unlock_percentage ?? 80;
     return (
       <div className="space-y-4">
         <div>
@@ -159,29 +176,20 @@ export const StepConfigPanel = ({ open, onClose, step, stepIndex, totalSteps, on
           )}
         </div>
 
-        <div>
-          <Label className="text-sm">Unlock next step after</Label>
-          <div className="mt-2 flex items-center gap-3">
-            <Slider
-              value={[pct]}
-              min={0}
-              max={100}
-              step={5}
-              onValueChange={(v) => {
-                onUpdate("unlock_percentage", v[0]);
-                onUpdate("unlock_rule_type", v[0] >= 100 ? "watch_complete" : v[0] === 0 ? "auto" : "watch_percent");
-              }}
-              className="flex-1"
-            />
-            <span className="text-sm font-semibold w-12 text-right">{pct}%</span>
+        <div className="flex items-center justify-between rounded-xl bg-muted/30 border border-border p-3">
+          <div className="min-w-0">
+            <Label className="text-sm font-medium">Allow viewer to skip ahead</Label>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Independent from the video gallery setting.</p>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {pct === 0 ? "Unlock immediately (no watch required)" : pct >= 100 ? "Prospect must finish the full video" : `Prospect must watch at least ${pct}% to unlock the next step`}
-          </p>
+          <Switch
+            checked={step.allow_skip !== false}
+            onCheckedChange={(v) => onUpdate("allow_skip", v)}
+          />
         </div>
       </div>
     );
   };
+
 
   // LEAD FORM — funnel-level lead capture fields are reused. Per-step lead forms aren't in schema.
   const renderLeadForm = () => (

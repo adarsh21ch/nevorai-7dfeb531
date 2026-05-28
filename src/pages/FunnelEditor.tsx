@@ -295,6 +295,9 @@ const FunnelEditor = () => {
         access_code_plain: s.access_code_plain || "",
         access_code_hash: s.access_code_hash || null,
         access_code_message: s.access_code_message || "",
+        allow_skip: s.allow_skip ?? true,
+        lock_next_step: s.lock_next_step ?? true,
+        unlock_after_percent: typeof s.unlock_after_percent === "number" ? s.unlock_after_percent : 85,
       })));
     }
   }, [existingSteps]);
@@ -416,6 +419,9 @@ const FunnelEditor = () => {
             access_code_hash: s.access_code_enabled ? accessCodeHash : null,
             access_code_plain: s.access_code_enabled ? accessCodePlain : null,
             access_code_message: s.access_code_enabled ? (s.access_code_message ? sanitizeText(s.access_code_message) : null) : null,
+            allow_skip: (s as any).allow_skip ?? true,
+            lock_next_step: (s as any).lock_next_step ?? true,
+            unlock_after_percent: Math.max(1, Math.min(100, (s as any).unlock_after_percent ?? 85)),
             speaker_mode_step: s.speaker_mode_step || "inherit",
             speaker_name_custom: isStepOverride ? (s.speaker_name_custom ? sanitizeText(s.speaker_name_custom) : null) : null,
             speaker_title: isStepOverride ? (s.speaker_title ? sanitizeText(s.speaker_title) : null) : null,
