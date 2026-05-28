@@ -12,7 +12,6 @@ ALTER TABLE public.plan_config
 -- 2) Drop hardcoded CHECK constraints (so admin can create new plans freely)
 ALTER TABLE public.plan_config        DROP CONSTRAINT IF EXISTS plan_config_plan_name_check;
 ALTER TABLE public.plan_view_tiers    DROP CONSTRAINT IF EXISTS plan_view_tiers_plan_name_check;
-ALTER TABLE public.subscription_plans DROP CONSTRAINT IF EXISTS subscription_plans_tier_check;
 
 -- 3) Format-only check (lowercase a-z, digits, underscores; must start with letter)
 ALTER TABLE public.plan_config DROP CONSTRAINT IF EXISTS plan_config_plan_name_format;
