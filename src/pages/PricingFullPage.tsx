@@ -535,19 +535,77 @@ const PricingFullPage = () => {
     </motion.div>
   ) : null;
 
+  // Generic card builder for any plan not explicitly designed above (free/basic/pro).
+  // Renders new plans created via Admin → "+ Create Plan" without code changes.
+  const KNOWN = new Set(["free", "basic", "pro"]);
+  const extraCards: { key: string; node: ReactNode }[] = planConfigs
+    .filter((c: any) => c?.is_enabled !== false && !KNOWN.has(c.plan_name))
+    .sort((a: any, b: any) => (a.display_order ?? 100) - (b.display_order ?? 100))
+    .map((rawConfig: any) => {
+      const config = withBasePrice(rawConfig, rawConfig.plan_name);
+      const planName = rawConfig.plan_name as string;
+      const displayName = (rawConfig.display_name && String(rawConfig.display_name).trim())
+        || planName.charAt(0).toUpperCase() + planName.slice(1);
+      const isCurrent = isCurrentTier(planName);
+      const loadingKey = `${planName}_${billing}`;
+      const features = buildFeatureList(config);
+      return {
+        key: planName,
+        node: (
+          <motion.div key={planName} className="glass-card p-6 flex flex-col h-full relative" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            {rawConfig.plan_badge_text && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-card border border-border text-xs font-semibold whitespace-nowrap">
+                {rawConfig.plan_badge_text}
+              </div>
+            )}
+            <div className="mb-6">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">{displayName}</span>
+              <div className="flex items-baseline gap-1 mt-3">
+                <span className="text-3xl font-heading font-bold">{formatPrice(getPrice(config), currency)}</span>
+                <span className="text-sm text-muted-foreground">/{billing === "monthly" ? "mo" : "yr"}</span>
+              </div>
+              {rawConfig.description && (
+                <p className="text-xs text-muted-foreground mt-1">{rawConfig.description}</p>
+              )}
+            </div>
+            <ul className="space-y-2.5 mb-6 max-h-[260px] md:max-h-[360px] overflow-y-auto pr-1 md:flex-1">
+              {features.map((item, i) => <FeatureRow key={i} item={item} />)}
+            </ul>
+            {isCurrent ? (
+              <Button disabled className="w-full">Current Plan</Button>
+            ) : (
+              <>
+                <GuaranteePill />
+                <Button className="w-full gap-2" onClick={() => handlePayment(planName)} disabled={loading === loadingKey}>
+                  {loading === loadingKey ? <Loader2 size={16} className="animate-spin" /> : null}
+                  Subscribe — {formatPrice(getPrice(config), currency)}/{billing === "monthly" ? "mo" : "yr"}
+                </Button>
+                <p className="text-[11px] text-muted-foreground text-center mt-2 flex items-center justify-center gap-1">
+                  <Shield size={10} className="text-emerald-500" /> Secure payment via Razorpay · UPI · Cards · NetBanking
+                </p>
+              </>
+            )}
+          </motion.div>
+        ),
+      };
+    });
+
   const cards: { key: string; node: ReactNode }[] = [
     { key: "free", node: freeCard },
     ...(basicCard ? [{ key: "basic", node: basicCard }] : []),
+    ...extraCards,
     ...(proCard ? [{ key: "pro", node: proCard }] : []),
   ];
 
-  const enabledPaidPlans = [basicEnabled, proEnabled].filter(Boolean).length;
+  const enabledPaidPlans = [basicEnabled, proEnabled].filter(Boolean).length + extraCards.length;
   const desktopGridCols =
     enabledPaidPlans === 0
       ? "md:grid-cols-1 max-w-md mx-auto"
       : enabledPaidPlans === 1
       ? "md:grid-cols-2 max-w-3xl mx-auto"
-      : "md:grid-cols-3 max-w-5xl mx-auto";
+      : enabledPaidPlans === 2
+      ? "md:grid-cols-3 max-w-5xl mx-auto"
+      : "md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto";
 
   const pageBody = (
     <>
