@@ -249,6 +249,23 @@ export const MultiStepViewer = ({
       .eq("funnel_id", funnel.id).eq("funnel_step_id", stepId).eq("session_id", sessionId.current);
   }, [funnel.id]);
 
+  // Resolve when the NEXT step should unlock based on the CURRENT step's
+  // settings (lock_next_step + unlock_after_percent). When lock_next_step is
+  // false, the next step unlocks immediately regardless of watch progress.
+  const shouldUnlockNext = useCallback((currentStep: FunnelStep, watchedPct: number, maxWatchedSec: number) => {
+    if (currentStep.lock_next_step === false) return true;
+    const threshold = typeof currentStep.unlock_after_percent === "number"
+      ? currentStep.unlock_after_percent
+      : 85;
+    if (threshold <= 0) return true;
+    // Legacy fallback: if a step uses watch_seconds rule on itself, honor it.
+    const rule = currentStep.unlock_rule_type;
+    if (rule === "watch_seconds") {
+      return maxWatchedSec >= parseInt(currentStep.unlock_rule_value || "0");
+    }
+    return watchedPct >= threshold;
+  }, []);
+
   const completeStep = useCallback(async (stepIndex: number) => {
     const step = steps[stepIndex];
     const nowIso = new Date().toISOString();
@@ -259,25 +276,16 @@ export const MultiStepViewer = ({
 
     if (stepIndex + 1 < steps.length) {
       const nextStep = steps[stepIndex + 1];
-      const rule = nextStep.unlock_rule_type;
-      let shouldUnlock = false;
-      if (rule === "auto" || rule === "watch_complete" || rule === "cta_click" || rule === "lead_submitted" || rule === "payment_submitted" || rule === "booking_done") shouldUnlock = true;
-      if (rule === "manual") shouldUnlock = false;
-      if (rule === "watch_seconds") {
-        const prev = progressMap[step.id];
-        shouldUnlock = !!(prev && prev.max_watched_seconds >= parseInt(nextStep.unlock_rule_value || "0"));
-      }
-      if (rule === "watch_percent") {
-        const prev = progressMap[step.id];
-        shouldUnlock = !!(prev && prev.watched_percentage >= parseInt(nextStep.unlock_rule_value || "0"));
-      }
-      if (shouldUnlock && progressMap[nextStep.id]?.status === "locked") {
+      const prev = progressMap[step.id];
+      const pct = prev?.watched_percentage ?? 100;
+      const secs = prev?.max_watched_seconds ?? 0;
+      if (shouldUnlockNext(step, pct, secs) && progressMap[nextStep.id]?.status === "locked") {
         await updateStepProgress(nextStep.id, {
           status: "unlocked", permanently_unlocked: true, condition_met_at: nowIso,
         });
       }
     }
-  }, [steps, progressMap, updateStepProgress]);
+  }, [steps, progressMap, updateStepProgress, shouldUnlockNext]);
 
   const handleVideoTimeUpdate = useCallback((stepIndex: number, currentTime: number, duration: number) => {
     const step = steps[stepIndex];
@@ -294,21 +302,24 @@ export const MultiStepViewer = ({
         last_position_seconds: Math.floor(currentTime),
       },
     }));
-    if (pct >= 95 && progress.status !== "completed") completeStep(stepIndex);
+
+    // Mark current step completed once viewer hits the step's unlock threshold
+    // (or 95% as a hard ceiling for video completion tracking).
+    const threshold = step.lock_next_step === false
+      ? 0
+      : (typeof step.unlock_after_percent === "number" ? step.unlock_after_percent : 85);
+    const completionPct = Math.max(threshold, 95);
+    if (pct >= completionPct && progress.status !== "completed") completeStep(stepIndex);
 
     if (stepIndex + 1 < steps.length) {
       const nextStep = steps[stepIndex + 1];
-      if (getStepStatus(nextStep.id) === "locked") {
-        const rule = nextStep.unlock_rule_type;
-        let shouldUnlock = false;
-        if (rule === "watch_seconds" && maxWatched >= parseInt(nextStep.unlock_rule_value || "0")) shouldUnlock = true;
-        if (rule === "watch_percent" && pct >= parseInt(nextStep.unlock_rule_value || "0")) shouldUnlock = true;
-        if (shouldUnlock) updateStepProgress(nextStep.id, {
+      if (getStepStatus(nextStep.id) === "locked" && shouldUnlockNext(step, pct, maxWatched)) {
+        updateStepProgress(nextStep.id, {
           status: "unlocked", permanently_unlocked: true, condition_met_at: new Date().toISOString(),
         });
       }
     }
-  }, [steps, progressMap, completeStep, updateStepProgress]);
+  }, [steps, progressMap, completeStep, updateStepProgress, shouldUnlockNext]);
 
   useEffect(() => {
     progressSaveTimer.current = setInterval(() => {
