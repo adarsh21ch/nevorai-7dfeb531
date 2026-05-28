@@ -82,7 +82,7 @@ export const ViewTiersManager = ({ planName }: { planName: string }) => {
       (supabase.from("plan_tiers" as any) as any).update(patch as any).eq("id", id).select(),
     );
     if (error) toast.error(error.message);
-    else { toast.success("Updated"); refresh(); qc.invalidateQueries({ queryKey: ["plan-pricing"] }); }
+    else { toast.success("Updated"); refresh(); qc.invalidateQueries({ queryKey: ["plan-pricing"] }); qc.invalidateQueries({ queryKey: ["plans"] }); }
   };
 
   const setPopular = async (id: string, val: boolean) => {
@@ -113,7 +113,7 @@ export const ViewTiersManager = ({ planName }: { planName: string }) => {
       (supabase.from("plan_tiers" as any) as any).delete().eq("id", id).select(),
     );
     if (error) toast.error(error.message);
-    else { toast.success("Deleted"); refresh(); qc.invalidateQueries({ queryKey: ["plan-pricing"] }); }
+    else { toast.success("Deleted"); refresh(); qc.invalidateQueries({ queryKey: ["plan-pricing"] }); qc.invalidateQueries({ queryKey: ["plans"] }); }
   };
 
   const saveNewTier = async () => {
@@ -149,7 +149,7 @@ export const ViewTiersManager = ({ planName }: { planName: string }) => {
     setNewTier({ daily_views: "", monthly_price: "", yearly_price: "", is_popular: false });
     setAdding(false);
     refresh();
-    qc.invalidateQueries({ queryKey: ["plan-pricing"] });
+    qc.invalidateQueries({ queryKey: ["plan-pricing"] }); qc.invalidateQueries({ queryKey: ["plans"] });
   };
 
   return (

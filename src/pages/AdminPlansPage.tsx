@@ -25,16 +25,28 @@ const PlanField = ({ planName, field, label, type = "number", disabled = false, 
   const [localValue, setLocalValue] = useState<string>(String(initialValue ?? ""));
   const [isDirty, setIsDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { if (!isDirty) setLocalValue(String(initialValue ?? "")); }, [initialValue, isDirty]);
 
   const handleSave = async () => {
     setSaving(true);
-    const parsed = type === "text" ? localValue : (localValue === "" ? null : parseInt(localValue));
-    await onSave(planName, field, parsed);
-    setIsDirty(false);
-    setSaving(false);
+    let parsed: any;
+    if (type === "text") parsed = localValue;
+    else if (localValue === "" || localValue === "-") parsed = null;
+    else {
+      const n = parseInt(localValue, 10);
+      parsed = isNaN(n) ? null : n;
+    }
+    try {
+      await onSave(planName, field, parsed);
+      setIsDirty(false);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 1500);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (type === "boolean") {
@@ -49,6 +61,10 @@ const PlanField = ({ planName, field, label, type = "number", disabled = false, 
     );
   }
 
+  const isNumeric = type !== "text";
+  const numericValue = isNumeric ? parseInt(localValue, 10) : NaN;
+  const showUnlimited = isNumeric && numericValue === -1 && !isDirty;
+
   return (
     <div className="flex items-center gap-2 py-2">
       <div className="flex-1 min-w-0">
@@ -56,15 +72,33 @@ const PlanField = ({ planName, field, label, type = "number", disabled = false, 
         {hint && <p className="text-[10px] text-muted-foreground">{hint}</p>}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <Input ref={inputRef} type={type === "text" ? "text" : "number"} value={localValue} disabled={disabled}
-          className="w-16 sm:w-24 h-8 text-xs" placeholder={type === "text" ? "" : "-1=∞"}
-          onChange={(e) => { setLocalValue(e.target.value); setIsDirty(true); }}
+        {showUnlimited && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold whitespace-nowrap">∞ Unlimited</span>
+        )}
+        <Input
+          ref={inputRef}
+          type="text"
+          inputMode={isNumeric ? "numeric" : undefined}
+          pattern={isNumeric ? "-?[0-9]*" : undefined}
+          value={localValue}
+          disabled={disabled}
+          className="w-16 sm:w-24 h-8 text-xs"
+          placeholder={isNumeric ? "-1=∞" : ""}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (isNumeric && v !== "" && v !== "-" && !/^-?\d+$/.test(v)) return;
+            setLocalValue(v);
+            setIsDirty(true);
+          }}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
         />
         {isDirty && (
           <Button size="sm" className="h-8 gap-1 text-xs px-2" onClick={handleSave} disabled={saving}>
             <Save size={12} />
           </Button>
+        )}
+        {justSaved && !isDirty && (
+          <span className="text-[10px] text-green-600 dark:text-green-400 font-medium">Saved</span>
         )}
       </div>
     </div>
@@ -103,16 +137,31 @@ const StorageFieldGB = ({ planName, mbValue, disabled, onSave }: {
     setSaving(false);
   };
 
+  const showUnlimited = mbValue === -1 && !isDirty;
+
   return (
     <div className="flex items-center gap-2 py-2">
       <div className="flex-1 min-w-0">
         <Label className="text-xs font-medium">Max Storage (GB)</Label>
-        <p className="text-[10px] text-muted-foreground">e.g. 0.5 = 500 MB · -1 = unlimited</p>
+        <p className="text-[10px] text-muted-foreground">e.g. 0.5 = 500 MB · -1 = unlimited · 0 = disabled</p>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <Input type="number" step="0.1" value={localValue} disabled={disabled}
-          className="w-16 sm:w-24 h-8 text-xs" placeholder="-1=∞"
-          onChange={(e) => { setLocalValue(e.target.value); setIsDirty(true); }}
+        {showUnlimited && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold whitespace-nowrap">∞ Unlimited</span>
+        )}
+        <Input
+          type="text"
+          inputMode="decimal"
+          value={localValue}
+          disabled={disabled}
+          className="w-16 sm:w-24 h-8 text-xs"
+          placeholder="-1=∞"
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v !== "" && v !== "-" && !/^-?\d*\.?\d*$/.test(v)) return;
+            setLocalValue(v);
+            setIsDirty(true);
+          }}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
         />
         {isDirty && (
@@ -238,7 +287,7 @@ const AdminPlansPage = () => {
     if (error) toast.error(error.message || "Failed to save");
     else {
       toast.success(cascadeTargets.length ? `Updated! Cascaded to ${cascadeTargets.join(", ")}` : "Updated!");
-      ["admin-plan-configs","plan-configs","plan-pricing","plan-configs-landing","billing-tier-plans","admin-monthly-views","plan-view-tiers","plan-view-tiers-public","user-plan","plan-config"]
+      ["plans","admin-plan-configs","plan-configs","plan-pricing","plan-configs-landing","billing-tier-plans","admin-monthly-views","plan-view-tiers","plan-view-tiers-public","user-plan","plan-config"]
         .forEach(k => queryClient.invalidateQueries({ queryKey: [k] }));
     }
   }, [queryClient, planConfigs]);
@@ -252,6 +301,7 @@ const AdminPlansPage = () => {
     if (error) toast.error(error.message || "Failed to update");
     else {
       toast.success(`${planName} plan ${enabled ? "enabled" : "disabled"}`);
+      queryClient.invalidateQueries({ queryKey: ["plans"] });
       queryClient.invalidateQueries({ queryKey: ["admin-plan-configs"] });
       queryClient.invalidateQueries({ queryKey: ["plan-configs"] });
     }
