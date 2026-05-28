@@ -230,7 +230,7 @@ export const ViewTiersManager = ({ planName }: { planName: string }) => {
           <div className="grid grid-cols-3 gap-1.5">
             <div>
               <Label className="text-[10px]">Daily views</Label>
-              <NumberInput min={1} max={1000000} value={newTier.daily_views === "" ? "" : Number(newTier.daily_views)} onValueChange={(n) => setNewTier(p => ({ ...p, daily_views: n === "" ? "" : String(n) }))} className="h-7 text-xs" placeholder="50" />
+              <NumberInput min={-1} max={1000000} value={newTier.daily_views === "" ? "" : Number(newTier.daily_views)} onValueChange={(n) => setNewTier(p => ({ ...p, daily_views: n === "" ? "" : String(n) }))} className="h-7 text-xs" placeholder="50 (-1=∞)" />
             </div>
             <div>
               <Label className="text-[10px]">Monthly ₹</Label>
