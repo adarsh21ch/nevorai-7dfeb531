@@ -137,16 +137,31 @@ const StorageFieldGB = ({ planName, mbValue, disabled, onSave }: {
     setSaving(false);
   };
 
+  const showUnlimited = mbValue === -1 && !isDirty;
+
   return (
     <div className="flex items-center gap-2 py-2">
       <div className="flex-1 min-w-0">
         <Label className="text-xs font-medium">Max Storage (GB)</Label>
-        <p className="text-[10px] text-muted-foreground">e.g. 0.5 = 500 MB · -1 = unlimited</p>
+        <p className="text-[10px] text-muted-foreground">e.g. 0.5 = 500 MB · -1 = unlimited · 0 = disabled</p>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <Input type="number" step="0.1" value={localValue} disabled={disabled}
-          className="w-16 sm:w-24 h-8 text-xs" placeholder="-1=∞"
-          onChange={(e) => { setLocalValue(e.target.value); setIsDirty(true); }}
+        {showUnlimited && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold whitespace-nowrap">∞ Unlimited</span>
+        )}
+        <Input
+          type="text"
+          inputMode="decimal"
+          value={localValue}
+          disabled={disabled}
+          className="w-16 sm:w-24 h-8 text-xs"
+          placeholder="-1=∞"
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v !== "" && v !== "-" && !/^-?\d*\.?\d*$/.test(v)) return;
+            setLocalValue(v);
+            setIsDirty(true);
+          }}
           onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
         />
         {isDirty && (
