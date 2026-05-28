@@ -411,7 +411,9 @@ export const PricingSection = () => {
       ? "md:grid-cols-2 max-w-3xl mx-auto"
       : totalCards === 3
       ? "md:grid-cols-3 max-w-5xl mx-auto"
-      : "md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto";
+      : totalCards === 4
+      ? "md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto"
+      : "md:grid-cols-2 lg:grid-cols-5 max-w-[1400px] mx-auto";
 
   return (
     <section id="pricing" className="py-24 relative">
