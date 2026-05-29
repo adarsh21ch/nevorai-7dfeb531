@@ -27,6 +27,7 @@ import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as OnboardingUploadRouteImport } from './routes/onboarding-upload'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as NevAiRouteImport } from './routes/nev-ai'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as LeadsRouteImport } from './routes/leads'
 import { Route as KycRouteImport } from './routes/kyc'
@@ -187,6 +188,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/notifications.lazy').then((d) => d.Route))
+const NevAiRoute = NevAiRouteImport.update({
+  id: '/nev-ai',
+  path: '/nev-ai',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/nev-ai.lazy').then((d) => d.Route))
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -570,6 +576,7 @@ export interface FileRoutesByFullPath {
   '/kyc': typeof KycRoute
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
+  '/nev-ai': typeof NevAiRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/onboarding-upload': typeof OnboardingUploadRoute
@@ -655,6 +662,7 @@ export interface FileRoutesByTo {
   '/kyc': typeof KycRoute
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
+  '/nev-ai': typeof NevAiRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/onboarding-upload': typeof OnboardingUploadRoute
@@ -739,6 +747,7 @@ export interface FileRoutesById {
   '/kyc': typeof KycRoute
   '/leads': typeof LeadsRoute
   '/live': typeof LiveRouteWithChildren
+  '/nev-ai': typeof NevAiRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/onboarding-upload': typeof OnboardingUploadRoute
@@ -826,6 +835,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/leads'
     | '/live'
+    | '/nev-ai'
     | '/notifications'
     | '/onboarding'
     | '/onboarding-upload'
@@ -911,6 +921,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/leads'
     | '/live'
+    | '/nev-ai'
     | '/notifications'
     | '/onboarding'
     | '/onboarding-upload'
@@ -994,6 +1005,7 @@ export interface FileRouteTypes {
     | '/kyc'
     | '/leads'
     | '/live'
+    | '/nev-ai'
     | '/notifications'
     | '/onboarding'
     | '/onboarding-upload'
@@ -1080,6 +1092,7 @@ export interface RootRouteChildren {
   KycRoute: typeof KycRoute
   LeadsRoute: typeof LeadsRoute
   LiveRoute: typeof LiveRouteWithChildren
+  NevAiRoute: typeof NevAiRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   OnboardingUploadRoute: typeof OnboardingUploadRoute
@@ -1262,6 +1275,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nev-ai': {
+      id: '/nev-ai'
+      path: '/nev-ai'
+      fullPath: '/nev-ai'
+      preLoaderRoute: typeof NevAiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live': {
@@ -1819,6 +1839,7 @@ const rootRouteChildren: RootRouteChildren = {
   KycRoute: KycRoute,
   LeadsRoute: LeadsRoute,
   LiveRoute: LiveRouteWithChildren,
+  NevAiRoute: NevAiRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   OnboardingUploadRoute: OnboardingUploadRoute,
@@ -1877,13 +1898,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

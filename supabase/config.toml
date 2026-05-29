@@ -57,3 +57,6 @@ verify_jwt = false
 verify_jwt = false
 
 
+
+[functions.nev-ai-query]
+verify_jwt = true

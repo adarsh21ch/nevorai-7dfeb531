@@ -1,97 +1,68 @@
-# Rename `plan_config` → `subscription_plans`, `plan_view_tiers` → `plan_tiers`
+# Nev AI Analytics Chat Assistant
 
-Two-phase rename: Supabase SQL first, then a global code sweep. Migration files are left untouched per request.
+Add a chat panel where creators ask natural-language questions about their analytics (views, leads, funnels, conversion). AI runs server-side via a Supabase edge function using `GEMINI_API_KEY`; the frontend never sees AI keys.
 
-## Step 1 — SQL to run on Supabase
+## 1. Edge function — `supabase/functions/nev-ai-query/index.ts`
 
-```sql
--- Rename tables
-ALTER TABLE public.plan_config     RENAME TO subscription_plans;
-ALTER TABLE public.plan_view_tiers RENAME TO plan_tiers;
+Endpoint: `POST /functions/v1/nev-ai-query`, body `{ message, history }`.
 
--- Compatibility views (kept until code sweep is verified)
-CREATE OR REPLACE VIEW public.plan_config     AS SELECT * FROM public.subscription_plans;
-CREATE OR REPLACE VIEW public.plan_view_tiers AS SELECT * FROM public.plan_tiers;
+Steps:
+1. Auth: read JWT from `Authorization` header → resolve `user_id` via Supabase.
+2. Plan gate: load user's plan (`user_subscriptions` + trial). If on `free` (no trial), return HTTP 403 `{ reply: "Nev AI is available on Basic and Pro plans. Upgrade to start asking questions.", usage: null }`.
+3. Daily quota: new table `nev_ai_usage(user_id, date, count)`. Limits: Basic = 20/day, Pro = 100/day. If exceeded, return HTTP 429 `{ reply: "You've reached today's Nev AI question limit (X/X). It resets tomorrow.", usage: { used, limit } }`.
+4. Gather analytics context for the user (last 30 days): funnels (id, title, total_views, total_leads, total_payments), funnel_leads counts grouped by day, top funnel by leads, today/week view counts from `user_daily_views`, conversion rate = leads/views. Trim to compact JSON (token-safe).
+5. Call Gemini (`gemini-2.0-flash`) with system prompt: "You are Nev AI, an analytics assistant for the creator. Answer concisely using ONLY the provided JSON stats. If unknown, say so. Format numbers Indian-style.", followed by `history` (last 10 turns) and the new `message`. Inject stats as a system context block.
+6. Increment usage, return `{ reply, usage: { used, limit } }`.
+7. CORS headers + OPTIONS preflight (match other functions).
+8. Register in `supabase/config.toml`.
 
--- Grants
-GRANT SELECT ON public.subscription_plans TO anon, authenticated;
-GRANT SELECT ON public.plan_tiers         TO anon, authenticated;
-GRANT SELECT ON public.plan_config        TO anon, authenticated;
-GRANT SELECT ON public.plan_view_tiers    TO anon, authenticated;
+Migration: create `nev_ai_usage` table with PK `(user_id, date)`, RLS owner-only select, service-role insert/update, plus GRANTs per project convention.
 
--- Reload PostgREST schema cache
-NOTIFY pgrst, 'reload schema';
-```
+## 2. Frontend route — `src/routes/nev-ai.tsx` + `src/routes/nev-ai.lazy.tsx`
 
-After Step 2 lands and the three pages (Admin Plans, Pricing, Billing) verify clean, run:
+URL: `/nev-ai` (keeps top-level pattern used by other dashboard pages). Lazy route renders `src/pages/NevAIPage.tsx` wrapped in `DashboardLayout`.
 
-```sql
-DROP VIEW IF EXISTS public.plan_config;
-DROP VIEW IF EXISTS public.plan_view_tiers;
-```
+## 3. Page — `src/pages/NevAIPage.tsx`
 
-## Step 2 — Code sweep
+- Header: "Nev AI" with `Sparkles` icon + tagline "Ask anything about your analytics."
+- Chat surface (shadcn styling, premium-card):
+  - Scrollable message list, auto-scroll to bottom on new message via `useEffect` + ref.
+  - User bubbles right-aligned (`bg-primary text-primary-foreground`), assistant bubbles left-aligned with `Sparkles` avatar + "Nev AI" label.
+  - Typing indicator (3 animated dots) while request in flight.
+  - Empty state: greeting from Nev AI + 4 suggestion chips:
+    - "How many views this week?"
+    - "Which funnel is performing best?"
+    - "How many leads did I get today?"
+    - "What's my conversion rate?"
+    - Clicking a chip sends it immediately.
+- Composer: `Textarea` (Enter to send, Shift+Enter newline) + `Button` Send. Both disabled while loading.
+- Subtle footer line under input: `used / limit questions today` when usage data present.
+- State: `messages: {role, content}[]`, `input`, `loading`, `usage`.
+- Send handler calls `supabase.functions.invoke("nev-ai-query", { body: { message, history: messages } })`.
+  - On success → append `{role:'assistant', content: data.reply}`, update `usage`.
+  - On error: if `error.context?.body` (or returned `data.reply`) has a reply field (403/429), show that reply as assistant message + update usage if provided.
+  - Generic failure → "Something went wrong, please try again."
 
-For each file below, replace:
-- `.from('plan_config')` / `.from("plan_config")` → `.from('subscription_plans')`
-- `.from('plan_view_tiers')` / `.from("plan_view_tiers")` → `.from('plan_tiers')`
-- Any `(supabase.from("plan_view_tiers" as any) as any)` patterns → drop the `as any` cast once types are regenerated; until then keep cast and just rename the string.
-- Query keys that mention old table names (`'plan-view-tiers'`, `'plan-configs'`) stay as cache keys — they're just strings — but I'll leave them alone to avoid churn (they don't affect behavior).
+## 4. Sidebar nav entry — `src/components/layout/DashboardLayout.tsx`
 
-Files:
-- `src/components/FeatureGate.tsx`
-- `src/components/admin/EnterpriseCardSettings.tsx`
-- `src/components/admin/PlanEditorTable.tsx`
-- `src/components/admin/ViewTiersManager.tsx`
-- `src/components/admin/ViewsAnalyticsCard.tsx`
-- `src/components/admin/CreatePlanDialog.tsx` *(also references these tables — included for completeness)*
-- `src/components/billing/ViewCapacityCard.tsx`
-- `src/components/landing/PricingSection.tsx`
-- `src/config/planFeatures.ts`
-- `src/hooks/useOwnerBranding.tsx`
-- `src/hooks/usePlan.tsx`
-- `src/hooks/usePlanLimits.tsx`
-- `src/hooks/usePlans.ts` *(reads `plan_config` — also needs rename)*
-- `src/hooks/useStorageUsage.ts`
-- `src/pages/AdminPlansPage.tsx`
-- `src/pages/AdminSubscriptionsPage.tsx`
-- `src/pages/AdminUsersPage.tsx`
-- `src/pages/BillingPage.tsx`
-- `src/pages/PricingFullPage.tsx`
+Add `{ icon: Sparkles, label: "Nev AI", path: "/nev-ai" }` in `baseNavItems` after "Dashboard" so it sits with primary nav. No other nav restructuring.
 
-### `src/integrations/supabase/types.ts`
+## Technical details
 
-Rename the generated table type aliases:
-- `PlanConfig` → `SubscriptionPlan`
-- `PlanViewTiers` → `PlanTier`
-
-And the table keys under `Database['public']['Tables']`:
-- `plan_config` → `subscription_plans`
-- `plan_view_tiers` → `plan_tiers`
-
-Update all consumers in the same edit batch (anything importing `PlanConfig` / `PlanViewTiers` from this module).
-
-> Note: this file is normally regenerated. After the rename runs in Supabase and Lovable types refresh, the regenerated file will produce the new names automatically — this manual edit keeps types compiling in the meantime.
-
-### Edge functions (Deno SQL strings only)
-
-- `supabase/functions/get-r2-upload-url/index.ts`
-- `supabase/functions/razorpay-portal/index.ts`
-- `supabase/functions/razorpay-webhook/index.ts`
-- `supabase/functions/send-landing-page-confirmation/index.ts`
-
-Same replacement: any `.from('plan_config')` / `.from('plan_view_tiers')` strings → new names. **Do not** touch references to the unrelated `admin_subscription_plans` table.
+- Files created:
+  - `supabase/functions/nev-ai-query/index.ts`
+  - `supabase/migrations/<ts>_nev_ai_usage.sql`
+  - `src/pages/NevAIPage.tsx`
+  - `src/routes/nev-ai.tsx`, `src/routes/nev-ai.lazy.tsx`
+- Files edited:
+  - `src/components/layout/DashboardLayout.tsx` (sidebar item)
+  - `supabase/config.toml` (register function)
+- AI provider: Gemini via `GEMINI_API_KEY` (already in secrets). Model: `gemini-2.0-flash`.
+- No prices/limits hardcoded in UI beyond default chips; limit text comes from `usage` payload returned by the function.
+- Reuses existing `supabase` client and `DashboardLayout`; no new dependencies.
 
 ## Out of scope
 
-- Migration files under `supabase/migrations/` (historical).
-- `admin_subscription_plans` (different table, unaffected by this rename).
-- Renaming React Query cache keys.
-
-## Verification
-
-1. Admin → Plans loads, lists existing plans, create/delete still work.
-2. `/pricing` shows enabled plans from the renamed table.
-3. `/billing` view capacity card + plan badge render with correct limits.
-4. Razorpay checkout returns a valid order (edge function still resolves prices).
-5. Then run the `DROP VIEW` cleanup.
+- Persisting chat history across sessions (kept in component state only, per spec).
+- Streaming responses (single round-trip reply for simplicity).
+- Admin controls for per-user limit overrides (can be added later via `plan_config`).
