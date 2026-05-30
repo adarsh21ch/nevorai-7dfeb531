@@ -47,7 +47,7 @@ const features = [
     icon: Lock,
     title: "Access Code Protection — Premium Videos and Courses",
     description:
-      "Lock any video behind an access code or one-time link so only invited prospects, paying students or VIP partners can watch. Combine with lead capture for a full pay-to-view course preview.",
+      "Lock any video behind an access code or one-time link so only invited prospects, paying students or VIP partners can watch. Perfect for a pay-to-view course preview.",
   },
 ];
 
