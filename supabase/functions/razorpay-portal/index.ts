@@ -17,8 +17,6 @@ console.log("razorpay-portal build v=2026-05-25a-dbcreds key_id_prefix=", RAZORP
 
 let credsLoadedAt = 0;
 async function ensureRazorpayCreds() {
-  // Reload at most once per 60s to keep latency low.
-  if (Date.now() - credsLoadedAt < 60_000) return;
   try {
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
