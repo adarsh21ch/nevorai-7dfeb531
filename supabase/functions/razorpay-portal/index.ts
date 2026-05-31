@@ -26,10 +26,13 @@ async function ensureRazorpayCreds() {
     );
     const { data } = await admin
       .from("payment_provider_settings")
-      .select("key_id, key_secret, is_active")
+      .select("key_id, key_secret, is_active, updated_at")
+      .eq("provider", "razorpay")
+      .eq("is_active", true)
+      .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (data?.is_active && data.key_id && data.key_secret) {
+    if (data?.key_id && data.key_secret) {
       RAZORPAY_KEY_ID = String(data.key_id).trim();
       RAZORPAY_KEY_SECRET = String(data.key_secret).trim();
     }
