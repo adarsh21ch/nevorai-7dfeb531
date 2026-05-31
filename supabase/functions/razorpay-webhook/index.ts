@@ -1,8 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const RAZORPAY_WEBHOOK_SECRET = Deno.env.get("RAZORPAY_WEBHOOK_SECRET")!;
-const RAZORPAY_KEY_ID = (Deno.env.get("RAZORPAY_KEY_ID") ?? "").trim();
-const RAZORPAY_KEY_SECRET = (Deno.env.get("RAZORPAY_KEY_SECRET") ?? "").trim();
+let RAZORPAY_KEY_ID = (Deno.env.get("RAZORPAY_KEY_ID") ?? "").trim();
+let RAZORPAY_KEY_SECRET = (Deno.env.get("RAZORPAY_KEY_SECRET") ?? "").trim();
 const RAZORPAY_API = "https://api.razorpay.com/v1";
 
 function rzpHeaders() {
@@ -10,6 +10,25 @@ function rzpHeaders() {
     Authorization: "Basic " + btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`),
     "Content-Type": "application/json",
   };
+}
+
+async function ensureRazorpayCreds(serviceClient: any): Promise<void> {
+  try {
+    const { data } = await serviceClient
+      .from("payment_provider_settings")
+      .select("key_id, key_secret, is_active, updated_at")
+      .eq("provider", "razorpay")
+      .eq("is_active", true)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data?.key_id && data?.key_secret) {
+      RAZORPAY_KEY_ID = String(data.key_id).trim();
+      RAZORPAY_KEY_SECRET = String(data.key_secret).trim();
+    }
+  } catch (e) {
+    console.warn("[razorpay-webhook] DB credential load failed, falling back to env:", e);
+  }
 }
 
 function getBillingInterval(planKey: string | null | undefined, fallback?: string | null) {
@@ -297,6 +316,7 @@ Deno.serve(async (req) => {
   const signature = req.headers.get("x-razorpay-signature") || "";
 
   try {
+    await ensureRazorpayCreds(serviceClient);
     const webhookSecret = await loadWebhookSecret(serviceClient);
     const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
     if (!isValid) {
