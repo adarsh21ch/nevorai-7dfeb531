@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage, IMAGE_PRESETS, LONG_CACHE_CONTROL } from "@/lib/imageCompress";
 import { Camera, Check, Loader2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -101,16 +102,18 @@ export const TestimonialPhotoUpload = ({
       const drawY = (size - drawH) / 2 + offset.y * ratio;
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
-      const blob = await new Promise<Blob>((resolve, reject) => {
+      const rawBlob = await new Promise<Blob>((resolve, reject) => {
         exportCanvas.toBlob((result) => {
           if (result) resolve(result);
           else reject(new Error("Could not create cropped photo."));
         }, "image/jpeg", 0.9);
       });
+      // Shrink to WebP at TESTIMONIAL_PHOTO budget for fast loads + cache hits.
+      const blob = await compressImage(rawBlob, IMAGE_PRESETS.TESTIMONIAL_PHOTO);
 
-      const path = `testimonial-photos/${landingPageId}/${testimonialId}-${Date.now()}.jpg`;
+      const path = `testimonial-photos/${landingPageId}/${testimonialId}-${Date.now()}.webp`;
       const { error } = await supabase.storage.from("landing-page-assets")
-        .upload(path, blob, { cacheControl: "3600", upsert: false, contentType: "image/jpeg" });
+        .upload(path, blob, { cacheControl: LONG_CACHE_CONTROL, upsert: false, contentType: "image/webp" });
       if (error) throw error;
 
       const { data: { publicUrl } } = supabase.storage.from("landing-page-assets").getPublicUrl(path);

@@ -49,11 +49,19 @@ const SlotCard = ({ slot, onSaved }: SlotCardProps) => {
   const onUpload = async (file: File) => {
     setUploading(true);
     try {
+      // Shrink to WebP ≤1200px before upload, and serve with a 1-year cache.
+      const { compressImage, IMAGE_PRESETS, LONG_CACHE_CONTROL, withWebpExtension } = await import("@/lib/imageCompress");
+      const blob = await compressImage(file, IMAGE_PRESETS.LANDING_IMAGE);
       const ext = file.name.split(".").pop() || "jpg";
-      const path = `${slot.id}-${Date.now()}.${ext}`;
+      const rawPath = `${slot.id}-${Date.now()}.${ext}`;
+      const path = blob.type === "image/webp" ? withWebpExtension(rawPath) : rawPath;
       const { error } = await supabase.storage
         .from("landing-images")
-        .upload(path, file, { upsert: true, contentType: file.type });
+        .upload(path, blob, {
+          upsert: true,
+          contentType: blob.type || file.type,
+          cacheControl: LONG_CACHE_CONTROL,
+        });
       if (error) throw error;
       const { data } = supabase.storage.from("landing-images").getPublicUrl(path);
       setImageUrl(data.publicUrl);

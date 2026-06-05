@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage, IMAGE_PRESETS, LONG_CACHE_CONTROL } from "@/lib/imageCompress";
 import { Loader2, Play, Upload, Video, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -89,9 +90,11 @@ export const TestimonialVideoUpload = ({
       const thumbnailBlob = await generateVideoThumbnail(file);
       if (thumbnailBlob) {
         try {
-          const thumbnailPath = `testimonial-thumbnails/${landingPageId}/${testimonialId}-${Date.now()}.jpg`;
+          // Compress the captured frame to a small WebP thumbnail.
+          const compressedThumb = await compressImage(thumbnailBlob, IMAGE_PRESETS.TESTIMONIAL_PHOTO);
+          const thumbnailPath = `testimonial-thumbnails/${landingPageId}/${testimonialId}-${Date.now()}.webp`;
           const { error: thumbErr } = await supabase.storage.from("landing-page-assets")
-            .upload(thumbnailPath, thumbnailBlob, { cacheControl: "3600", upsert: true, contentType: "image/jpeg" });
+            .upload(thumbnailPath, compressedThumb, { cacheControl: LONG_CACHE_CONTROL, upsert: true, contentType: "image/webp" });
           if (!thumbErr) {
             const { data: { publicUrl } } = supabase.storage.from("landing-page-assets").getPublicUrl(thumbnailPath);
             uploadedThumbnailUrl = publicUrl;
@@ -102,7 +105,7 @@ export const TestimonialVideoUpload = ({
       setProgress(20); setStatusLabel("Uploading video");
       const videoPath = `testimonial-videos/${landingPageId}/${testimonialId}-${Date.now()}.${file.name.split('.').pop()?.toLowerCase() || 'mp4'}`;
       const { error: uploadError } = await supabase.storage.from("landing-page-assets")
-        .upload(videoPath, file, { cacheControl: "3600", upsert: true, contentType: file.type });
+        .upload(videoPath, file, { cacheControl: LONG_CACHE_CONTROL, upsert: true, contentType: file.type });
       if (uploadError) throw new Error(uploadError.message || "Video upload failed");
 
       setProgress(90); setStatusLabel("Finalizing");

@@ -247,7 +247,7 @@ const PublicLandingPage = () => {
           <div key={i} className="space-y-4">
             <h1 className="text-3xl md:text-4xl font-bold leading-tight">{section.headline}</h1>
             {section.subheadline && <p className="text-lg text-muted-foreground">{section.subheadline}</p>}
-            {section.image_url && <img src={section.image_url} alt="" className="rounded-xl w-full object-contain" />}
+            {section.image_url && <img src={section.image_url} alt="" loading="lazy" decoding="async" className="rounded-xl w-full object-contain" />}
             {section.cta_text && <p className="text-primary font-semibold text-lg">{section.cta_text}</p>}
           </div>
         );
@@ -304,7 +304,7 @@ const PublicLandingPage = () => {
       case "image":
         return (
           <div key={i} className={section.size === "full" ? "" : "max-w-lg mx-auto"}>
-            {section.url && <img src={section.url} alt={section.caption || ""} className="rounded-xl w-full" />}
+            {section.url && <img src={section.url} alt={section.caption || ""} loading="lazy" decoding="async" className="rounded-xl w-full" />}
             {section.caption && <p className="text-xs text-muted-foreground text-center mt-2">{section.caption}</p>}
           </div>
         );
@@ -396,7 +396,7 @@ const PublicLandingPage = () => {
               {(page.speaker_name || page.speaker_photo_url) && (
                 <Card className="p-6 flex flex-col sm:flex-row gap-4 items-start">
                   {page.speaker_photo_url && (
-                    <img src={page.speaker_photo_url} alt={page.speaker_name || "Speaker"} className="w-24 h-24 rounded-full object-cover shrink-0 ring-2 ring-primary/30" />
+                    <img src={page.speaker_photo_url} alt={page.speaker_name || "Speaker"} width={96} height={96} loading="lazy" decoding="async" className="w-24 h-24 rounded-full object-cover shrink-0 ring-2 ring-primary/30" />
                   )}
                   <div className="flex-1">
                     <h3 className="text-xl font-bold">{page.speaker_name}</h3>

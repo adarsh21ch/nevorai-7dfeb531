@@ -586,7 +586,7 @@ export const MultiStepViewer = ({
           <div className="flex items-center gap-3 pb-4 mb-4" style={{ borderBottom: `1px solid ${sc.border}` }}>
             <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ border: "2px solid rgba(249,115,22,0.35)", boxShadow: "0 0 0 3px rgba(249,115,22,0.08)" }}>
               {creatorProfile.avatar_url ? (
-                <img src={creatorProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+                <img src={creatorProfile.avatar_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center" style={{ background: "rgba(249,115,22,0.12)" }}>
                   <span className="text-primary font-bold text-sm">{creatorProfile.full_name.charAt(0).toUpperCase()}</span>
@@ -1197,7 +1197,7 @@ export const MultiStepViewer = ({
                       <div className="flex items-start gap-3 sm:gap-4 mt-4 p-3 sm:p-4 rounded-2xl" style={{ background: sc.itemBg, border: `1px solid ${sc.border}` }}>
                         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shrink-0 flex items-center justify-center" style={{ border: "2px solid rgba(249,115,22,0.35)" }}>
                           {photo ? (
-                            <img src={photo} alt={name} className="w-full h-full object-cover" />
+                            <img src={photo} alt={name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                           ) : (
                             <span className="text-[#F97316] font-heading font-bold text-base">{name.charAt(0).toUpperCase() || "?"}</span>
                           )}

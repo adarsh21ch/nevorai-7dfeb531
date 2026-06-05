@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage, IMAGE_PRESETS, LONG_CACHE_CONTROL, withWebpExtension } from "@/lib/imageCompress";
 import { Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,12 +43,19 @@ export const ImageUploadField = ({
 
     setUploading(true);
     try {
+      // Shrink to WebP ≤1200px for landing-page imagery.
+      const blob = await compressImage(file, IMAGE_PRESETS.LANDING_IMAGE);
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const rawName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const fileName = blob.type === "image/webp" ? withWebpExtension(rawName) : rawName;
 
       const { error } = await supabase.storage
         .from(bucket)
-        .upload(fileName, file, { cacheControl: "3600", upsert: false });
+        .upload(fileName, blob, {
+          cacheControl: LONG_CACHE_CONTROL,
+          upsert: false,
+          contentType: blob.type || file.type,
+        });
 
       if (error) throw error;
 

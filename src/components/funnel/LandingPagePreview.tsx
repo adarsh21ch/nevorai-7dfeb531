@@ -93,7 +93,7 @@ export const LandingPagePreview = ({
           <div key={i} className="space-y-3">
             {section.headline && <h1 className="text-2xl md:text-3xl font-bold leading-tight">{section.headline}</h1>}
             {section.subheadline && <p className="text-sm opacity-70">{section.subheadline}</p>}
-            {section.image_url && <img src={section.image_url} alt="" className="rounded-lg w-full max-h-48 object-cover" />}
+            {section.image_url && <img src={section.image_url} alt="" loading="lazy" decoding="async" className="rounded-lg w-full max-h-48 object-cover" />}
             {section.cta_text && <p className="font-semibold text-sm" style={{ color: form.theme_color }}>{section.cta_text}</p>}
           </div>
         );
@@ -150,7 +150,7 @@ export const LandingPagePreview = ({
       case "image":
         return (
           <div key={i}>
-            {section.url && <img src={section.url} alt={section.caption || ""} className="rounded-lg w-full" />}
+            {section.url && <img src={section.url} alt={section.caption || ""} loading="lazy" decoding="async" className="rounded-lg w-full" />}
             {section.caption && <p className="text-[10px] opacity-50 text-center mt-1">{section.caption}</p>}
           </div>
         );
@@ -182,7 +182,7 @@ export const LandingPagePreview = ({
                 <div className={`rounded-xl overflow-hidden border ${cardBg}`}>
                   <div className="relative aspect-video bg-black flex items-center justify-center">
                     {postSubmitVideo?.thumbnail_url && (
-                      <img src={postSubmitVideo.thumbnail_url} alt={postSubmitVideo.title || "Post registration video"} className="absolute inset-0 w-full h-full object-cover" />
+                      <img src={postSubmitVideo.thumbnail_url} alt={postSubmitVideo.title || "Post registration video"} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
                     )}
                     <div className="absolute inset-0 bg-black/35" />
                     <div className="relative z-10 w-12 h-12 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center">
@@ -289,7 +289,7 @@ export const LandingPagePreview = ({
             {hasSpeaker && (
               <div className={`rounded-lg p-4 flex items-center gap-3 ${cardBg} border`}>
                 {form.speaker_photo_url && (
-                  <img src={form.speaker_photo_url} alt={form.speaker_name} className="w-16 h-16 rounded-full object-cover shrink-0" />
+                  <img src={form.speaker_photo_url} alt={form.speaker_name} width={64} height={64} loading="lazy" decoding="async" className="w-16 h-16 rounded-full object-cover shrink-0" />
                 )}
                 <div>
                   <h3 className="font-bold text-sm">{form.speaker_name}</h3>

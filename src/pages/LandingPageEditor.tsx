@@ -726,7 +726,7 @@ const LandingPageEditor = () => {
                       const path = `pdfs/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.pdf`;
                       const { error } = await supabase.storage
                         .from("landing-page-attachments")
-                        .upload(path, f, { cacheControl: "3600", upsert: false, contentType: "application/pdf" });
+                        .upload(path, f, { cacheControl: "31536000", upsert: false, contentType: "application/pdf" });
                       if (error) { toast.error(error.message); return; }
                       const { data } = supabase.storage.from("landing-page-attachments").getPublicUrl(path);
                       updateField("attachment_pdf_url", data.publicUrl);

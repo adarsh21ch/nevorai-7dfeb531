@@ -48,7 +48,7 @@ export function EntityCard({
       >
         <div className="w-10 h-10 rounded-lg bg-primary/10 grid place-items-center shrink-0">
           {thumbnail ? (
-            <img src={thumbnail} alt="" className="w-full h-full object-cover rounded-lg" />
+            <img src={thumbnail} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover rounded-lg" />
           ) : (
             <Icon size={18} className="text-primary" />
           )}
@@ -96,7 +96,7 @@ export function EntityCard({
       </div>
       {thumbnail ? (
         <div className="aspect-video rounded-lg bg-muted overflow-hidden">
-          <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+          <img src={thumbnail} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         </div>
       ) : null}
       <div className="grid grid-cols-2 gap-2">

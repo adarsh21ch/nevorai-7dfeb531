@@ -29,7 +29,7 @@ export const LatestVideoShareCard = ({ video }: Props) => {
       <div className="grid gap-0 sm:grid-cols-[200px,1fr]">
         <Link to={`/v/${video.id}` as any} className="group relative block aspect-video bg-muted sm:aspect-auto">
           {video.thumbnail_url ? (
-            <img src={video.thumbnail_url} alt={video.title} className="h-full w-full object-cover" />
+            <img src={video.thumbnail_url} alt={video.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
           ) : video.public_url ? (
             <video src={video.public_url} muted preload="metadata" playsInline className="h-full w-full object-cover" />
           ) : (

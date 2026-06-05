@@ -56,7 +56,7 @@ const TCard = ({ testimonial: t }: { testimonial: Testimonial }) => {
     <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
       <div className="flex items-center gap-3 p-4 pb-3">
         {t.student_photo_url ? (
-          <img src={t.student_photo_url} alt={t.student_name} className="w-11 h-11 rounded-full object-cover border-2 border-background shrink-0" />
+          <img src={t.student_photo_url} alt={t.student_name} width={44} height={44} loading="lazy" decoding="async" className="w-11 h-11 rounded-full object-cover border-2 border-background shrink-0" />
         ) : (
           <div className="w-11 h-11 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold shrink-0">
             {initials(t.student_name || "?")}

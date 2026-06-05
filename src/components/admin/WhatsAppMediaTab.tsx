@@ -554,7 +554,7 @@ function UploadForm({ onDone }: { onDone: () => void }) {
       const path = `${intentKey}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("whatsapp-media")
-        .upload(path, file, { cacheControl: "3600", upsert: false });
+        .upload(path, file, { cacheControl: "31536000", upsert: false });
       if (upErr) {
         toast.error(`Upload failed: ${upErr.message}. Make sure the 'whatsapp-media' bucket exists and is public.`);
         return;

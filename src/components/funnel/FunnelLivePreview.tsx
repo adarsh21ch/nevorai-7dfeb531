@@ -103,7 +103,7 @@ export const FunnelLivePreview = ({ funnel, selectedVideo, flowSteps, leadForm, 
             </div>
           )}
           <div className="aspect-video rounded-lg bg-muted/50 border border-border flex items-center justify-center relative overflow-hidden">
-            {selectedVideo?.thumbnail ? <img src={selectedVideo.thumbnail} alt="" className="w-full h-full object-cover rounded-lg opacity-60" /> : null}
+            {selectedVideo?.thumbnail ? <img src={selectedVideo.thumbnail} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover rounded-lg opacity-60" /> : null}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
                 <Play size={14} className="text-primary ml-0.5" fill="currentColor" />

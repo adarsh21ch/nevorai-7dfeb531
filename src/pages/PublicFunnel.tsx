@@ -517,7 +517,7 @@ const NativeCustomVideoPlayer = ({
           className="absolute inset-0 flex items-center justify-center cursor-pointer z-20"
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
         >
-          {poster && <img src={poster} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+          {poster && <img src={poster} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />}
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative z-10">
             <button className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center hover:scale-110 transition-transform shadow-xl shadow-primary/25 backdrop-blur-sm">
@@ -532,7 +532,7 @@ const NativeCustomVideoPlayer = ({
           className="absolute inset-0 flex items-center justify-center cursor-pointer z-20"
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
         >
-          {poster && <img src={poster} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+          {poster && <img src={poster} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />}
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative z-10">
             <button className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center hover:scale-110 transition-transform shadow-xl shadow-primary/25 backdrop-blur-sm">
@@ -1593,7 +1593,7 @@ const PublicFunnel = () => {
                 </div>
               </div>
             )}
-            {funnel.qr_code_url && <img src={funnel.qr_code_url} alt="QR Code" className="w-48 h-48 mx-auto mb-4 rounded-xl" />}
+            {funnel.qr_code_url && <img src={funnel.qr_code_url} alt="QR Code" width={192} height={192} loading="lazy" decoding="async" className="w-48 h-48 mx-auto mb-4 rounded-xl" />}
             {funnel.payment_instructions && <p className="text-sm mb-4" style={{ color: tc.textMuted }}>{funnel.payment_instructions}</p>}
             <div className="space-y-3">
               <Input placeholder="UPI Transaction ID (optional)" value={paymentProof.upi_transaction_id} onChange={(e) => setPaymentProof({ ...paymentProof, upi_transaction_id: e.target.value })} style={{ background: tc.inputBg, borderColor: tc.inputBorder, color: tc.inputText }} className="h-12 rounded-xl" />

@@ -537,7 +537,7 @@ const PublicLivePage = () => {
           {session.description && <p className="text-sm text-muted-foreground max-w-xl mx-auto">{session.description}</p>}
           {speakerName && (
             <div className="flex items-center justify-center gap-2 pt-1">
-              {speakerPhoto && <img src={speakerPhoto} alt={speakerName} className="w-7 h-7 rounded-full object-cover" />}
+              {speakerPhoto && <img src={speakerPhoto} alt={speakerName} width={28} height={28} loading="lazy" decoding="async" className="w-7 h-7 rounded-full object-cover" />}
               <span className="text-xs text-muted-foreground">Hosted by <span className="text-foreground font-medium">{speakerName}</span></span>
             </div>
           )}

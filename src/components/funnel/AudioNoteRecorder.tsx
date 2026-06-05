@@ -56,7 +56,7 @@ export const AudioNoteRecorder = ({
       const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error } = await supabase.storage
         .from(bucket)
-        .upload(fileName, blob, { cacheControl: "3600", upsert: false, contentType: blob.type || `audio/${ext}` });
+        .upload(fileName, blob, { cacheControl: "31536000", upsert: false, contentType: blob.type || `audio/${ext}` });
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
       onChange(publicUrl);

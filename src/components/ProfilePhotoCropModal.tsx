@@ -3,6 +3,7 @@ import Cropper, { Area } from "react-easy-crop";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage, IMAGE_PRESETS, LONG_CACHE_CONTROL } from "@/lib/imageCompress";
 import { toast } from "sonner";
 
 interface Props {
@@ -43,11 +44,17 @@ export const ProfilePhotoCropModal = ({ open, onClose, imageSrc, userId, onSaved
     if (!area) return;
     setSaving(true);
     try {
-      const blob = await getCroppedBlob(imageSrc, area);
-      const path = `${userId}/avatar-${Date.now()}.jpg`;
+      const rawBlob = await getCroppedBlob(imageSrc, area);
+      // Shrink to WebP ≤256×256 to keep avatar payloads ~10 kB.
+      const blob = await compressImage(rawBlob, IMAGE_PRESETS.AVATAR);
+      const path = `${userId}/avatar-${Date.now()}.webp`;
       const { error: upErr } = await supabase.storage
         .from("avatars")
-        .upload(path, blob, { contentType: "image/jpeg", upsert: true });
+        .upload(path, blob, {
+          contentType: "image/webp",
+          upsert: true,
+          cacheControl: LONG_CACHE_CONTROL,
+        });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
       const url = pub.publicUrl;
