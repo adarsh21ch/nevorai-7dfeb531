@@ -21,6 +21,7 @@ const STATIC_PAGES: Array<{ path: string; priority: string; changefreq: string }
   { path: "/privacy", priority: "0.4", changefreq: "yearly" },
   { path: "/terms", priority: "0.4", changefreq: "yearly" },
   { path: "/refund-policy", priority: "0.4", changefreq: "yearly" },
+  { path: "/academy", priority: "0.8", changefreq: "weekly" },
 ];
 
 function escapeXml(value: string): string {
