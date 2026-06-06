@@ -21,6 +21,7 @@ const STATIC_PAGES: Array<{ path: string; priority: string; changefreq: string }
   { path: "/privacy", priority: "0.4", changefreq: "yearly" },
   { path: "/terms", priority: "0.4", changefreq: "yearly" },
   { path: "/refund-policy", priority: "0.4", changefreq: "yearly" },
+  { path: "/academy", priority: "0.8", changefreq: "weekly" },
 ];
 
 function escapeXml(value: string): string {
@@ -147,6 +148,27 @@ async function buildEntries(): Promise<Entry[]> {
     }
   } catch (e) {
     console.error("sitemap live_sessions exception", e);
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("academy_tutorials")
+      .select("id, updated_at")
+      .eq("is_published", true)
+      .order("updated_at", { ascending: false })
+      .limit(5_000);
+    if (error) console.error("sitemap academy_tutorials error", error);
+    for (const row of data ?? []) {
+      if (!row.id) continue;
+      entries.push({
+        loc: `${BASE_URL}/academy/${escapeXml(row.id)}`,
+        lastmod: formatDate(row.updated_at),
+        changefreq: "monthly",
+        priority: "0.6",
+      });
+    }
+  } catch (e) {
+    console.error("sitemap academy_tutorials exception", e);
   }
 
   return entries.slice(0, MAX_URLS);

@@ -43,6 +43,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LandingPagesIndexRouteImport } from './routes/landing-pages.index'
@@ -76,6 +77,7 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminPlansRouteImport } from './routes/admin.plans'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
+import { Route as AcademyIdRouteImport } from './routes/academy.$id'
 import { Route as LandingPagesIdIndexRouteImport } from './routes/landing-pages.$id.index'
 import { Route as FunnelsIdIndexRouteImport } from './routes/funnels.$id.index'
 import { Route as FSlugIndexRouteImport } from './routes/f.$slug.index'
@@ -268,6 +270,11 @@ const AnalyticsRoute = AnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/analytics.lazy').then((d) => d.Route))
+const AcademyRoute = AcademyRouteImport.update({
+  id: '/academy',
+  path: '/academy',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/academy.lazy').then((d) => d.Route))
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -451,6 +458,11 @@ const AdminKycRoute = AdminKycRouteImport.update({
   path: '/admin/kyc',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/admin.kyc.lazy').then((d) => d.Route))
+const AcademyIdRoute = AcademyIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AcademyRoute,
+} as any).lazy(() => import('./routes/academy.$id.lazy').then((d) => d.Route))
 const LandingPagesIdIndexRoute = LandingPagesIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -561,6 +573,7 @@ const ApiAdminWhatsappMessagesLeadIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/academy': typeof AcademyRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRouteWithChildren
   '/billing': typeof BillingRoute
@@ -595,6 +608,7 @@ export interface FileRoutesByFullPath {
   '/verify-whatsapp': typeof VerifyWhatsappRoute
   '/videos': typeof VideosRouteWithChildren
   '/whatsapp-test': typeof WhatsappTestRoute
+  '/academy/$id': typeof AcademyIdRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/revenue': typeof AdminRevenueRoute
@@ -647,6 +661,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/academy': typeof AcademyRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRouteWithChildren
   '/billing': typeof BillingRoute
@@ -681,6 +696,7 @@ export interface FileRoutesByTo {
   '/verify-whatsapp': typeof VerifyWhatsappRoute
   '/videos': typeof VideosRouteWithChildren
   '/whatsapp-test': typeof WhatsappTestRoute
+  '/academy/$id': typeof AcademyIdRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/revenue': typeof AdminRevenueRoute
@@ -732,6 +748,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/academy': typeof AcademyRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRouteWithChildren
   '/billing': typeof BillingRoute
@@ -766,6 +783,7 @@ export interface FileRoutesById {
   '/verify-whatsapp': typeof VerifyWhatsappRoute
   '/videos': typeof VideosRouteWithChildren
   '/whatsapp-test': typeof WhatsappTestRoute
+  '/academy/$id': typeof AcademyIdRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/plans': typeof AdminPlansRoute
   '/admin/revenue': typeof AdminRevenueRoute
@@ -820,6 +838,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/academy'
     | '/analytics'
     | '/auth'
     | '/billing'
@@ -854,6 +873,7 @@ export interface FileRouteTypes {
     | '/verify-whatsapp'
     | '/videos'
     | '/whatsapp-test'
+    | '/academy/$id'
     | '/admin/kyc'
     | '/admin/plans'
     | '/admin/revenue'
@@ -906,6 +926,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/academy'
     | '/analytics'
     | '/auth'
     | '/billing'
@@ -940,6 +961,7 @@ export interface FileRouteTypes {
     | '/verify-whatsapp'
     | '/videos'
     | '/whatsapp-test'
+    | '/academy/$id'
     | '/admin/kyc'
     | '/admin/plans'
     | '/admin/revenue'
@@ -990,6 +1012,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/academy'
     | '/analytics'
     | '/auth'
     | '/billing'
@@ -1024,6 +1047,7 @@ export interface FileRouteTypes {
     | '/verify-whatsapp'
     | '/videos'
     | '/whatsapp-test'
+    | '/academy/$id'
     | '/admin/kyc'
     | '/admin/plans'
     | '/admin/revenue'
@@ -1077,6 +1101,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AcademyRoute: typeof AcademyRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRouteWithChildren
   BillingRoute: typeof BillingRoute
@@ -1389,6 +1414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/academy': {
+      id: '/academy'
+      path: '/academy'
+      fullPath: '/academy'
+      preLoaderRoute: typeof AcademyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -1620,6 +1652,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKycRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/academy/$id': {
+      id: '/academy/$id'
+      path: '/$id'
+      fullPath: '/academy/$id'
+      preLoaderRoute: typeof AcademyIdRouteImport
+      parentRoute: typeof AcademyRoute
+    }
     '/landing-pages/$id/': {
       id: '/landing-pages/$id/'
       path: '/'
@@ -1742,6 +1781,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AcademyRouteChildren {
+  AcademyIdRoute: typeof AcademyIdRoute
+}
+
+const AcademyRouteChildren: AcademyRouteChildren = {
+  AcademyIdRoute: AcademyIdRoute,
+}
+
+const AcademyRouteWithChildren =
+  AcademyRoute._addFileChildren(AcademyRouteChildren)
+
 interface AuthRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthUpdatePasswordRoute: typeof AuthUpdatePasswordRoute
@@ -1824,6 +1874,7 @@ const LandingPagesIdRouteWithChildren = LandingPagesIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AcademyRoute: AcademyRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRouteWithChildren,
   BillingRoute: BillingRoute,
