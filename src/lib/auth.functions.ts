@@ -20,9 +20,27 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
         process.env.VITE_SUPABASE_URL ||
         "https://dnyjlmtiliqkpxwsgqyn.supabase.co";
 
+      // Supabase's edge gateway requires an apikey header to route to the
+      // function, even when verify_jwt = false. Without this, the call 401s
+      // before our function ever runs — which is why reset emails were never
+      // being sent. Use service role if available, anon/publishable as fallback.
+      const apiKey =
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_PUBLISHABLE_KEY ||
+        process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+        process.env.SUPABASE_ANON_KEY ||
+        process.env.VITE_SUPABASE_ANON_KEY ||
+        "";
+
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (apiKey) {
+        headers["apikey"] = apiKey;
+        headers["Authorization"] = `Bearer ${apiKey}`;
+      }
+
       const res = await fetch(`${supabaseUrl.replace(/\/+$/, "")}/functions/v1/request-password-reset`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ email: data.email }),
       });
       if (!res.ok) {
