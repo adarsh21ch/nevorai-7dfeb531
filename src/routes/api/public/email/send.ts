@@ -66,7 +66,14 @@ type Payload =
       name: string;
       plan: string;
       dueDate?: string;
+    }
+  | {
+      type: "password_reset";
+      to: string;
+      name?: string;
+      action_link: string;
     };
+
 
 interface OutgoingMail {
   to: string;
