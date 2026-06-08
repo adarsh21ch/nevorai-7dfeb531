@@ -28,7 +28,7 @@ export const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-6 badge-pill badge-pill-accent"
           >
-            BUILT FOR PEOPLE WHO SELL
+            UNSKIPPABLE VIDEO FUNNELS
           </motion.div>
 
           <div className="relative mb-6">
