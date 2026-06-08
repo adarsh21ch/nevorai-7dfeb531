@@ -122,6 +122,7 @@ export default function PublicAcademyTutorialPage() {
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["academy-completion", user?.id, vars.tutorialId] });
+      qc.invalidateQueries({ queryKey: ["academy-completions", user?.id] });
       toast.success(vars.done ? "Marked as completed" : "Marked as not completed");
     },
     onError: (e: any) => toast.error(e.message || "Failed"),
@@ -166,7 +167,6 @@ export default function PublicAcademyTutorialPage() {
         current={tutorial}
         feed={shortsFeed.length > 0 ? shortsFeed : [tutorial]}
         user={user}
-        isCompleted={isCompleted}
         onToggleComplete={(tid, done) => toggleComplete.mutate({ tutorialId: tid, done })}
       />
     );
@@ -247,7 +247,7 @@ export default function PublicAcademyTutorialPage() {
 
             {related.length > 0 && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-3 text-sm">More Full Videos in this series</h3>
+                <h3 className="font-semibold mb-3 text-sm">More desktop tutorials in this series</h3>
                 <ul className="space-y-2">
                   {related.map((r) => (
                     <li key={r.id}>
@@ -284,18 +284,31 @@ function ShortsPlayer({
   current,
   feed,
   user,
-  isCompleted,
   onToggleComplete,
 }: {
   current: Tutorial;
   feed: Tutorial[];
   user: any;
-  isCompleted: boolean;
   onToggleComplete: (tutorialId: string, done: boolean) => void;
 }) {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+
+  const { data: completedSet = new Set<string>() } = useQuery({
+    queryKey: ["academy-completions", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("academy_completions")
+        .select("tutorial_id")
+        .eq("user_id", user!.id);
+      return new Set<string>((data || []).map((r: any) => r.tutorial_id));
+    },
+  });
+  // keep qc referenced (invalidation happens via parent mutation)
+  void qc;
 
   const startIndex = useMemo(() => {
     const i = feed.findIndex((t) => t.id === current.id);
@@ -391,7 +404,7 @@ function ShortsPlayer({
           <ChevronLeft size={16} /> Academy
         </button>
         <div className="rounded-full bg-black/40 px-3 py-1 text-xs backdrop-blur-sm">
-          Shorts · {activeIndex + 1}/{feed.length}
+          Mobile view · {activeIndex + 1}/{feed.length}
         </div>
       </div>
 
@@ -431,7 +444,7 @@ function ShortsPlayer({
               else videoRefs.current.delete(t.id);
             }}
             user={user}
-            isCompleted={i === activeIndex ? isCompleted : false}
+            isCompleted={completedSet.has(t.id)}
             onComplete={(done) => onToggleComplete(t.id, done)}
           />
         ))}
@@ -449,11 +462,11 @@ function ShortsPlayer({
           <div className="pointer-events-auto flex flex-wrap items-center gap-2">
             {user ? (
               <Button
-                variant={isCompleted && activeTutorial.id === current.id ? "outline" : "hero"}
+                variant={completedSet.has(activeTutorial.id) ? "outline" : "hero"}
                 size="sm"
-                onClick={() => onToggleComplete(activeTutorial.id, !(isCompleted && activeTutorial.id === current.id))}
+                onClick={() => onToggleComplete(activeTutorial.id, !completedSet.has(activeTutorial.id))}
               >
-                {isCompleted && activeTutorial.id === current.id ? (
+                {completedSet.has(activeTutorial.id) ? (
                   <><CheckCircle2 size={14} className="text-green-500" /> Completed</>
                 ) : (
                   <><Circle size={14} /> Mark complete</>

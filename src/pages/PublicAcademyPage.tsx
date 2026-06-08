@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { PlayCircle, Search, GraduationCap, Loader2, Sparkles } from "lucide-react";
+import { PlayCircle, Search, GraduationCap, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 type TutorialFormat = "short" | "full";
 
@@ -37,8 +38,22 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function PublicAcademyPage() {
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<TutorialFormat>("short");
+
+  const { data: completedSet = new Set<string>() } = useQuery({
+    queryKey: ["academy-completions", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("academy_completions")
+        .select("tutorial_id")
+        .eq("user_id", user!.id);
+      return new Set<string>((data || []).map((r: any) => r.tutorial_id));
+    },
+  });
+
 
   const { data: tutorials = [], isLoading } = useQuery({
     queryKey: ["academy-tutorials-public"],
@@ -109,7 +124,7 @@ export default function PublicAcademyPage() {
           </h1>
           <p className="mt-3 max-w-2xl text-sm sm:text-base text-muted-foreground">
             Short, no-fluff tutorials for coaches, network marketers and entrepreneurs.
-            Swipe through Shorts or watch Full Videos. No signup required.
+            Pick <strong>Mobile view</strong> for swipeable reels, or <strong>Desktop view</strong> for full landscape lessons. No signup required.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link to="/auth?tab=signup">
@@ -124,13 +139,13 @@ export default function PublicAcademyPage() {
         <Tabs value={tab} onValueChange={(v) => setTab(v as TutorialFormat)}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <TabsList>
-              <TabsTrigger value="short">Shorts ({shortsCount})</TabsTrigger>
-              <TabsTrigger value="full">Full Videos ({fullCount})</TabsTrigger>
+              <TabsTrigger value="short">📱 Mobile view ({shortsCount})</TabsTrigger>
+              <TabsTrigger value="full">🖥️ Desktop view ({fullCount})</TabsTrigger>
             </TabsList>
             <div className="relative w-full max-w-xs">
               <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <Input
-                placeholder={`Search ${tab === "short" ? "shorts" : "full videos"}...`}
+                placeholder={`Search ${tab === "short" ? "mobile tutorials" : "desktop tutorials"}...`}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-9"
@@ -147,7 +162,7 @@ export default function PublicAcademyPage() {
               <Card className="p-10 text-center">
                 <Sparkles className="mx-auto mb-3 text-primary" />
                 <h3 className="text-base font-semibold">
-                  {tab === "short" ? "No Shorts yet" : "No Full Videos yet"}
+                  {tab === "short" ? "No mobile tutorials yet" : "No desktop tutorials yet"}
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {query ? `Nothing matches "${query}".` : "Check back soon."}
@@ -191,6 +206,11 @@ export default function PublicAcademyPage() {
                           <div className="absolute left-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-white">
                             #{i + 1}
                           </div>
+                          {completedSet.has(t.id) && (
+                            <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-green-500/95 px-2 py-0.5 text-[10px] font-semibold text-white shadow">
+                              <CheckCircle2 size={12} /> Watched
+                            </div>
+                          )}
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
                             <PlayCircle className="text-white" size={56} />
                           </div>

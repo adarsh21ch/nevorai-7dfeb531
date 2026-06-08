@@ -416,10 +416,10 @@ export const AcademyTab = () => {
                         }`}
                       >
                         <div className="text-sm font-semibold">
-                          {f === "short" ? "Shorts" : "Full Videos"}
+                          {f === "short" ? "📱 Mobile view (Shorts)" : "🖥️ Desktop view (Full)"}
                         </div>
                         <div className="text-[11px] text-muted-foreground">
-                          {f === "short" ? "Vertical 9:16 — reels-style" : "Horizontal 16:9 — landscape"}
+                          {f === "short" ? "Vertical 9:16 — reels-style swipe" : "Horizontal 16:9 — landscape player"}
                         </div>
                       </button>
                     );
@@ -594,8 +594,8 @@ export const AcademyTab = () => {
                     </div>
                     <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
                       {form.format === "short"
-                        ? "Vertical thumbnail (9:16) — matches Shorts player."
-                        : "Wide thumbnail (16:9) — matches Full Videos player."}
+                        ? "Vertical thumbnail (9:16) — matches the Mobile view player."
+                        : "Wide thumbnail (16:9) — matches the Desktop view player."}
                     </div>
                   </div>
                 ) : (
@@ -647,10 +647,10 @@ export const AcademyTab = () => {
         <div className="glass-card flex flex-wrap items-center gap-3 p-3 text-xs">
           <span className="font-semibold">Library:</span>
           <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
-            Shorts ({tutorials.filter((t) => (t.format ?? "short") === "short").length})
+            📱 Mobile view ({tutorials.filter((t) => (t.format ?? "short") === "short").length})
           </span>
           <span className="rounded-full bg-muted px-2.5 py-1">
-            · Full Videos ({tutorials.filter((t) => t.format === "full").length})
+            🖥️ Desktop view ({tutorials.filter((t) => t.format === "full").length})
           </span>
         </div>
       )}
