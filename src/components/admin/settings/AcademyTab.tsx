@@ -647,10 +647,10 @@ export const AcademyTab = () => {
         <div className="glass-card flex flex-wrap items-center gap-3 p-3 text-xs">
           <span className="font-semibold">Library:</span>
           <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
-            Shorts ({tutorials.filter((t) => (t.format ?? "short") === "short").length})
+            📱 Mobile view ({tutorials.filter((t) => (t.format ?? "short") === "short").length})
           </span>
           <span className="rounded-full bg-muted px-2.5 py-1">
-            · Full Videos ({tutorials.filter((t) => t.format === "full").length})
+            🖥️ Desktop view ({tutorials.filter((t) => t.format === "full").length})
           </span>
         </div>
       )}
