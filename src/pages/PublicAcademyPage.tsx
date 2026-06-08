@@ -6,9 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PlayCircle, Search, GraduationCap, Loader2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+type TutorialFormat = "short" | "full";
 
 type Tutorial = {
   id: string;
@@ -19,6 +22,7 @@ type Tutorial = {
   category: string;
   order_index: number;
   is_published: boolean;
+  format: TutorialFormat;
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -34,18 +38,22 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function PublicAcademyPage() {
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<TutorialFormat>("short");
 
   const { data: tutorials = [], isLoading } = useQuery({
     queryKey: ["academy-tutorials-public"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("academy_tutorials")
-        .select("id,title,description,video_url,thumbnail_url,category,order_index,is_published")
+        .select("id,title,description,video_url,thumbnail_url,category,order_index,is_published,format")
         .eq("is_published", true)
         .order("category", { ascending: true })
         .order("order_index", { ascending: true });
       if (error) throw error;
-      return (data || []) as Tutorial[];
+      return ((data || []) as Tutorial[]).map((t) => ({
+        ...t,
+        format: (t.format === "full" ? "full" : "short") as TutorialFormat,
+      }));
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -62,13 +70,17 @@ export default function PublicAcademyPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const shortsCount = useMemo(() => tutorials.filter((t) => t.format === "short").length, [tutorials]);
+  const fullCount = useMemo(() => tutorials.filter((t) => t.format === "full").length, [tutorials]);
+
   const filtered = useMemo(() => {
-    if (!query) return tutorials;
+    const byFormat = tutorials.filter((t) => t.format === tab);
+    if (!query) return byFormat;
     const q = query.toLowerCase();
-    return tutorials.filter(
+    return byFormat.filter(
       (t) => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q),
     );
-  }, [tutorials, query]);
+  }, [tutorials, query, tab]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Tutorial[]>();
@@ -97,7 +109,7 @@ export default function PublicAcademyPage() {
           </h1>
           <p className="mt-3 max-w-2xl text-sm sm:text-base text-muted-foreground">
             Short, no-fluff tutorials for coaches, network marketers and entrepreneurs.
-            Watch in order, or jump to what you need. No signup required.
+            Swipe through Shorts or watch Full Videos. No signup required.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link to="/auth?tab=signup">
@@ -109,76 +121,94 @@ export default function PublicAcademyPage() {
           </div>
         </header>
 
-        <div className="relative max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-          <Input
-            placeholder="Search tutorials..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as TutorialFormat)}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <TabsList>
+              <TabsTrigger value="short">Shorts ({shortsCount})</TabsTrigger>
+              <TabsTrigger value="full">Full Videos ({fullCount})</TabsTrigger>
+            </TabsList>
+            <div className="relative w-full max-w-xs">
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+              <Input
+                placeholder={`Search ${tab === "short" ? "shorts" : "full videos"}...`}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
 
-        {isLoading ? (
-          <Card className="flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
-            <Loader2 className="animate-spin" size={16} /> Loading tutorials…
-          </Card>
-        ) : grouped.length === 0 ? (
-          <Card className="p-10 text-center">
-            <Sparkles className="mx-auto mb-3 text-primary" />
-            <h3 className="text-base font-semibold">No tutorials yet</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {query ? `Nothing matches "${query}".` : "Check back soon."}
-            </p>
-          </Card>
-        ) : (
-          grouped.map(([cat, items]) => (
-            <section key={cat} className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">{CATEGORY_LABELS[cat] || cat}</h2>
-                <Badge variant="secondary">{items.length}</Badge>
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((t, i) => (
-                  <Link
-                    key={t.id}
-                    to="/academy/$id"
-                    params={{ id: t.id }}
-                    className="group block overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/50 hover:shadow-md"
+          <TabsContent value={tab} className="mt-6 space-y-8">
+            {isLoading ? (
+              <Card className="flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
+                <Loader2 className="animate-spin" size={16} /> Loading tutorials…
+              </Card>
+            ) : grouped.length === 0 ? (
+              <Card className="p-10 text-center">
+                <Sparkles className="mx-auto mb-3 text-primary" />
+                <h3 className="text-base font-semibold">
+                  {tab === "short" ? "No Shorts yet" : "No Full Videos yet"}
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {query ? `Nothing matches "${query}".` : "Check back soon."}
+                </p>
+              </Card>
+            ) : (
+              grouped.map(([cat, items]) => (
+                <section key={cat} className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-semibold">{CATEGORY_LABELS[cat] || cat}</h2>
+                    <Badge variant="secondary">{items.length}</Badge>
+                  </div>
+                  <div
+                    className={
+                      tab === "short"
+                        ? "grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                        : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    }
                   >
-                    <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                      {t.thumbnail_url ? (
-                        <img
-                          src={t.thumbnail_url}
-                          alt={t.title}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/15 to-accent/10">
-                          <PlayCircle className="text-primary/60" size={48} />
+                    {items.map((t, i) => (
+                      <Link
+                        key={t.id}
+                        to="/academy/$id"
+                        params={{ id: t.id }}
+                        className="group block overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/50 hover:shadow-md"
+                      >
+                        <div className={`relative w-full overflow-hidden bg-muted ${tab === "short" ? "aspect-[9/16]" : "aspect-video"}`}>
+                          {t.thumbnail_url ? (
+                            <img
+                              src={t.thumbnail_url}
+                              alt={t.title}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/15 to-accent/10">
+                              <PlayCircle className="text-primary/60" size={48} />
+                            </div>
+                          )}
+                          <div className="absolute left-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-white">
+                            #{i + 1}
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+                            <PlayCircle className="text-white" size={56} />
+                          </div>
                         </div>
-                      )}
-                      <div className="absolute left-2 top-2 rounded-md bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-white">
-                        #{i + 1}
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
-                        <PlayCircle className="text-white" size={56} />
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="font-semibold leading-tight">{t.title}</div>
-                      {t.description && (
-                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{t.description}</p>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ))
-        )}
+                        <div className="p-3 sm:p-4">
+                          <div className="text-sm font-semibold leading-tight line-clamp-2">{t.title}</div>
+                          {t.description && tab === "full" && (
+                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{t.description}</p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
 
         <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 to-card p-6 sm:p-10 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
