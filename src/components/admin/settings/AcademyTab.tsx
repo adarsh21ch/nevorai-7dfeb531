@@ -26,6 +26,8 @@ import {
   X,
 } from "lucide-react";
 
+type TutorialFormat = "short" | "full";
+
 type Tutorial = {
   id: string;
   title: string;
@@ -35,6 +37,7 @@ type Tutorial = {
   category: string;
   order_index: number;
   is_published: boolean;
+  format: TutorialFormat;
 };
 
 type UploadState = {
@@ -62,7 +65,9 @@ const emptyForm = {
   thumbnail_url: "",
   category: "getting-started",
   is_published: true,
+  format: "short" as TutorialFormat,
 };
+
 
 const emptyUploadState: UploadState = {
   error: null,
@@ -189,7 +194,9 @@ export const AcademyTab = () => {
       thumbnail_url: t.thumbnail_url || "",
       category: t.category,
       is_published: t.is_published,
+      format: (t.format === "full" ? "full" : "short") as TutorialFormat,
     });
+
     setVideoUpload(emptyUploadState);
     setThumbnailUpload(emptyUploadState);
     setShowForm(true);
@@ -207,8 +214,10 @@ export const AcademyTab = () => {
         thumbnail_url: form.thumbnail_url.trim() || null,
         category: form.category,
         is_published: form.is_published,
+        format: form.format,
         updated_at: new Date().toISOString(),
       };
+
 
       if (editing) {
         const { error } = await (supabase as any)
@@ -390,7 +399,35 @@ export const AcademyTab = () => {
                 </Select>
               </div>
 
-              <div className="flex items-end justify-between gap-3 rounded-lg border border-border px-3 py-3">
+              <div className="sm:col-span-2">
+                <Label className="text-xs">Format *</Label>
+                <div className="mt-1.5 grid grid-cols-2 gap-2">
+                  {(["short", "full"] as TutorialFormat[]).map((f) => {
+                    const active = form.format === f;
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => setForm({ ...form, format: f })}
+                        className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
+                          active
+                            ? "border-primary bg-primary/10 ring-1 ring-primary"
+                            : "border-border hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="text-sm font-semibold">
+                          {f === "short" ? "Shorts" : "Full Videos"}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {f === "short" ? "Vertical 9:16 — reels-style" : "Horizontal 16:9 — landscape"}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-end justify-between gap-3 rounded-lg border border-border px-3 py-3 sm:col-span-2">
                 <div>
                   <Label className="text-xs">Published</Label>
                   <p className="text-[10px] text-muted-foreground">Visible to users immediately</p>
@@ -400,6 +437,7 @@ export const AcademyTab = () => {
                   onCheckedChange={(value) => setForm({ ...form, is_published: value })}
                 />
               </div>
+
 
               <div className="sm:col-span-2 space-y-2 rounded-xl border border-border bg-background/60 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -544,7 +582,9 @@ export const AcademyTab = () => {
 
                 {form.thumbnail_url ? (
                   <div className="overflow-hidden rounded-xl border border-border bg-card">
-                    <div className="aspect-video w-full bg-muted">
+                    <div
+                      className={`${form.format === "short" ? "aspect-[9/16] mx-auto max-w-[220px]" : "aspect-video w-full"} bg-muted`}
+                    >
                       <img
                         src={form.thumbnail_url}
                         alt="Tutorial thumbnail preview"
@@ -553,14 +593,17 @@ export const AcademyTab = () => {
                       />
                     </div>
                     <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-                      Thumbnail ready for this tutorial card.
+                      {form.format === "short"
+                        ? "Vertical thumbnail (9:16) — matches Shorts player."
+                        : "Wide thumbnail (16:9) — matches Full Videos player."}
                     </div>
                   </div>
                 ) : (
                   <div className="rounded-lg border border-dashed border-border bg-muted/20 p-4 text-[11px] text-muted-foreground">
-                    No thumbnail uploaded yet.
+                    No thumbnail uploaded yet. Use a {form.format === "short" ? "9:16 vertical" : "16:9 horizontal"} image for best results.
                   </div>
                 )}
+
               </div>
 
               <div className="sm:col-span-2">
@@ -600,11 +643,24 @@ export const AcademyTab = () => {
         )}
       </div>
 
+      {!isLoading && tutorials.length > 0 && (
+        <div className="glass-card flex flex-wrap items-center gap-3 p-3 text-xs">
+          <span className="font-semibold">Library:</span>
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+            Shorts ({tutorials.filter((t) => (t.format ?? "short") === "short").length})
+          </span>
+          <span className="rounded-full bg-muted px-2.5 py-1">
+            · Full Videos ({tutorials.filter((t) => t.format === "full").length})
+          </span>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="glass-card p-6 text-center text-sm text-muted-foreground">
           <Loader2 className="mx-auto mb-2 animate-spin" /> Loading tutorials…
         </div>
       ) : (
+
         byCategory.map((cat, cIdx) => (
           <div key={cat.value} className="glass-card p-3 sm:p-4">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -637,28 +693,35 @@ export const AcademyTab = () => {
               <p className="text-xs italic text-muted-foreground">No tutorials yet.</p>
             ) : (
               <ul className="space-y-2">
-                {cat.items.map((t, i) => (
+                {cat.items.map((t, i) => {
+                  const fmt = (t.format ?? "short") as TutorialFormat;
+                  const thumbCls = fmt === "short" ? "h-14 w-8" : "h-10 w-16";
+                  return (
                   <li key={t.id} className="flex items-center gap-2 rounded-md border border-border bg-card/50 p-2">
                     <span className="w-6 text-center text-xs font-mono text-muted-foreground">{i + 1}</span>
                     {t.thumbnail_url ? (
                       <img
                         src={t.thumbnail_url}
                         alt={t.title}
-                        className="h-10 w-16 rounded object-cover"
+                        className={`${thumbCls} rounded object-cover`}
                         loading="lazy"
                       />
                     ) : (
-                      <div className="flex h-10 w-16 items-center justify-center rounded bg-muted text-muted-foreground">
+                      <div className={`${thumbCls} flex items-center justify-center rounded bg-muted text-muted-foreground`}>
                         <Video size={14} />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className="truncate text-sm font-medium">{t.title}</p>
+                        <span className={`rounded px-1.5 py-0.5 text-[9px] uppercase ${fmt === "short" ? "bg-primary/15 text-primary" : "bg-accent/20 text-foreground"}`}>
+                          {fmt === "short" ? "Short" : "Full"}
+                        </span>
                         {!t.is_published && <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] uppercase">Draft</span>}
                       </div>
                       {t.description && <p className="line-clamp-1 text-[11px] text-muted-foreground">{t.description}</p>}
                     </div>
+
                     <div className="flex shrink-0 items-center gap-0.5">
                       <Button
                         size="icon"
@@ -693,7 +756,9 @@ export const AcademyTab = () => {
                       </Button>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
+
               </ul>
             )}
           </div>
