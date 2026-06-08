@@ -391,7 +391,7 @@ function ShortsPlayer({
           <ChevronLeft size={16} /> Academy
         </button>
         <div className="rounded-full bg-black/40 px-3 py-1 text-xs backdrop-blur-sm">
-          Shorts · {activeIndex + 1}/{feed.length}
+          Mobile view · {activeIndex + 1}/{feed.length}
         </div>
       </div>
 
