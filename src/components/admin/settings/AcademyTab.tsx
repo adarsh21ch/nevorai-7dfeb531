@@ -582,7 +582,9 @@ export const AcademyTab = () => {
 
                 {form.thumbnail_url ? (
                   <div className="overflow-hidden rounded-xl border border-border bg-card">
-                    <div className="aspect-video w-full bg-muted">
+                    <div
+                      className={`${form.format === "short" ? "aspect-[9/16] mx-auto max-w-[220px]" : "aspect-video w-full"} bg-muted`}
+                    >
                       <img
                         src={form.thumbnail_url}
                         alt="Tutorial thumbnail preview"
@@ -591,14 +593,17 @@ export const AcademyTab = () => {
                       />
                     </div>
                     <div className="border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-                      Thumbnail ready for this tutorial card.
+                      {form.format === "short"
+                        ? "Vertical thumbnail (9:16) — matches Shorts player."
+                        : "Wide thumbnail (16:9) — matches Full Videos player."}
                     </div>
                   </div>
                 ) : (
                   <div className="rounded-lg border border-dashed border-border bg-muted/20 p-4 text-[11px] text-muted-foreground">
-                    No thumbnail uploaded yet.
+                    No thumbnail uploaded yet. Use a {form.format === "short" ? "9:16 vertical" : "16:9 horizontal"} image for best results.
                   </div>
                 )}
+
               </div>
 
               <div className="sm:col-span-2">
@@ -638,11 +643,24 @@ export const AcademyTab = () => {
         )}
       </div>
 
+      {!isLoading && tutorials.length > 0 && (
+        <div className="glass-card flex flex-wrap items-center gap-3 p-3 text-xs">
+          <span className="font-semibold">Library:</span>
+          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+            Shorts ({tutorials.filter((t) => (t.format ?? "short") === "short").length})
+          </span>
+          <span className="rounded-full bg-muted px-2.5 py-1">
+            · Full Videos ({tutorials.filter((t) => t.format === "full").length})
+          </span>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="glass-card p-6 text-center text-sm text-muted-foreground">
           <Loader2 className="mx-auto mb-2 animate-spin" /> Loading tutorials…
         </div>
       ) : (
+
         byCategory.map((cat, cIdx) => (
           <div key={cat.value} className="glass-card p-3 sm:p-4">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -675,28 +693,35 @@ export const AcademyTab = () => {
               <p className="text-xs italic text-muted-foreground">No tutorials yet.</p>
             ) : (
               <ul className="space-y-2">
-                {cat.items.map((t, i) => (
+                {cat.items.map((t, i) => {
+                  const fmt = (t.format ?? "short") as TutorialFormat;
+                  const thumbCls = fmt === "short" ? "h-14 w-8" : "h-10 w-16";
+                  return (
                   <li key={t.id} className="flex items-center gap-2 rounded-md border border-border bg-card/50 p-2">
                     <span className="w-6 text-center text-xs font-mono text-muted-foreground">{i + 1}</span>
                     {t.thumbnail_url ? (
                       <img
                         src={t.thumbnail_url}
                         alt={t.title}
-                        className="h-10 w-16 rounded object-cover"
+                        className={`${thumbCls} rounded object-cover`}
                         loading="lazy"
                       />
                     ) : (
-                      <div className="flex h-10 w-16 items-center justify-center rounded bg-muted text-muted-foreground">
+                      <div className={`${thumbCls} flex items-center justify-center rounded bg-muted text-muted-foreground`}>
                         <Video size={14} />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className="truncate text-sm font-medium">{t.title}</p>
+                        <span className={`rounded px-1.5 py-0.5 text-[9px] uppercase ${fmt === "short" ? "bg-primary/15 text-primary" : "bg-accent/20 text-foreground"}`}>
+                          {fmt === "short" ? "Short" : "Full"}
+                        </span>
                         {!t.is_published && <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] uppercase">Draft</span>}
                       </div>
                       {t.description && <p className="line-clamp-1 text-[11px] text-muted-foreground">{t.description}</p>}
                     </div>
+
                     <div className="flex shrink-0 items-center gap-0.5">
                       <Button
                         size="icon"
