@@ -122,6 +122,7 @@ export default function PublicAcademyTutorialPage() {
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["academy-completion", user?.id, vars.tutorialId] });
+      qc.invalidateQueries({ queryKey: ["academy-completions", user?.id] });
       toast.success(vars.done ? "Marked as completed" : "Marked as not completed");
     },
     onError: (e: any) => toast.error(e.message || "Failed"),
