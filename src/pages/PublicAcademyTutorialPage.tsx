@@ -247,7 +247,7 @@ export default function PublicAcademyTutorialPage() {
 
             {related.length > 0 && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-3 text-sm">More Full Videos in this series</h3>
+                <h3 className="font-semibold mb-3 text-sm">More desktop tutorials in this series</h3>
                 <ul className="space-y-2">
                   {related.map((r) => (
                     <li key={r.id}>
