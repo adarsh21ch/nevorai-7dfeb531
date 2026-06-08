@@ -194,7 +194,9 @@ export const AcademyTab = () => {
       thumbnail_url: t.thumbnail_url || "",
       category: t.category,
       is_published: t.is_published,
+      format: (t.format === "full" ? "full" : "short") as TutorialFormat,
     });
+
     setVideoUpload(emptyUploadState);
     setThumbnailUpload(emptyUploadState);
     setShowForm(true);
@@ -212,8 +214,10 @@ export const AcademyTab = () => {
         thumbnail_url: form.thumbnail_url.trim() || null,
         category: form.category,
         is_published: form.is_published,
+        format: form.format,
         updated_at: new Date().toISOString(),
       };
+
 
       if (editing) {
         const { error } = await (supabase as any)
