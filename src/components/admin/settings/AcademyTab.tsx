@@ -399,7 +399,35 @@ export const AcademyTab = () => {
                 </Select>
               </div>
 
-              <div className="flex items-end justify-between gap-3 rounded-lg border border-border px-3 py-3">
+              <div className="sm:col-span-2">
+                <Label className="text-xs">Format *</Label>
+                <div className="mt-1.5 grid grid-cols-2 gap-2">
+                  {(["short", "full"] as TutorialFormat[]).map((f) => {
+                    const active = form.format === f;
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => setForm({ ...form, format: f })}
+                        className={`rounded-lg border px-3 py-2 text-left text-xs transition ${
+                          active
+                            ? "border-primary bg-primary/10 ring-1 ring-primary"
+                            : "border-border hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="text-sm font-semibold">
+                          {f === "short" ? "Shorts" : "Full Videos"}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {f === "short" ? "Vertical 9:16 — reels-style" : "Horizontal 16:9 — landscape"}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-end justify-between gap-3 rounded-lg border border-border px-3 py-3 sm:col-span-2">
                 <div>
                   <Label className="text-xs">Published</Label>
                   <p className="text-[10px] text-muted-foreground">Visible to users immediately</p>
@@ -409,6 +437,7 @@ export const AcademyTab = () => {
                   onCheckedChange={(value) => setForm({ ...form, is_published: value })}
                 />
               </div>
+
 
               <div className="sm:col-span-2 space-y-2 rounded-xl border border-border bg-background/60 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
