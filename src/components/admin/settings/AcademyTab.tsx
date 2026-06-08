@@ -756,7 +756,9 @@ export const AcademyTab = () => {
                       </Button>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
+
               </ul>
             )}
           </div>
