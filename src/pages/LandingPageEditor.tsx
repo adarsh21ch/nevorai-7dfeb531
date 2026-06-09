@@ -24,6 +24,8 @@ import {
   Lock as LockIcon,
 } from "lucide-react";
 import { TestimonialsBuilderStep } from "@/components/funnel/TestimonialsBuilderStep";
+import { ShareWithTeamModal } from "@/components/landing-pages/ShareWithTeamModal";
+import { Users as UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import { sanitizeText } from "@/lib/sanitize";
 import { generateUniqueSuffixedSlug } from "@/lib/slugSuffix";
@@ -157,6 +159,7 @@ const LandingPageEditor = () => {
   const [slugEdited, setSlugEdited] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [previewStage, setPreviewStage] = useState<"form" | "after-submit">("form");
+  const [shareTeamOpen, setShareTeamOpen] = useState(false);
   const [videoToggle, setVideoToggle] = useState(false);
   const [funnelToggle, setFunnelToggle] = useState(false);
   const [videoPickerOpen, setVideoPickerOpen] = useState(false);
@@ -1107,10 +1110,24 @@ const LandingPageEditor = () => {
             <Eye size={14} className="mr-1.5" /> Preview
           </Button>
         )}
+        {isEdit && id && (
+          <Button variant="outline" size="sm" onClick={() => setShareTeamOpen(true)}>
+            <UsersIcon size={14} className="mr-1.5" /> Share with Team
+          </Button>
+        )}
         <Button size="sm" onClick={() => { updateField("status", "published"); setTimeout(() => saveMutation.mutate(), 50); }} disabled={saveMutation.isPending || !form.title}>
           <Save size={14} className="mr-1.5" /> {saveMutation.isPending ? "Saving..." : "Save"}
         </Button>
       </div>
+      {isEdit && id && (
+        <ShareWithTeamModal
+          open={shareTeamOpen}
+          onOpenChange={setShareTeamOpen}
+          landingPageId={id}
+          landingPageTitle={form.title || "Landing page"}
+        />
+      )}
+    </div>
     </div>
   );
 
