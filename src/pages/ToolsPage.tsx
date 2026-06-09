@@ -7,7 +7,13 @@ import { useLocation, useNavigate } from "@/lib/router-compat";
 import FunnelsPage from "@/pages/FunnelsPage";
 import LandingPagesPage from "@/pages/LandingPagesPage";
 import LivePage from "@/pages/LivePage";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { PlanFeatureBadge, type GatedFeature } from "@/components/PlanFeatureBadge";
+
+const TOOL_TABS = [
+  { key: "funnels", label: "Funnels", icon: GitBranch, Component: FunnelsPage, feature: "funnelCreation" as GatedFeature },
+  { key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage, feature: "landingPages" as GatedFeature },
+  { key: "live", label: "Live", icon: Radio, Component: LivePage, feature: "goLive" as GatedFeature },
+];
 
 const parseTab = (search: string, validTabs: string[]): string => {
   const tab = new URLSearchParams(search).get("tab") || "funnels";
@@ -18,23 +24,17 @@ const ToolsPage = () => {
   useDocumentTitle("Tools");
   const navigate = useNavigate();
   const location = useLocation();
-  const { features } = usePlanLimits();
-  const TOOL_TABS = useMemo(() => [
-    { key: "funnels", label: "Funnels", icon: GitBranch, Component: FunnelsPage },
-    ...(features.landingPages ? [{ key: "landing-pages", label: "Landing Pages", icon: Layout, Component: LandingPagesPage }] : []),
-    ...(features.goLive ? [{ key: "live", label: "Live", icon: Radio, Component: LivePage }] : []),
-  ], [features.landingPages, features.goLive]);
+  const validKeys = useMemo(() => TOOL_TABS.map((t) => t.key), []);
   const [activeTab, setActiveTab] = useState<string>(() => {
     const search = (typeof window !== "undefined" ? window.location.search : "") || "";
-    return parseTab(search, ["funnels", "landing-pages", "live"]);
+    return parseTab(search, validKeys);
   });
 
-  // Keep tab in sync with URL ?tab= so sidebar Link clicks switch instantly.
   useEffect(() => {
     const search = location.search || (typeof window !== "undefined" ? window.location.search : "");
-    const next = parseTab(search, TOOL_TABS.map((tab) => tab.key));
+    const next = parseTab(search, validKeys);
     setActiveTab((prev) => (prev === next ? prev : next));
-  }, [TOOL_TABS, location.search]);
+  }, [validKeys, location.search]);
 
   const handleTabChange = (key: string) => {
     setActiveTab(key);
@@ -63,6 +63,7 @@ const ToolsPage = () => {
               >
                 <Icon size={15} />
                 {tab.label}
+                <PlanFeatureBadge feature={tab.feature} className="ml-1" />
               </button>
             );
           })}
@@ -74,3 +75,4 @@ const ToolsPage = () => {
 };
 
 export default ToolsPage;
+

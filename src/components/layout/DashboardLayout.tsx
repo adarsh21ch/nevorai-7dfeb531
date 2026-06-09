@@ -21,6 +21,7 @@ import { TrialExpiredGate } from "@/components/TrialExpiredGate";
 import { TrialBanner } from "@/components/TrialBanner";
 import { usePlan } from "@/hooks/usePlan";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { PlanFeatureBadge } from "@/components/PlanFeatureBadge";
 // SupportFAB removed from global mount — moved to Profile page
 import { useRouter } from "@tanstack/react-router";
 
@@ -161,9 +162,9 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
                 const search = location.search || (typeof window !== "undefined" ? window.location.search : "");
                 const activeTab = onTools ? (new URLSearchParams(search).get("tab") || "funnels") : null;
                 const subItems = [
-                  { key: "funnels", label: "Funnels", icon: GitBranch },
-                  ...(features.landingPages ? [{ key: "landing-pages", label: "Landing Pages", icon: Layout }] : []),
-                  ...(features.goLive ? [{ key: "live", label: "Live", icon: Radio }] : []),
+                  { key: "funnels", label: "Funnels", icon: GitBranch, feature: "funnelCreation" as const },
+                  { key: "landing-pages", label: "Landing Pages", icon: Layout, feature: "landingPages" as const },
+                  { key: "live", label: "Live", icon: Radio, feature: "goLive" as const },
                 ];
                 return (
                   <div key={item.path}>
@@ -186,7 +187,8 @@ export const DashboardLayout = ({ children, editorMode = false }: { children: Re
                               style={subActive ? { color: "var(--accent-saffron)" } : undefined}
                             >
                               <sub.icon size={14} />
-                              <span>{sub.label}</span>
+                              <span className="flex-1">{sub.label}</span>
+                              <PlanFeatureBadge feature={sub.feature} />
                             </Link>
                           );
                         })}
