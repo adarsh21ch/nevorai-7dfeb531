@@ -10,11 +10,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Pencil, Eye, Users, Mail, Download, Search } from "lucide-react";
+import { ArrowLeft, Pencil, Eye, Users, Mail, Download, Search, Copy, Users2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { useAuth } from "@/hooks/useAuth";
+import { ShareWithTeamModal } from "@/components/landing-pages/ShareWithTeamModal";
 
 const LandingPageDetail = () => {
   const { id } = useParams<{ id: string }>();
