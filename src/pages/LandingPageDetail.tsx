@@ -96,12 +96,13 @@ const LandingPageDetail = () => {
             <p className="text-sm text-muted-foreground">{window.location.origin}/l/{(page as any).slug}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <WhatsAppShareButton
-              url={`${typeof window !== "undefined" ? window.location.origin : ""}/l/${(page as any).slug}`}
-              message={`Check this out: ${(page as any).title}`}
-              size="sm"
-            />
-            <Button variant="outline" onClick={() => id && navigate({ to: "/landing-pages/$id/edit", params: { id } })}>
+            <Button variant="outline" size="sm" onClick={() => copyLink((page as any).slug)}>
+              <Copy size={14} className="mr-2" /> Copy link
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShareOpen(true)}>
+              <Users2 size={14} className="mr-2" /> Share with Team
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => id && navigate({ to: "/landing-pages/$id/edit", params: { id } })}>
               <Pencil size={14} className="mr-2" /> Edit
             </Button>
           </div>
