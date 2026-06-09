@@ -171,11 +171,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [fetchProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    // Clear local state INSTANTLY so the UI never feels frozen.
     setUser(null);
     setSession(null);
     setProfile(null);
-  }, []);
+    // Drop cached protected queries so a back-nav can't restore them.
+    try { queryClient.clear(); } catch {}
+    // Local-scope signOut clears localStorage tokens with no network call —
+    // returns in milliseconds even on slow/offline networks.
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Best-effort; local state is already cleared.
+    }
+    // Fire the global server-side revoke in the background (don't await).
+    // If the network is slow or offline, the user is already logged out locally.
+    void supabase.auth.signOut({ scope: "global" }).catch(() => {});
+  }, [queryClient]);
 
   // Memoize context value so consumers don't re-render every time AuthProvider
   // re-renders for unrelated reasons. Identity changes only when one of the
