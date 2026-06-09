@@ -10,11 +10,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Pencil, Eye, Users, Mail, Download, Search } from "lucide-react";
+import { ArrowLeft, Pencil, Eye, Users, Mail, Download, Search, Copy, Users2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { useAuth } from "@/hooks/useAuth";
+import { ShareWithTeamModal } from "@/components/landing-pages/ShareWithTeamModal";
 
 const LandingPageDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +22,13 @@ const LandingPageDetail = () => {
   const { loading: authLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [shareOpen, setShareOpen] = useState(false);
+
+  const pageUrl = typeof window !== "undefined" ? `${window.location.origin}/l/` : "/l/";
+  const copyLink = (slug: string) => {
+    navigator.clipboard.writeText(`${pageUrl}${slug}`);
+    toast.success("Link copied!");
+  };
 
   const { data: page } = useQuery({
     queryKey: ["landing-page", id],
@@ -89,12 +96,13 @@ const LandingPageDetail = () => {
             <p className="text-sm text-muted-foreground">{window.location.origin}/l/{(page as any).slug}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <WhatsAppShareButton
-              url={`${typeof window !== "undefined" ? window.location.origin : ""}/l/${(page as any).slug}`}
-              message={`Check this out: ${(page as any).title}`}
-              size="sm"
-            />
-            <Button variant="outline" onClick={() => id && navigate({ to: "/landing-pages/$id/edit", params: { id } })}>
+            <Button variant="outline" size="sm" onClick={() => copyLink((page as any).slug)}>
+              <Copy size={14} className="mr-2" /> Copy link
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShareOpen(true)}>
+              <Users2 size={14} className="mr-2" /> Share with Team
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => id && navigate({ to: "/landing-pages/$id/edit", params: { id } })}>
               <Pencil size={14} className="mr-2" /> Edit
             </Button>
           </div>
@@ -118,7 +126,7 @@ const LandingPageDetail = () => {
 
         <Card className="p-5 space-y-4">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <h2 className="font-semibold">Registrations ({(registrations as any[]).length})</h2>
+            <h2 className="font-semibold">Insights ({(registrations as any[]).length})</h2>
             <div className="flex gap-2">
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -183,6 +191,12 @@ const LandingPageDetail = () => {
           </div>
         </Card>
       </div>
+      <ShareWithTeamModal
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        landingPageId={(page as any).id}
+        landingPageTitle={(page as any).title}
+      />
     </DashboardLayout>
   );
 };
