@@ -171,10 +171,25 @@ export const TestimonialsBuilderStep = ({
         <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
           <Star size={18} className="text-primary" /> Testimonials
         </h2>
-        <p className="text-sm text-muted-foreground">Save the landing page first to add testimonials.</p>
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-5 space-y-3">
+          <p className="text-sm">
+            Testimonials attach to a saved landing page. Create a draft now and you can keep adding testimonials right after — no need to publish first.
+          </p>
+          {onCreateDraft ? (
+            <Button size="sm" onClick={onCreateDraft} disabled={creatingDraft || !canCreateDraft}>
+              {creatingDraft ? (<><Loader2 size={14} className="mr-1.5 animate-spin" /> Creating draft…</>) : "Save draft & continue"}
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">Add a page title in step 1, then come back here.</p>
+          )}
+          {!canCreateDraft && onCreateDraft && (
+            <p className="text-xs text-muted-foreground">Tip: a page title is required before saving.</p>
+          )}
+        </div>
       </>
     );
   }
+
 
   return (
     <>
