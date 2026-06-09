@@ -139,36 +139,53 @@ const LandingPagesPage = ({ embedded = false }: { embedded?: boolean } = {}) => 
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filtered.map((page: any) => (
-              <Card key={page.id} className="p-5 space-y-3 premium-card">
-                <div className="flex items-start justify-between">
-                  <Badge variant={statusColor(page.status) as any} className="capitalize">{page.status}</Badge>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical size={16} /></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => navigate({ to: "/landing-pages/$id/edit", params: { id: page.id } })}><Pencil size={14} className="mr-2" /> Edit</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => window.open(`/l/${page.slug}`, "_blank")}><ExternalLink size={14} className="mr-2" /> Preview</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => deletePage(page.id)} className="text-destructive"><Trash2 size={14} className="mr-2" /> Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <h3 className="font-semibold text-lg leading-tight">{page.title}</h3>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="truncate">{window.location.origin}/l/{page.slug}</span>
-                  <button onClick={() => copyLink(page.slug)} className="hover:text-foreground"><Copy size={12} /></button>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><Eye size={14} /> {page.total_views || 0} views</span>
-                  <span className="flex items-center gap-1"><Users size={14} /> {page.total_registrations || 0} registrations</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Created {format(new Date(page.created_at), "d MMM yyyy")}</p>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <Button variant="outline" size="sm" onClick={() => navigate({ to: "/landing-pages/$id/edit", params: { id: page.id } })}>Edit</Button>
-                  <Button variant="outline" size="sm" onClick={() => navigate({ to: "/landing-pages/$id", params: { id: page.id } })}>Registrations</Button>
-                  <Button variant="outline" size="sm" onClick={() => window.open(`/l/${page.slug}`, "_blank")}>Preview</Button>
-                  <Button variant="outline" size="sm" onClick={() => setShareTeam({ id: page.id, title: page.title })}>
-                    <Users2 size={14} className="mr-1" /> Share with Team
-                  </Button>
-                  <WhatsAppShareButton url={`${typeof window !== "undefined" ? window.location.origin : ""}/l/${page.slug}`} message={`Check this out: ${page.title}`} size="sm" iconOnly />
+              <Card
+                key={page.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate({ to: "/landing-pages/$id", params: { id: page.id } })}
+                onKeyDown={(e) => { if (e.key === "Enter") navigate({ to: "/landing-pages/$id", params: { id: page.id } }); }}
+                className="p-0 overflow-hidden premium-card cursor-pointer transition hover:shadow-md hover:border-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {page.og_image_url ? (
+                  <div className="aspect-[16/9] w-full bg-muted overflow-hidden border-b">
+                    <img src={page.og_image_url} alt={page.title} loading="lazy" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="aspect-[16/9] w-full bg-gradient-to-br from-primary/10 via-muted to-muted/50 flex items-center justify-center border-b">
+                    <FileText size={32} className="text-muted-foreground/60" />
+                  </div>
+                )}
+                <div className="p-5 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <Badge variant={statusColor(page.status) as any} className="capitalize">{page.status}</Badge>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical size={16} /></Button></DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate({ to: "/landing-pages/$id/edit", params: { id: page.id } })}><Pencil size={14} className="mr-2" /> Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => window.open(`/l/${page.slug}`, "_blank")}><ExternalLink size={14} className="mr-2" /> Preview</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => copyLink(page.slug)}><Copy size={14} className="mr-2" /> Copy link</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => deletePage(page.id)} className="text-destructive"><Trash2 size={14} className="mr-2" /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-lg leading-tight">{page.title}</h3>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1"><Eye size={14} /> {page.total_views || 0} views</span>
+                    <span className="flex items-center gap-1"><Users size={14} /> {page.total_registrations || 0} registrations</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Created {format(new Date(page.created_at), "d MMM yyyy")}</p>
+                  <div className="flex flex-wrap gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="outline" size="sm" onClick={() => navigate({ to: "/landing-pages/$id/edit", params: { id: page.id } })}>Edit</Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate({ to: "/landing-pages/$id", params: { id: page.id } })}>Insights</Button>
+                    <Button variant="outline" size="sm" onClick={() => window.open(`/l/${page.slug}`, "_blank")}>Preview</Button>
+                    <Button variant="outline" size="sm" onClick={() => copyLink(page.slug)} title="Copy link"><Copy size={14} className="mr-1" /> Copy link</Button>
+                    <Button variant="outline" size="sm" onClick={() => setShareTeam({ id: page.id, title: page.title })}>
+                      <Users2 size={14} className="mr-1" /> Share with Team
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
