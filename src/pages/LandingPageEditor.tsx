@@ -248,20 +248,25 @@ const LandingPageEditor = () => {
       if (isEdit) {
         const { error } = await supabase.from("landing_pages").update(payload).eq("id", id!);
         if (error) throw error;
+        return { id: id!, created: false };
       } else {
         // Append a 4-char random base62 suffix so URLs cannot be enumerated.
         // Existing landing pages keep their slug — we only suffix on first insert.
         const baseSlug = generateSlug(payload.slug || payload.title || "page") || "page";
         payload.slug = await generateUniqueSuffixedSlug(baseSlug, "landing_pages");
-        const { error } = await supabase.from("landing_pages").insert(payload);
+        const { data: inserted, error } = await supabase
+          .from("landing_pages").insert(payload).select("id").single();
         if (error) throw error;
+        return { id: inserted!.id as string, created: true };
       }
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       toast.success(isEdit ? "Landing page updated" : "Landing page created");
       await queryClient.invalidateQueries({ queryKey: ["landing-pages"] });
       await queryClient.refetchQueries({ queryKey: ["landing-pages"] });
-      if (!isEdit) navigate("/tools?tab=landing-pages");
+      // After first save, jump into the edit view so the user can immediately
+      // add testimonials / video / etc. that require a landing_page_id.
+      if (result?.created && result.id) navigate(`/landing-pages/${result.id}/edit`);
     },
     onError: (e: any) => toast.error(e.message || "Failed to save"),
   });
