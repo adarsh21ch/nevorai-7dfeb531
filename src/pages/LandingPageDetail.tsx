@@ -87,15 +87,14 @@ const LandingPageDetail = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/landing-pages/" })}>
-            <ArrowLeft size={18} />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold">{(page as any).title}</h1>
-            <p className="text-sm text-muted-foreground">{window.location.origin}/l/{(page as any).slug}</p>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/landing-pages/" })}>
+              <ArrowLeft size={18} />
+            </Button>
+            <h1 className="text-xl sm:text-2xl font-bold flex-1 min-w-0 truncate">{(page as any).title}</h1>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pl-1">
             <Button variant="outline" size="sm" onClick={() => copyLink((page as any).slug)}>
               <Copy size={14} className="mr-2" /> Copy link
             </Button>
