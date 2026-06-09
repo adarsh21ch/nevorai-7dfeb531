@@ -96,7 +96,7 @@ const defaultFormState = {
   speaker_photo_url: "",
   testimonials_enabled: false,
   testimonials_section_title: "What our members say",
-  testimonials_display_position: "after_registration" as string,
+  testimonials_display_position: "both" as string,
   min_age_enabled: false,
   min_age: 18,
   access_code_message: "",
