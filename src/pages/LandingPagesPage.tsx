@@ -185,6 +185,15 @@ const LandingPagesPage = ({ embedded = false }: { embedded?: boolean } = {}) => 
         limit={config.max_landing_pages}
         tier={tier}
       />
+
+      {shareTeam && (
+        <ShareWithTeamModal
+          open={!!shareTeam}
+          onOpenChange={(v) => !v && setShareTeam(null)}
+          landingPageId={shareTeam.id}
+          landingPageTitle={shareTeam.title}
+        />
+      )}
     </>
   );
   return embedded ? content : <DashboardLayout>{content}</DashboardLayout>;
