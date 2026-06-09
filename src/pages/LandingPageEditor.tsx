@@ -1128,7 +1128,6 @@ const LandingPageEditor = () => {
         />
       )}
     </div>
-    </div>
   );
 
   const rightPaneNode = !isMobile ? (
