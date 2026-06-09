@@ -1029,7 +1029,7 @@ const LandingPageEditor = () => {
               { v: "after_registration", label: "After form", desc: "Reassure post-submit" },
               { v: "both", label: "Both", desc: "Maximum exposure" },
             ].map((opt) => {
-              const active = (form.testimonials_display_position || "after_registration") === opt.v;
+              const active = (form.testimonials_display_position || "both") === opt.v;
               return (
                 <button key={opt.v} type="button" onClick={() => updateField("testimonials_display_position", opt.v)}
                   className={`text-left p-3 rounded-lg border transition ${active ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
