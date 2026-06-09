@@ -22,6 +22,13 @@ const LandingPageDetail = () => {
   const { loading: authLoading } = useAuth();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [shareOpen, setShareOpen] = useState(false);
+
+  const pageUrl = typeof window !== "undefined" ? `${window.location.origin}/l/` : "/l/";
+  const copyLink = (slug: string) => {
+    navigator.clipboard.writeText(`${pageUrl}${slug}`);
+    toast.success("Link copied!");
+  };
 
   const { data: page } = useQuery({
     queryKey: ["landing-page", id],
