@@ -81,6 +81,7 @@ import { Route as AcademyIdRouteImport } from './routes/academy.$id'
 import { Route as LandingPagesIdIndexRouteImport } from './routes/landing-pages.$id.index'
 import { Route as FunnelsIdIndexRouteImport } from './routes/funnels.$id.index'
 import { Route as FSlugIndexRouteImport } from './routes/f.$slug.index'
+import { Route as TeamLeadsTokenRouteImport } from './routes/team.leads.$token'
 import { Route as LandingPagesIdEditRouteImport } from './routes/landing-pages.$id.edit'
 import { Route as InsightsVideosIdRouteImport } from './routes/insights.videos.$id'
 import { Route as InsightsLiveIdRouteImport } from './routes/insights.live.$id'
@@ -482,6 +483,13 @@ const FSlugIndexRoute = FSlugIndexRouteImport.update({
   path: '/f/$slug/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/f.$slug.index.lazy').then((d) => d.Route))
+const TeamLeadsTokenRoute = TeamLeadsTokenRouteImport.update({
+  id: '/team/leads/$token',
+  path: '/team/leads/$token',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/team.leads.$token.lazy').then((d) => d.Route),
+)
 const LandingPagesIdEditRoute = LandingPagesIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -651,6 +659,7 @@ export interface FileRoutesByFullPath {
   '/insights/live/$id': typeof InsightsLiveIdRoute
   '/insights/videos/$id': typeof InsightsVideosIdRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
+  '/team/leads/$token': typeof TeamLeadsTokenRoute
   '/f/$slug/': typeof FSlugIndexRoute
   '/funnels/$id/': typeof FunnelsIdIndexRoute
   '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
@@ -737,6 +746,7 @@ export interface FileRoutesByTo {
   '/insights/live/$id': typeof InsightsLiveIdRoute
   '/insights/videos/$id': typeof InsightsVideosIdRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
+  '/team/leads/$token': typeof TeamLeadsTokenRoute
   '/f/$slug': typeof FSlugIndexRoute
   '/funnels/$id': typeof FunnelsIdIndexRoute
   '/landing-pages/$id': typeof LandingPagesIdIndexRoute
@@ -826,6 +836,7 @@ export interface FileRoutesById {
   '/insights/live/$id': typeof InsightsLiveIdRoute
   '/insights/videos/$id': typeof InsightsVideosIdRoute
   '/landing-pages/$id/edit': typeof LandingPagesIdEditRoute
+  '/team/leads/$token': typeof TeamLeadsTokenRoute
   '/f/$slug/': typeof FSlugIndexRoute
   '/funnels/$id/': typeof FunnelsIdIndexRoute
   '/landing-pages/$id/': typeof LandingPagesIdIndexRoute
@@ -916,6 +927,7 @@ export interface FileRouteTypes {
     | '/insights/live/$id'
     | '/insights/videos/$id'
     | '/landing-pages/$id/edit'
+    | '/team/leads/$token'
     | '/f/$slug/'
     | '/funnels/$id/'
     | '/landing-pages/$id/'
@@ -1002,6 +1014,7 @@ export interface FileRouteTypes {
     | '/insights/live/$id'
     | '/insights/videos/$id'
     | '/landing-pages/$id/edit'
+    | '/team/leads/$token'
     | '/f/$slug'
     | '/funnels/$id'
     | '/landing-pages/$id'
@@ -1090,6 +1103,7 @@ export interface FileRouteTypes {
     | '/insights/live/$id'
     | '/insights/videos/$id'
     | '/landing-pages/$id/edit'
+    | '/team/leads/$token'
     | '/f/$slug/'
     | '/funnels/$id/'
     | '/landing-pages/$id/'
@@ -1168,6 +1182,7 @@ export interface RootRouteChildren {
   ApiAdminWhatsappLeadsRoute: typeof ApiAdminWhatsappLeadsRoute
   ApiAdminWhatsappSendRoute: typeof ApiAdminWhatsappSendRoute
   FSlugMemberRoute: typeof FSlugMemberRoute
+  TeamLeadsTokenRoute: typeof TeamLeadsTokenRoute
   FSlugIndexRoute: typeof FSlugIndexRoute
   ApiAdminWhatsappMessagesLeadIdRoute: typeof ApiAdminWhatsappMessagesLeadIdRoute
   ApiPublicEmailSendRoute: typeof ApiPublicEmailSendRoute
@@ -1680,6 +1695,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team/leads/$token': {
+      id: '/team/leads/$token'
+      path: '/team/leads/$token'
+      fullPath: '/team/leads/$token'
+      preLoaderRoute: typeof TeamLeadsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/landing-pages/$id/edit': {
       id: '/landing-pages/$id/edit'
       path: '/edit'
@@ -1941,6 +1963,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminWhatsappLeadsRoute: ApiAdminWhatsappLeadsRoute,
   ApiAdminWhatsappSendRoute: ApiAdminWhatsappSendRoute,
   FSlugMemberRoute: FSlugMemberRoute,
+  TeamLeadsTokenRoute: TeamLeadsTokenRoute,
   FSlugIndexRoute: FSlugIndexRoute,
   ApiAdminWhatsappMessagesLeadIdRoute: ApiAdminWhatsappMessagesLeadIdRoute,
   ApiPublicEmailSendRoute: ApiPublicEmailSendRoute,
@@ -1949,13 +1972,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
