@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Eye, Users, Copy, ExternalLink, MoreVertical, Pencil, Trash2, FileText } from "lucide-react";
+import { Plus, Search, Eye, Users, Copy, ExternalLink, MoreVertical, Pencil, Trash2, FileText, Users2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { ShareWithTeamModal } from "@/components/landing-pages/ShareWithTeamModal";
 
 const LandingPagesPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const LandingPagesPage = ({ embedded = false }: { embedded?: boolean } = {}) => 
   const [filter, setFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"upgrade" | "limit">("upgrade");
+  const [shareTeam, setShareTeam] = useState<{ id: string; title: string } | null>(null);
 
   const { isFree, canCreateLandingPage, config, counts, tier, features } = usePlanLimits();
   const queryClient = useQueryClient();
@@ -163,6 +165,9 @@ const LandingPagesPage = ({ embedded = false }: { embedded?: boolean } = {}) => 
                   <Button variant="outline" size="sm" onClick={() => navigate({ to: "/landing-pages/$id/edit", params: { id: page.id } })}>Edit</Button>
                   <Button variant="outline" size="sm" onClick={() => navigate({ to: "/landing-pages/$id", params: { id: page.id } })}>Registrations</Button>
                   <Button variant="outline" size="sm" onClick={() => window.open(`/l/${page.slug}`, "_blank")}>Preview</Button>
+                  <Button variant="outline" size="sm" onClick={() => setShareTeam({ id: page.id, title: page.title })}>
+                    <Users2 size={14} className="mr-1" /> Share with Team
+                  </Button>
                   <WhatsAppShareButton url={`${typeof window !== "undefined" ? window.location.origin : ""}/l/${page.slug}`} message={`Check this out: ${page.title}`} size="sm" iconOnly />
                 </div>
               </Card>
