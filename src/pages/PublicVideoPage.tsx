@@ -26,6 +26,8 @@ import {
   formatRelativeDate,
 } from "@/lib/format";
 import { toast } from "sonner";
+import { PrivacyGuardMount } from "@/components/PrivacyGuard";
+import { MaterialsList } from "@/components/MaterialsList";
 
 const PublicVideoPage = () => {
   const { id } = useParams();
