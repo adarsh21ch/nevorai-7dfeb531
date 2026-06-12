@@ -1171,6 +1171,12 @@ const LandingPageEditor = () => {
             {STEP_RENDERERS[i]()}
           </EditorSectionBlock>
         ))}
+        {id && (
+          <EditorSectionBlock id="section-materials">
+            <MaterialsManager entityType="landing_page" entityId={id} />
+          </EditorSectionBlock>
+        )}
+
       </EditorScrollLayout>
     </DashboardLayout>
   );
