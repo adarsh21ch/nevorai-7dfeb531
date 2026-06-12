@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * PrivacyGuard — best-effort content-protection deterrents for public viewer pages.
@@ -6,17 +6,6 @@ import { useEffect, useRef } from "react";
  * IMPORTANT: Browsers cannot truly block OS-level screenshots or screen recording.
  * This component layers strong deterrents and a dynamic watermark so any leaked
  * capture is traceable back to the viewer.
- *
- * What it does (scoped to its subtree):
- * - Disables right-click context menu
- * - Disables text & image selection, drag-to-save on images
- * - Blocks common shortcuts: Ctrl/Cmd+S, Ctrl/Cmd+P, Ctrl/Cmd+U,
- *   Ctrl/Cmd+Shift+I/J/C, F12, PrintScreen
- * - Forces `controlsList="nodownload noremoteplayback"` and
- *   `disablePictureInPicture` on every <video> inside
- * - Blurs the screen when the tab loses focus / visibility changes
- * - Renders a translucent diagonal watermark overlay with viewer name/phone
- *   + timestamp on top of the content
  */
 export const PrivacyGuard = ({
   children,
@@ -28,16 +17,9 @@ export const PrivacyGuard = ({
   enabled?: boolean;
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const [hidden, setHidden] = (function useLocal() {
-    // tiny local state without importing useState to avoid lint noise
-    const ref = useRef({ value: false, set: (_: boolean) => {} });
-    const [v, setV] = (require("react") as typeof import("react")).useState(false);
-    ref.current.value = v;
-    ref.current.set = setV;
-    return [v, setV] as const;
-  })();
+  const [hidden, setHidden] = useState(false);
 
-  // Apply <video> hardening + disable download attributes inside subtree
+  // Harden <video> + <img> in the subtree (no download, no PiP, no drag)
   useEffect(() => {
     if (!enabled) return;
     const root = rootRef.current;
@@ -48,12 +30,12 @@ export const PrivacyGuard = ({
         v.setAttribute("controlsList", "nodownload noremoteplayback noplaybackrate");
         v.setAttribute("disablePictureInPicture", "true");
         (v as any).disablePictureInPicture = true;
-        v.oncontextmenu = (e) => e.preventDefault();
+        v.oncontextmenu = (e) => { e.preventDefault(); return false; };
       });
       root.querySelectorAll("a[download]").forEach((a) => a.removeAttribute("download"));
       root.querySelectorAll("img").forEach((img) => {
         img.setAttribute("draggable", "false");
-        img.oncontextmenu = (e) => e.preventDefault();
+        img.oncontextmenu = (e) => { e.preventDefault(); return false; };
       });
     };
 
@@ -63,45 +45,34 @@ export const PrivacyGuard = ({
     return () => obs.disconnect();
   }, [enabled]);
 
-  // Global event handlers (scoped within the guarded subtree where possible)
+  // Global keyboard / clipboard / visibility handlers
   useEffect(() => {
     if (!enabled) return;
 
-    const onContext = (e: MouseEvent) => {
-      if (rootRef.current?.contains(e.target as Node)) e.preventDefault();
-    };
+    const inGuard = (t: EventTarget | null) =>
+      rootRef.current?.contains(t as Node);
+
+    const onContext = (e: MouseEvent) => { if (inGuard(e.target)) e.preventDefault(); };
 
     const onKey = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
       const meta = e.ctrlKey || e.metaKey;
-      // Block: Ctrl+S, Ctrl+P, Ctrl+U, Ctrl+Shift+I/J/C, F12, PrintScreen
       if (
         (meta && ["s", "p", "u"].includes(k)) ||
         (meta && e.shiftKey && ["i", "j", "c"].includes(k)) ||
-        e.key === "F12" ||
-        e.key === "PrintScreen"
+        e.key === "F12"
       ) {
         e.preventDefault();
-        // Briefly hide content if PrintScreen pressed
-        if (e.key === "PrintScreen") {
-          setHidden(true);
-          setTimeout(() => setHidden(false), 1500);
-          try {
-            // Best-effort: overwrite clipboard so any auto-paste is neutralized
-            navigator.clipboard?.writeText("");
-          } catch {}
-        }
+      }
+      if (e.key === "PrintScreen") {
+        setHidden(true);
+        setTimeout(() => setHidden(false), 1500);
+        try { navigator.clipboard?.writeText(""); } catch {}
       }
     };
 
-    const onCopy = (e: ClipboardEvent) => {
-      if (rootRef.current?.contains(e.target as Node)) e.preventDefault();
-    };
-
-    const onVisibility = () => {
-      if (document.visibilityState !== "visible") setHidden(true);
-      else setHidden(false);
-    };
+    const onCopy = (e: ClipboardEvent) => { if (inGuard(e.target)) e.preventDefault(); };
+    const onVisibility = () => setHidden(document.visibilityState !== "visible");
     const onBlur = () => setHidden(true);
     const onFocus = () => setHidden(false);
 
@@ -122,7 +93,7 @@ export const PrivacyGuard = ({
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("focus", onFocus);
     };
-  }, [enabled, setHidden]);
+  }, [enabled]);
 
   if (!enabled) return <>{children}</>;
 
@@ -132,7 +103,7 @@ export const PrivacyGuard = ({
   return (
     <div
       ref={rootRef}
-      className="relative select-none"
+      className="relative"
       style={{
         WebkitUserSelect: "none",
         MozUserSelect: "none",
@@ -143,18 +114,10 @@ export const PrivacyGuard = ({
     >
       {children}
 
-      {/* Dynamic diagonal watermark — covers the subtree, pointer-events: none */}
+      {/* Dynamic diagonal watermark overlay — pointer-events: none */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-[60] overflow-hidden"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            -30deg,
-            transparent 0,
-            transparent 180px,
-            rgba(255,255,255,0.0001) 181px
-          )`,
-        }}
       >
         <div
           className="absolute inset-0"
@@ -163,7 +126,7 @@ export const PrivacyGuard = ({
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, 360px)",
             gridAutoRows: "180px",
-            opacity: 0.18,
+            opacity: 0.16,
             color: "rgba(120,120,120,0.9)",
             fontSize: "13px",
             fontWeight: 600,
@@ -180,7 +143,6 @@ export const PrivacyGuard = ({
         </div>
       </div>
 
-      {/* Hide overlay on PrintScreen / tab-blur — black out content */}
       {hidden && (
         <div
           aria-hidden
