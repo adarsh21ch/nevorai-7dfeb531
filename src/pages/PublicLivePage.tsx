@@ -517,6 +517,8 @@ const PublicLivePage = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background">
+      <PrivacyGuardMount watermarkText={(session as any)?.title || "Live session"} />
+
       <div className="border-b border-border px-4 py-3 flex items-center justify-between">
         <a href="https://nevorai.com" target="_blank" rel="noopener noreferrer"><Logo size="sm" /></a>
         {(stateData.state === "live" || stateData.state === "replay") && (
