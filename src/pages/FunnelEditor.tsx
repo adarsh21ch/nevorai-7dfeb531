@@ -1492,9 +1492,15 @@ const FunnelEditor = () => {
             </EditorSectionBlock>
           );
         })}
+        {id && (
+          <EditorSectionBlock id="section-materials">
+            <MaterialsManager entityType="funnel" entityId={id} />
+          </EditorSectionBlock>
+        )}
       </EditorScrollLayout>
     </DashboardLayout>
   );
 };
+
 
 export default FunnelEditor;
