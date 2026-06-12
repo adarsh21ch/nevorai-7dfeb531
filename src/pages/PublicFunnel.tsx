@@ -1299,7 +1299,15 @@ const PublicFunnel = () => {
           : undefined,
       }}
     >
+      <PrivacyGuardMount
+        watermarkText={
+          (leadForm?.name || leadForm?.phone)
+            ? `${leadForm.name || ""} ${leadForm.phone || ""}`.trim()
+            : (funnel as any)?.title || "Protected funnel"
+        }
+      />
       <div
+
         className="flex items-center justify-between sticky top-0 z-50"
         style={{
           height: "52px",
