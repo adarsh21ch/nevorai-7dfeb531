@@ -21,6 +21,7 @@ import {
   sessionDurationSec, googleCalendarUrl, buildICS, downloadICS,
 } from "@/lib/liveSession";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { MaterialsManager } from "@/components/MaterialsManager";
 
 const LiveDetailPage = () => {
   const { id } = useParams();
