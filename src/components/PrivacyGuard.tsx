@@ -151,6 +151,7 @@ export const PrivacyGuard = ({
           <div className="text-white max-w-md">
             <p className="text-lg font-semibold mb-2">Content paused</p>
             <p className="text-sm opacity-80">
+
               Return to this tab to resume. Screenshots and recordings are tracked.
             </p>
           </div>
