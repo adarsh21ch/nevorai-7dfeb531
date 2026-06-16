@@ -27,6 +27,7 @@ import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { isYouTubeUrl } from "@/lib/youtube";
 import { sanitizeText } from "@/lib/sanitize";
 import { trackEntityView, captureAttribution } from "@/lib/tracking";
+import { trackLinkEvent, getCachedShareLinkId } from "@/lib/teamTracking";
 import { logFunnelEngagement } from "@/lib/funnelEngagement";
 import { trackLead, trackPixel } from "@/lib/pixel";
 import {
@@ -876,8 +877,11 @@ const PublicFunnel = () => {
 
   useEffect(() => {
     if (!funnel?.id) return;
+    // Team tracking: fire share-link 'view' (no-op if no token in URL).
+    void trackLinkEvent(funnel.id, null, "view");
     return trackEntityView("funnel", funnel.id);
   }, [funnel?.id]);
+
 
   useEffect(() => {
     if (!funnel) return;
