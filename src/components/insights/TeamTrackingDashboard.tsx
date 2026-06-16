@@ -99,28 +99,30 @@ export function TeamTrackingDashboard() {
     return <div className="premium-card p-6 text-sm text-muted-foreground">Loading team tracking…</div>;
   }
 
-  if (!hasTeam && (data?.members.length ?? 0) <= 1 && (data?.funnels.length ?? 0) === 0) {
-    return (
-      <InsightsEmptyState
-        icon={Users}
-        title="No team yet"
-        hint="Connect your team to see their numbers here. Share your connect link from Profile → Team."
-      />
-    );
-  }
+  const showSoloHint = !hasTeam;
+  const noFunnels = (data?.funnels.length ?? 0) === 0;
 
-  if ((data?.funnels.length ?? 0) === 0) {
+  if (noFunnels) {
     return (
       <InsightsEmptyState
         icon={Users}
         title="No funnels yet"
-        hint="Create a funnel to start sharing — your team's numbers will appear here."
+        hint="Create a funnel to start sharing — your numbers (and your team's) will appear here."
       />
     );
   }
 
+
   return (
     <div className="space-y-4">
+      {showSoloHint && (
+        <div className="premium-card p-3 md:p-4 flex flex-wrap items-center justify-between gap-2 border-dashed">
+          <div className="text-xs text-muted-foreground">
+            <span className="text-foreground font-medium">Solo for now.</span> Connect teammates from <span className="text-foreground">Profile → Team</span> to see their numbers in this sheet alongside yours.
+          </div>
+        </div>
+      )}
+
       {/* KPI Header */}
       <div className="premium-card p-4 md:p-5 space-y-3">
         <div className="flex items-start justify-between gap-3 flex-wrap">
