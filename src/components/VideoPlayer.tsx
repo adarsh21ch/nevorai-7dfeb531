@@ -158,6 +158,16 @@ function NativeVideoPlayer({
   const [canPiP, setCanPiP] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
   const [hoverFrac, setHoverFrac] = useState<number | null>(null);
+  const [waiting, setWaiting] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [seekHint, setSeekHint] = useState<null | { side: "left" | "right"; amount: number; key: number }>(null);
+  const lastTapRef = useRef<{ time: number; x: number; side: "left" | "right" | null }>({ time: 0, x: 0, side: null });
+  const resumeKey = useMemo(() => `nflow:resume:${tracking?.videoId ?? src}`, [tracking?.videoId, src]);
+  const lastSaveRef = useRef(0);
+  // Speed menu is only available when both playback-speed AND seeking are allowed (skip-protected
+  // videos lock playback to 1x to preserve creator intent).
+  const speedEnabled = allowPlaybackSpeed && allowSeek;
+
   
 
   useEffect(() => {
