@@ -421,8 +421,8 @@ const PublicVideoPage = () => {
               </span>
             </>
           )}
-          <span aria-hidden>·</span>
         </div>
+
 
         {/* Skip-protection badge — premium saffron pill */}
         {video.allow_seek === false && (
