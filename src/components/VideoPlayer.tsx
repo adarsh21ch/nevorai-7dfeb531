@@ -414,6 +414,7 @@ function NativeVideoPlayer({
 
   const onTouchEnd = useCallback(
     (e: React.TouchEvent) => {
+      const wasLongPress = longPressTimerRef.current == null;
       if (longPressTimerRef.current) {
         window.clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
@@ -427,12 +428,34 @@ function NativeVideoPlayer({
       if (target && target.closest("button, input, [role='menu'], [data-no-tap]")) {
         return;
       }
+
+      // Double-tap to seek (only when seeking is allowed). Detect by tap interval + position.
+      const touch = e.changedTouches[0];
+      const wrap = wrapRef.current;
+      if (allowSeek && touch && wrap) {
+        const r = wrap.getBoundingClientRect();
+        const x = touch.clientX - r.left;
+        const side: "left" | "right" = x < r.width / 2 ? "left" : "right";
+        const now = Date.now();
+        const last = lastTapRef.current;
+        if (now - last.time < 300 && last.side === side) {
+          e.preventDefault();
+          seekBy(side === "left" ? -10 : 10);
+          lastTapRef.current = { time: 0, x: 0, side: null };
+          showControls();
+          return;
+        }
+        lastTapRef.current = { time: now, x, side };
+      }
+
       // Single tap anywhere on video: toggle play/pause + show controls.
-      togglePlay();
+      // Suppress when the long-press already fired (we don't want a pause on release).
+      if (!wasLongPress) togglePlay();
       showControls();
     },
-    [togglePlay, showControls],
+    [togglePlay, showControls, seekBy, allowSeek],
   );
+
 
   // CRITICAL: also reset speed on touchcancel — without this, a long-press
   // interrupted by a scroll/swipe leaves the video stuck at 2x forever.
