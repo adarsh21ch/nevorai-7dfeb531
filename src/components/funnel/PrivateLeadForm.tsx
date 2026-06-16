@@ -27,7 +27,7 @@ import { PrivacyMicrocopy } from "@/components/funnel/PrivacyMicrocopy";
 interface PrivateLeadFormProps {
   funnelId: string;
   funnelTitle: string;
-  requiredFields: { email: boolean; city: boolean; state: boolean; whatsapp: boolean };
+  requiredFields: { phone?: boolean; email: boolean; city: boolean; state: boolean; whatsapp: boolean };
   onSuccess: () => void;
   isDark: boolean;
 }
