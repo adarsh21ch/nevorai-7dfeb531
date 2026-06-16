@@ -90,6 +90,53 @@ export async function trackLinkEvent(
   }
 }
 
+/**
+ * Record a funnel event (view/lead/complete) into link_events. If the URL has
+ * a team share token (?t=/?ref=), attributes to that member; otherwise resolves
+ * the funnel's owner-default universal share link server-side.
+ *
+ * This is the single entry point for funnel view/lead tracking. Use it
+ * instead of trackLinkEvent for funnel pages so owner/direct opens are
+ * counted too.
+ */
+export async function trackFunnelEvent(
+  funnelId: string,
+  stepId: string | null,
+  eventType: "view" | "lead" | "complete",
+): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const token = readShareTokenFromUrl();
+  try {
+    if (eventType === "view") {
+      const key = `${VIEW_FIRED_PREFIX}fv_${funnelId}_${stepId ?? "root"}`;
+      if (sessionStorage.getItem(key)) return getCachedShareLinkId(funnelId);
+      sessionStorage.setItem(key, "1");
+    }
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
+    const { data, error } = await (supabase as any).rpc("track_funnel_event", {
+      p_funnel_id: funnelId,
+      p_token: token,
+      p_step_id: stepId,
+      p_event_type: eventType,
+      p_fingerprint: getVisitorFingerprint(),
+      p_user_agent: ua,
+    });
+    if (error) {
+      console.warn("[teamTracking] track_funnel_event failed", error.message);
+      // Fallback to v2 if token present
+      if (token) return trackLinkEvent(funnelId, stepId, eventType);
+      return null;
+    }
+    const shareLinkId = (data as string | null) ?? null;
+    if (shareLinkId) cacheShareLinkId(funnelId, shareLinkId);
+    return shareLinkId;
+  } catch (e) {
+    console.warn("[teamTracking] track_funnel_event threw", e);
+    return null;
+  }
+}
+
+
 function cacheShareLinkId(funnelId: string, id: string) {
   try { sessionStorage.setItem(`${RESOLVED_KEY_PREFIX}${funnelId}`, id); } catch {}
 }
