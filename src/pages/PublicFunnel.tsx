@@ -836,6 +836,7 @@ const PublicFunnel = () => {
   // of truth). Falls back to the legacy required_fields for older funnels.
   const legacyRequired = funnel?.required_fields || { email: false, city: false, state: false, whatsapp: false };
   const requiredFields = {
+    phone: !!((formConfig as any)?.phone_required ?? false),
     email: !!(formConfig?.show_email ?? legacyRequired.email),
     city: !!(formConfig?.show_city ?? legacyRequired.city),
     state: !!((formConfig as any)?.show_state ?? legacyRequired.state),

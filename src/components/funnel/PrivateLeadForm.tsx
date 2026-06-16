@@ -27,7 +27,7 @@ import { PrivacyMicrocopy } from "@/components/funnel/PrivacyMicrocopy";
 interface PrivateLeadFormProps {
   funnelId: string;
   funnelTitle: string;
-  requiredFields: { email: boolean; city: boolean; state: boolean; whatsapp: boolean };
+  requiredFields: { phone?: boolean; email: boolean; city: boolean; state: boolean; whatsapp: boolean };
   onSuccess: () => void;
   isDark: boolean;
 }
@@ -75,7 +75,7 @@ export const PrivateLeadForm = ({
   const validate = (): FieldErrors => {
     const e: FieldErrors = {};
     e.name = validateRequired(form.name, "Name");
-    e.phone = validatePhone(form.phone);
+    if (requiredFields.phone || form.phone) e.phone = validatePhone(form.phone);
     if (requiredFields.email) e.email = validateEmail(form.email);
     if (requiredFields.city) e.city = validateRequired(form.city, "City");
     if (requiredFields.state) e.state = validateRequired(form.state, "State");
@@ -245,7 +245,7 @@ export const PrivateLeadForm = ({
             </div>
 
             <div>
-              <Label className="text-xs font-medium" style={{ color: textMuted }}>Phone Number *</Label>
+              <Label className="text-xs font-medium" style={{ color: textMuted }}>Phone Number{requiredFields.phone ? " *" : ""}</Label>
               <div className="mt-1">
                 <NPhoneInput
                   ref={refs.phone as any}
