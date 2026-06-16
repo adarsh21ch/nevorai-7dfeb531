@@ -574,21 +574,22 @@ const InsightsPage = ({ embedded = false }: { embedded?: boolean } = {}) => {
         <TabsContent value="overview" className="space-y-5">
           {/* Hero KPIs — Unique Viewers + Leads lead; Total Views demoted; Live moved to Live tab. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <KpiCard
-              icon={Users}
-              label="Unique Viewers"
-              value={uniqueViewerEstimate}
-              spark={viewerSpark}
-              suffix={PERIOD_LABELS[period]}
-              previous={0}
-              footer={
-                <span className="text-[10px] text-muted-foreground">
-                  {formatCompact(totalEventViews)} total views
-                </span>
-              }
-            />
+            <div className="space-y-1">
+              <KpiCard
+                icon={Users}
+                label="Unique Viewers"
+                value={uniqueViewerEstimate}
+                spark={viewerSpark}
+                suffix={PERIOD_LABELS[period]}
+                previous={0}
+              />
+              <div className="px-1 text-[10px] text-muted-foreground">
+                {formatCompact(totalEventViews)} total views (refreshes counted)
+              </div>
+            </div>
             <KpiCard icon={UserCheck} label="Total Leads" value={uniqueLeads} previous={prevLeads} spark={leadsSpark} suffix={PERIOD_LABELS[period]} />
           </div>
+
 
 
           {/* Activity / Team Tracking segment */}
