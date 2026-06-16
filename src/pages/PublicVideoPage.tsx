@@ -422,11 +422,27 @@ const PublicVideoPage = () => {
             </>
           )}
           <span aria-hidden>·</span>
-          <span>
-            {video.allow_seek === false ? "🛡️ Skip-protection" : "▶ Standard playback"}
-          </span>
         </div>
+
+        {/* Skip-protection badge — premium saffron pill */}
+        {video.allow_seek === false && (
+          <div className="flex">
+            <span
+              title="This video plays start-to-finish for the best experience."
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold border"
+              style={{
+                color: "var(--accent-saffron)",
+                borderColor: "var(--accent-saffron)",
+                background: "var(--accent-saffron-soft)",
+              }}
+            >
+              <ShieldCheck size={12} strokeWidth={2.5} />
+              Distraction-free
+            </span>
+          </div>
+        )}
       </div>
+
 
       {/* Description */}
       {video.description && (
