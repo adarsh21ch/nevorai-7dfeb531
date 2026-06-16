@@ -166,7 +166,7 @@ begin
   ),
   member_meta as (
     select t.user_id,
-           coalesce(p.display_name, p.full_name, p.email, 'Member') as name,
+           coalesce(nullif(p.full_name,''), p.email, 'Member') as name,
            p.avatar_url,
            (t.user_id = v_owner) as is_you,
            -- Label = most recent non-null label_id on any of that member's share_links
