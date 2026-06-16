@@ -345,6 +345,14 @@ export const MultiStepViewer = ({
     return () => { if (progressSaveTimer.current) clearInterval(progressSaveTimer.current); };
   }, [activeStepIndex, progressMap, steps, funnel.id]);
 
+  // Team tracking: fire a 'view' event for the active step (deduped per session).
+  useEffect(() => {
+    const step = steps[activeStepIndex];
+    if (!step) return;
+    void trackLinkEvent(funnel.id, step.id, "view");
+  }, [activeStepIndex, steps, funnel.id]);
+
+
   // Realtime: re-fetch progress when creator manually unlocks a step for this session.
   useEffect(() => {
     const channel = supabase
