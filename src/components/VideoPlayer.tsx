@@ -14,6 +14,10 @@ import {
   Download,
   MessageCircle,
   Twitter,
+  Gauge,
+  Loader2,
+  RotateCcw,
+  RotateCw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,6 +25,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -28,6 +35,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { isYouTubeUrl } from "@/lib/youtube";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { useVideoTracking, type VideoTrackingMeta } from "@/hooks/useVideoTracking";
+
+const SAFFRON = "var(--accent-saffron)";
+const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 
 export interface VideoPlayerProps {
   src: string;
