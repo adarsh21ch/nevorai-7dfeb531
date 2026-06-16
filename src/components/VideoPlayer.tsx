@@ -338,6 +338,24 @@ function NativeVideoPlayer({
           e.preventDefault();
           setVol(Math.max(0, (v.volume || 0) - 0.1));
           break;
+        case "ArrowLeft":
+          e.preventDefault();
+          seekBy(-5);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          seekBy(5);
+          break;
+        case "j":
+        case "J":
+          e.preventDefault();
+          seekBy(-10);
+          break;
+        case "l":
+        case "L":
+          e.preventDefault();
+          seekBy(10);
+          break;
         default:
           if (allowSeek && /^[0-9]$/.test(key)) {
             e.preventDefault();
@@ -348,7 +366,8 @@ function NativeVideoPlayer({
     };
     el.addEventListener("keydown", onKey);
     return () => el.removeEventListener("keydown", onKey);
-  }, [togglePlay, toggleMute, toggleFullscreen, setVol, seekToFraction, allowSeek, showControls]);
+  }, [togglePlay, toggleMute, toggleFullscreen, setVol, seekBy, seekToFraction, allowSeek, showControls]);
+
 
   const url = shareUrl ?? (typeof window !== "undefined" ? window.location.href : "");
   const handleCopy = useCallback(() => {
