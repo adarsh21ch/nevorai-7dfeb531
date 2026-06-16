@@ -755,18 +755,18 @@ function NativeVideoPlayer({
                 style={{ width: `${bufferedPct}%` }}
               />
               <div
-                className="absolute top-0 left-0 h-full bg-primary rounded-full"
-                style={{ width: `${progressPct}%` }}
+                className="absolute top-0 left-0 h-full rounded-full"
+                style={{ width: `${progressPct}%`, background: SAFFRON }}
               />
               {allowSeek && (
                 <div
                   className={cn(
-                    "absolute top-1/2 -translate-y-1/2 bg-primary rounded-full",
-                    // Mobile: always-visible 12px scrubber. Desktop: 8px, hover-only.
-                    "w-3 h-3 -ml-1.5 sm:w-2 sm:h-2 sm:-ml-1",
-                    "opacity-100 sm:opacity-0 sm:group-hover/seek:opacity-100 transition-opacity",
+                    "absolute top-1/2 -translate-y-1/2 rounded-full shadow-md",
+                    // Mobile: always-visible 12px scrubber. Desktop: 8px, hover-only, grows on hover.
+                    "w-3 h-3 -ml-1.5 sm:w-2.5 sm:h-2.5 sm:-ml-[5px]",
+                    "opacity-100 sm:opacity-0 sm:group-hover/seek:opacity-100 sm:group-hover/seek:scale-125 transition-all",
                   )}
-                  style={{ left: `${progressPct}%` }}
+                  style={{ left: `${progressPct}%`, background: SAFFRON }}
                 />
               )}
             </div>
