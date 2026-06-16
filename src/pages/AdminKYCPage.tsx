@@ -25,18 +25,15 @@ const AdminKYCPage = () => {
   });
 
   const reviewMutation = useMutation({
-    mutationFn: async ({ id, userId, action }: { id: string; userId: string; action: "approved" | "rejected" }) => {
-      const { error } = await supabase.from("user_kyc_submissions").update({
-        status: action,
-        reviewed_at: new Date().toISOString(),
-        rejection_reason: action === "rejected" ? rejectionReason : null,
-      }).eq("id", id);
+    mutationFn: async ({ id, action }: { id: string; userId: string; action: "approved" | "rejected" }) => {
+      // Single atomic RPC: updates submission AND flips profiles.is_verified
+      // (only admins can run it; checks role server-side).
+      const { error } = await (supabase as any).rpc("admin_review_kyc", {
+        _submission_id: id,
+        _action: action,
+        _reason: action === "rejected" ? rejectionReason : null,
+      });
       if (error) throw error;
-
-      await supabase.from("profiles").update({
-        kyc_status: action === "approved" ? "verified" : "rejected",
-        kyc_verified_at: action === "approved" ? new Date().toISOString() : null,
-      }).eq("id", userId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-kyc-all"] });
@@ -45,6 +42,7 @@ const AdminKYCPage = () => {
       setDocPreviewUrl(null);
       setRejectionReason("");
     },
+    onError: (e: any) => toast.error(e?.message || "Failed to save review"),
   });
 
   const getDocUrl = async (path: string) => {

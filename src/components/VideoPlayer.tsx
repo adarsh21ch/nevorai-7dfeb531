@@ -812,37 +812,50 @@ function NativeVideoPlayer({
 
           <div className="flex-1" />
 
-          {/* Playback speed — only when not skip-protected */}
-          {speedEnabled && !live && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="h-11 px-2 min-w-[44px] flex items-center justify-center gap-1 rounded-md text-white hover:bg-white/10 active:scale-90 transition-transform"
-                  aria-label="Playback speed"
-                >
-                  <Gauge size={isFs ? 20 : 18} />
-                  <span className="text-xs font-semibold tabular-nums">
-                    {playbackRate === 1 ? "1×" : `${playbackRate}×`}
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" side="top" className="w-32">
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  Speed
-                </DropdownMenuLabel>
-                <DropdownMenuRadioGroup
-                  value={String(playbackRate)}
-                  onValueChange={(v) => setRate(parseFloat(v))}
-                >
-                  {SPEED_OPTIONS.map((s) => (
-                    <DropdownMenuRadioItem key={s} value={String(s)} className="text-sm">
-                      {s === 1 ? "Normal (1×)" : `${s}×`}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {/* Playback speed — full menu when allowed; disabled chip with tooltip when skip-protected */}
+          {!live && (
+            speedEnabled ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="h-11 px-2 min-w-[44px] flex items-center justify-center gap-1 rounded-md text-white hover:bg-white/10 active:scale-90 transition-transform"
+                    aria-label="Playback speed"
+                  >
+                    <Gauge size={isFs ? 20 : 18} />
+                    <span className="text-xs font-semibold tabular-nums">
+                      {playbackRate === 1 ? "1×" : `${playbackRate}×`}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="top" className="w-32">
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Speed
+                  </DropdownMenuLabel>
+                  <DropdownMenuRadioGroup
+                    value={String(playbackRate)}
+                    onValueChange={(v) => setRate(parseFloat(v))}
+                  >
+                    {SPEED_OPTIONS.map((s) => (
+                      <DropdownMenuRadioItem key={s} value={String(s)} className="text-sm">
+                        {s === 1 ? "Normal (1×)" : `${s}×`}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : allowPlaybackSpeed ? (
+              <button
+                type="button"
+                disabled
+                title="Speed locked for this video"
+                aria-label="Speed locked"
+                className="h-11 px-2 min-w-[44px] flex items-center justify-center gap-1 rounded-md text-white/50 cursor-not-allowed"
+              >
+                <Gauge size={isFs ? 20 : 18} />
+                <span className="text-xs font-semibold tabular-nums">1×</span>
+              </button>
+            ) : null
           )}
 
           {/* 3-dot menu */}

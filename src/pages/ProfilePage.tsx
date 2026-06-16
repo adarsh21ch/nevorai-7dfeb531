@@ -46,7 +46,7 @@ const ProfilePage = () => {
   }, [router]);
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({
-    full_name: "", phone: "", city: "", bio: "", company: "",
+    full_name: "", display_name: "", phone: "", city: "", address: "", bio: "", company: "",
     instagram_url: "", whatsapp_number: "",
     username: "", cta_label: "", cta_url: "",
     email: "",
@@ -61,7 +61,8 @@ const ProfilePage = () => {
     if (profile) {
       const p = profile as any;
       setForm({
-        full_name: profile.full_name || "", phone: profile.phone || "", city: profile.city || "",
+        full_name: profile.full_name || "", display_name: p.display_name || "",
+        phone: profile.phone || "", city: profile.city || "", address: p.address || "",
         bio: profile.bio || "", company: profile.company || "",
         instagram_url: profile.instagram_url || "", whatsapp_number: profile.whatsapp_number || "",
         username: p.username || "", cta_label: p.cta_label || "", cta_url: p.cta_url || "",
@@ -96,7 +97,7 @@ const ProfilePage = () => {
       toast.error("CTA URL must start with https://, mailto:, tel: or wa.me"); return;
     }
     const cleanForm = sanitizeFields(form, [
-      "full_name", "city", "bio", "company", "instagram_url", "cta_label",
+      "full_name", "display_name", "city", "address", "bio", "company", "instagram_url", "cta_label",
     ]) as any;
     cleanForm.phone = normalizePhone(form.phone);
     // whatsapp_number changes only via OTP re-verification, never via this form.
@@ -293,9 +294,17 @@ const ProfilePage = () => {
               <div className="px-4 pb-4 pt-2 space-y-4 border-t border-border mt-2">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div><Label className="text-xs">Full Name</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="mt-1 bg-muted border-border" /></div>
+                  <div>
+                    <Label className="text-xs">Display Name <span className="text-muted-foreground">(shown publicly)</span></Label>
+                    <Input value={form.display_name} maxLength={60} placeholder={form.full_name || "Channel name"} onChange={(e) => setForm({ ...form, display_name: e.target.value })} className="mt-1 bg-muted border-border" />
+                  </div>
                   <div><Label className="text-xs">Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1 bg-muted border-border" /></div>
                   <div><Label className="text-xs">City</Label><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="mt-1 bg-muted border-border" /></div>
+                  <div className="sm:col-span-2"><Label className="text-xs">Address</Label><Input value={form.address} maxLength={200} onChange={(e) => setForm({ ...form, address: e.target.value })} className="mt-1 bg-muted border-border" /></div>
                   <div><Label className="text-xs">Company</Label><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="mt-1 bg-muted border-border" /></div>
+                  <div className="sm:col-span-2 text-[11px] text-muted-foreground bg-muted/40 rounded-md px-3 py-2">
+                    Verified badge is granted after KYC review.
+                  </div>
                   <div className="sm:col-span-2">
                     <Label className="text-xs">Email <span className="text-muted-foreground">(used for login)</span></Label>
                     <div className="flex gap-2 mt-1">
