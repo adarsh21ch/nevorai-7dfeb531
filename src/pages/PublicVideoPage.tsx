@@ -15,6 +15,8 @@ import {
   Sun,
   Moon,
   X,
+  ShieldCheck,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -419,12 +421,28 @@ const PublicVideoPage = () => {
               </span>
             </>
           )}
-          <span aria-hidden>·</span>
-          <span>
-            {video.allow_seek === false ? "🛡️ Skip-protection" : "▶ Standard playback"}
-          </span>
         </div>
+
+
+        {/* Skip-protection badge — premium saffron pill */}
+        {video.allow_seek === false && (
+          <div className="flex">
+            <span
+              title="This video plays start-to-finish for the best experience."
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold border"
+              style={{
+                color: "var(--accent-saffron)",
+                borderColor: "var(--accent-saffron)",
+                background: "var(--accent-saffron-soft)",
+              }}
+            >
+              <ShieldCheck size={12} strokeWidth={2.5} />
+              Distraction-free
+            </span>
+          </div>
+        )}
       </div>
+
 
       {/* Description */}
       {video.description && (
@@ -462,16 +480,27 @@ const PublicVideoPage = () => {
       )}
 
       <footer
-        style={{
-          textAlign: "center",
-          padding: "24px 16px",
-          color: "#9ca3af",
-          fontSize: 13,
-          borderTop: "1px solid hsl(var(--border))",
-          marginTop: "auto",
-        }}
+        className="text-center text-xs sm:text-[13px] text-muted-foreground border-t border-border mt-auto"
+        style={{ padding: "20px 16px" }}
       >
-        © 2026 Nevorai · All Rights Reserved · India
+        <div className="inline-flex items-center gap-1.5 mb-1.5">
+          <Lock size={12} />
+          <span>Your information is safe</span>
+          <span aria-hidden>·</span>
+          <span>
+            Powered by{" "}
+            <a
+              href="https://nevorai.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline"
+              style={{ color: "var(--accent-saffron)" }}
+            >
+              Nevorai
+            </a>
+          </span>
+        </div>
+        <div>© 2026 Nevorai · All Rights Reserved · India</div>
       </footer>
     </div>
   );

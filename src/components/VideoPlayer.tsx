@@ -14,6 +14,10 @@ import {
   Download,
   MessageCircle,
   Twitter,
+  Gauge,
+  Loader2,
+  RotateCcw,
+  RotateCw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,6 +25,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -28,6 +35,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { isYouTubeUrl } from "@/lib/youtube";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { useVideoTracking, type VideoTrackingMeta } from "@/hooks/useVideoTracking";
+
+const SAFFRON = "var(--accent-saffron)";
+const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 
 export interface VideoPlayerProps {
   src: string;
@@ -148,6 +158,16 @@ function NativeVideoPlayer({
   const [canPiP, setCanPiP] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
   const [hoverFrac, setHoverFrac] = useState<number | null>(null);
+  const [waiting, setWaiting] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [seekHint, setSeekHint] = useState<null | { side: "left" | "right"; amount: number; key: number }>(null);
+  const lastTapRef = useRef<{ time: number; x: number; side: "left" | "right" | null }>({ time: 0, x: 0, side: null });
+  const resumeKey = useMemo(() => `nflow:resume:${tracking?.videoId ?? src}`, [tracking?.videoId, src]);
+  const lastSaveRef = useRef(0);
+  // Speed menu is only available when both playback-speed AND seeking are allowed (skip-protected
+  // videos lock playback to 1x to preserve creator intent).
+  const speedEnabled = allowPlaybackSpeed && allowSeek;
+
   
 
   useEffect(() => {
@@ -219,6 +239,29 @@ function NativeVideoPlayer({
     },
     [allowSeek],
   );
+
+  const seekBy = useCallback(
+    (delta: number) => {
+      if (!allowSeek) return;
+      const v = videoRef.current;
+      if (!v || !isFinite(v.duration)) return;
+      v.currentTime = Math.max(0, Math.min(v.duration, (v.currentTime || 0) + delta));
+      setSeekHint({ side: delta > 0 ? "right" : "left", amount: Math.abs(delta), key: Date.now() });
+    },
+    [allowSeek],
+  );
+
+  const setRate = useCallback(
+    (rate: number) => {
+      const v = videoRef.current;
+      if (!v) return;
+      const effective = speedEnabled ? rate : 1;
+      v.playbackRate = effective;
+      setPlaybackRate(effective);
+    },
+    [speedEnabled],
+  );
+
 
   const toggleFullscreen = useCallback(async () => {
     const el = wrapRef.current;
@@ -295,6 +338,24 @@ function NativeVideoPlayer({
           e.preventDefault();
           setVol(Math.max(0, (v.volume || 0) - 0.1));
           break;
+        case "ArrowLeft":
+          e.preventDefault();
+          seekBy(-5);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          seekBy(5);
+          break;
+        case "j":
+        case "J":
+          e.preventDefault();
+          seekBy(-10);
+          break;
+        case "l":
+        case "L":
+          e.preventDefault();
+          seekBy(10);
+          break;
         default:
           if (allowSeek && /^[0-9]$/.test(key)) {
             e.preventDefault();
@@ -305,7 +366,8 @@ function NativeVideoPlayer({
     };
     el.addEventListener("keydown", onKey);
     return () => el.removeEventListener("keydown", onKey);
-  }, [togglePlay, toggleMute, toggleFullscreen, setVol, seekToFraction, allowSeek, showControls]);
+  }, [togglePlay, toggleMute, toggleFullscreen, setVol, seekBy, seekToFraction, allowSeek, showControls]);
+
 
   const url = shareUrl ?? (typeof window !== "undefined" ? window.location.href : "");
   const handleCopy = useCallback(() => {
@@ -352,6 +414,7 @@ function NativeVideoPlayer({
 
   const onTouchEnd = useCallback(
     (e: React.TouchEvent) => {
+      const wasLongPress = longPressTimerRef.current == null;
       if (longPressTimerRef.current) {
         window.clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
@@ -365,12 +428,34 @@ function NativeVideoPlayer({
       if (target && target.closest("button, input, [role='menu'], [data-no-tap]")) {
         return;
       }
+
+      // Double-tap to seek (only when seeking is allowed). Detect by tap interval + position.
+      const touch = e.changedTouches[0];
+      const wrap = wrapRef.current;
+      if (allowSeek && touch && wrap) {
+        const r = wrap.getBoundingClientRect();
+        const x = touch.clientX - r.left;
+        const side: "left" | "right" = x < r.width / 2 ? "left" : "right";
+        const now = Date.now();
+        const last = lastTapRef.current;
+        if (now - last.time < 300 && last.side === side) {
+          e.preventDefault();
+          seekBy(side === "left" ? -10 : 10);
+          lastTapRef.current = { time: 0, x: 0, side: null };
+          showControls();
+          return;
+        }
+        lastTapRef.current = { time: now, x, side };
+      }
+
       // Single tap anywhere on video: toggle play/pause + show controls.
-      togglePlay();
+      // Suppress when the long-press already fired (we don't want a pause on release).
+      if (!wasLongPress) togglePlay();
       showControls();
     },
-    [togglePlay, showControls],
+    [togglePlay, showControls, seekBy, allowSeek],
   );
+
 
   // CRITICAL: also reset speed on touchcancel — without this, a long-press
   // interrupted by a scroll/swipe leaves the video stuck at 2x forever.
@@ -470,20 +555,60 @@ function NativeVideoPlayer({
           setDuration(v.duration || 0);
           setVolume(v.volume);
           setMuted(v.muted);
+          // Priority: explicit initialTime prop > stored resume position.
           if (initialTime && initialTime > 0 && isFinite(initialTime)) {
             try {
               v.currentTime = Math.min(initialTime, v.duration || initialTime);
             } catch {
               /* ignore */
             }
+          } else if (typeof window !== "undefined" && !live) {
+            try {
+              const saved = parseFloat(window.localStorage.getItem(resumeKey) || "");
+              const d = v.duration || 0;
+              // Only resume if >10s in and not within 15s of the end.
+              if (isFinite(saved) && saved > 10 && d > 30 && saved < d - 15) {
+                v.currentTime = saved;
+                maxWatchedRef.current = saved;
+                toast(`Resumed from ${fmt(saved)}`, { duration: 2000 });
+              }
+            } catch {
+              /* ignore */
+            }
           }
+          // Sync playbackRate state with whatever the element ends up with.
+          setPlaybackRate(v.playbackRate || 1);
         }}
         onTimeUpdate={(e) => {
           const v = e.currentTarget;
           setCurrent(v.currentTime);
           if (v.currentTime > maxWatchedRef.current) maxWatchedRef.current = v.currentTime;
           onTimeUpdate?.(v.currentTime, v.duration || 0);
+          // Persist resume position at most once every ~5s.
+          if (typeof window !== "undefined" && !live) {
+            const now = Date.now();
+            if (now - lastSaveRef.current > 5000) {
+              lastSaveRef.current = now;
+              try {
+                if (v.currentTime > 5 && v.currentTime < (v.duration || 0) - 5) {
+                  window.localStorage.setItem(resumeKey, String(v.currentTime));
+                } else if (v.duration && v.currentTime >= v.duration - 5) {
+                  window.localStorage.removeItem(resumeKey);
+                }
+              } catch {
+                /* ignore */
+              }
+            }
+          }
         }}
+        onEnded={() => {
+          if (typeof window !== "undefined") {
+            try { window.localStorage.removeItem(resumeKey); } catch { /* ignore */ }
+          }
+        }}
+        onWaiting={() => setWaiting(true)}
+        onPlaying={() => setWaiting(false)}
+        onCanPlay={() => setWaiting(false)}
         onSeeking={(e) => {
           const v = e.currentTarget;
           if (!allowSeek && v.currentTime > maxWatchedRef.current + 0.5) {
@@ -499,12 +624,44 @@ function NativeVideoPlayer({
           }
         }}
         onRateChange={(e) => {
-          if (!allowPlaybackSpeed && e.currentTarget.playbackRate !== 1) {
+          // When skip-protection is on, lock playback at 1x regardless of allowPlaybackSpeed.
+          if (!speedEnabled && e.currentTarget.playbackRate !== 1) {
             e.currentTarget.playbackRate = 1;
           }
+          setPlaybackRate(e.currentTarget.playbackRate);
         }}
         onError={onError}
       />
+
+      {/* Buffering spinner — saffron, only while truly waiting on data */}
+      {waiting && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <Loader2 size={isFs ? 64 : 48} className="animate-spin" style={{ color: SAFFRON }} />
+        </div>
+      )}
+
+      {/* Double-tap seek hint (mobile) */}
+      {seekHint && (
+        <div
+          key={seekHint.key}
+          className={cn(
+            "absolute top-0 bottom-0 flex items-center justify-center pointer-events-none z-20 text-white",
+            seekHint.side === "left" ? "left-0 w-1/2" : "right-0 w-1/2",
+          )}
+          onAnimationEnd={() => setSeekHint(null)}
+          style={{ animation: "nflowSeekHint 600ms ease-out forwards" }}
+        >
+          <div className="flex flex-col items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-4 py-3">
+            {seekHint.side === "left" ? <RotateCcw size={26} /> : <RotateCw size={26} />}
+            <span className="text-xs font-semibold tabular-nums">
+              {seekHint.side === "left" ? "-" : "+"}
+              {seekHint.amount}s
+            </span>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Mobile centered play button */}
       {isMobile && controlsVisible && (
@@ -598,18 +755,18 @@ function NativeVideoPlayer({
                 style={{ width: `${bufferedPct}%` }}
               />
               <div
-                className="absolute top-0 left-0 h-full bg-primary rounded-full"
-                style={{ width: `${progressPct}%` }}
+                className="absolute top-0 left-0 h-full rounded-full"
+                style={{ width: `${progressPct}%`, background: SAFFRON }}
               />
               {allowSeek && (
                 <div
                   className={cn(
-                    "absolute top-1/2 -translate-y-1/2 bg-primary rounded-full",
-                    // Mobile: always-visible 12px scrubber. Desktop: 8px, hover-only.
-                    "w-3 h-3 -ml-1.5 sm:w-2 sm:h-2 sm:-ml-1",
-                    "opacity-100 sm:opacity-0 sm:group-hover/seek:opacity-100 transition-opacity",
+                    "absolute top-1/2 -translate-y-1/2 rounded-full shadow-md",
+                    // Mobile: always-visible 12px scrubber. Desktop: 8px, hover-only, grows on hover.
+                    "w-3 h-3 -ml-1.5 sm:w-2.5 sm:h-2.5 sm:-ml-[5px]",
+                    "opacity-100 sm:opacity-0 sm:group-hover/seek:opacity-100 sm:group-hover/seek:scale-125 transition-all",
                   )}
-                  style={{ left: `${progressPct}%` }}
+                  style={{ left: `${progressPct}%`, background: SAFFRON }}
                 />
               )}
             </div>
@@ -654,6 +811,39 @@ function NativeVideoPlayer({
           )}
 
           <div className="flex-1" />
+
+          {/* Playback speed — only when not skip-protected */}
+          {speedEnabled && !live && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="h-11 px-2 min-w-[44px] flex items-center justify-center gap-1 rounded-md text-white hover:bg-white/10 active:scale-90 transition-transform"
+                  aria-label="Playback speed"
+                >
+                  <Gauge size={isFs ? 20 : 18} />
+                  <span className="text-xs font-semibold tabular-nums">
+                    {playbackRate === 1 ? "1×" : `${playbackRate}×`}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="top" className="w-32">
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Speed
+                </DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  value={String(playbackRate)}
+                  onValueChange={(v) => setRate(parseFloat(v))}
+                >
+                  {SPEED_OPTIONS.map((s) => (
+                    <DropdownMenuRadioItem key={s} value={String(s)} className="text-sm">
+                      {s === 1 ? "Normal (1×)" : `${s}×`}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           {/* 3-dot menu */}
           <DropdownMenu>
