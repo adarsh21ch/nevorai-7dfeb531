@@ -394,7 +394,7 @@ const PublicVideoPage = () => {
             (creatorProfile?.display_name || "").trim() || "Creator";
           const initial = name[0]?.toUpperCase() || "C";
           const colorIdx =
-            Array.from(name).reduce((a, c) => a + c.charCodeAt(0), 0) % 6;
+            Array.from(name).reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % 6;
           const palette = [
             "bg-amber-500/15 text-amber-600 dark:text-amber-400",
             "bg-rose-500/15 text-rose-600 dark:text-rose-400",
