@@ -29,6 +29,39 @@ import {
 } from "@/lib/format";
 import { toast } from "sonner";
 
+const TitleBlock = ({ title }: { title: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const ref = useRef<HTMLHeadingElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Detect whether the clamped element overflows; only then show "...more".
+    setOverflows(el.scrollHeight - el.clientHeight > 2);
+  }, [title]);
+  return (
+    <div>
+      <h1
+        ref={ref}
+        className={`text-xl sm:text-2xl font-heading font-semibold leading-tight tracking-tight transition-[max-height] duration-200 ease-out ${
+          expanded ? "" : "line-clamp-2"
+        }`}
+      >
+        {title}
+      </h1>
+      {overflows && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {expanded ? "Show less" : "...more"}
+        </button>
+      )}
+    </div>
+  );
+};
+
 const PublicVideoPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
