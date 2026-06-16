@@ -634,7 +634,7 @@ function NativeVideoPlayer({
       />
 
       {/* Buffering spinner — saffron, only while truly waiting on data */}
-      {waiting && !videoError(undefined as any) && (
+      {waiting && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <Loader2 size={isFs ? 64 : 48} className="animate-spin" style={{ color: SAFFRON }} />
         </div>
