@@ -164,9 +164,9 @@ function NativeVideoPlayer({
   const lastTapRef = useRef<{ time: number; x: number; side: "left" | "right" | null }>({ time: 0, x: 0, side: null });
   const resumeKey = useMemo(() => `nflow:resume:${tracking?.videoId ?? src}`, [tracking?.videoId, src]);
   const lastSaveRef = useRef(0);
-  // Speed menu is only available when both playback-speed AND seeking are allowed (skip-protected
-  // videos lock playback to 1x to preserve creator intent).
-  const speedEnabled = allowPlaybackSpeed && allowSeek;
+  // Speed menu is independent of seeking. Skip-protection only blocks fast-forwarding via the
+  // timeline — viewers can still choose 1×/1.25×/1.5×/2× playback as long as the creator allows it.
+  const speedEnabled = allowPlaybackSpeed;
 
   
 
