@@ -28,6 +28,7 @@ import {
   formatRelativeDate,
 } from "@/lib/format";
 import { toast } from "sonner";
+import { VideoReactions } from "@/components/video/VideoReactions";
 
 const TitleBlock = ({ title }: { title: string }) => {
   const [expanded, setExpanded] = useState(false);
@@ -458,6 +459,9 @@ const PublicVideoPage = () => {
             </div>
           );
         })()}
+
+        {/* Like / Dislike */}
+        {video?.id && <VideoReactions videoId={video.id} />}
 
         {/* Secondary meta row — date · views · duration · subtle distraction-free chip */}
         <div className="flex items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-muted-foreground flex-wrap">
