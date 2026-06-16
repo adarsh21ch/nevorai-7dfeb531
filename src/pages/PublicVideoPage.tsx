@@ -390,8 +390,8 @@ const PublicVideoPage = () => {
 
         {/* Creator row — ALWAYS renders when we have a creator profile (with fallback name) */}
         {(() => {
-          const name =
-            (creatorProfile?.display_name || "").trim() || "Creator";
+          const cp = creatorProfile as any;
+          const name: string = (cp?.display_name || "").toString().trim() || "Creator";
           const initial = name[0]?.toUpperCase() || "C";
           const colorIdx =
             Array.from(name).reduce((a: number, c: string) => a + c.charCodeAt(0), 0) % 6;
